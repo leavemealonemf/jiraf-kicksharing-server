@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ErpUser {
+  id         Int       @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String?
+
+  franchise  Franchise?
+  franchiseId Int?
+}
+
+model Franchise {
+  id       Int      @id @default(autoincrement())
+  erpUserId   Int      @unique
+  eprUser     ErpUser     @relation(fields: [erpUserId], references: [id])
+  scooters Scooter[] @relation("FranchiseScooters")
+  city     String
+  income   Int
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  name     String
+  phone    String
+  email    String?
+
+  tariffId           Int?      // Внешний ключ для связи с тарифом
+  tariff             Tariff?   @relation(fields: [tariffId], references: [id], name: "UserTariffs")
+
+  trips   Trip[]
+}
+
+model Trip {
+  id             Int      @id @default(autoincrement())
+  startTime      DateTime
+  endTime        DateTime
+  travelTime     String
+  photo          String 
+  price          Int
+  scooterId      Int
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+model Scooter {
+  id               Int      @id @default(autoincrement())
+  deviceId         String   @unique
+  qrCode           String
+  modelName        String
+  serialNumber     String
+  franchiseId      Int?
+  franchise        Franchise? @relation(fields: [franchiseId], references: [id], name: "FranchiseScooters")
+  // city          String   Возможно заменю на ENUM
+  batteryLevel     Int     
+  status           ScooterStatus @default(NOTRENTED)
+  active           Boolean @default(false) // В аренде самокат или нет
+
+  addedDate        DateTime   @default(now()) // Дата добавления
+  photo            String?    // Путь к файлу фотографии или URL
+
+  parkingId        Int
+  parking          Parking  @relation(fields: [parkingId], references: [id])
+}
+
+model Parking {
+  id       Int      @id @default(autoincrement())
+  address  String?
+  photo    String?  // Предполагается, что это будет ссылка на файл/фотографию
+  latitude Float
+  longitude Float
+  radius   Int      // Замените на тип, который отражает радиус
+  
+  scooters Scooter[]
+}
+
+model Tariff {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  boardingCost       Float
+  minuteCost         Float
+  fixedCost          Float
+  colorRGB           String   // Предполагается, что это будет строка в формате RGB (например, "255,0,0")
+  
+  users              User[]   @relation("UserTariffs")
+}
+
+enum ScooterStatus {
+  RENTED
+  NOTRENTED
+}
