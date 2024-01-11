@@ -11,8 +11,8 @@ model ErpUser {
   id         Int       @id @default(autoincrement())
   name       String
   phone      String
-  email      String?
-
+  email      String 
+  password   String
   franchise  Franchise?
   franchiseId Int?
 }
