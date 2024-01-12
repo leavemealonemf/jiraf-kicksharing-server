@@ -5,9 +5,15 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ErpUserModule } from 'src/erp-user/erp-user.module';
 import { options } from './config';
+import { DbModule } from 'src/db/db.module';
 
 @Module({
-  imports: [PassportModule, JwtModule.registerAsync(options()), ErpUserModule],
+  imports: [
+    PassportModule,
+    JwtModule.registerAsync(options()),
+    ErpUserModule,
+    DbModule,
+  ],
   controllers: [AuthController],
   providers: [AuthService],
 })

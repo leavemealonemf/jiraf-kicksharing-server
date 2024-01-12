@@ -13,6 +13,7 @@ model ErpUser {
   phone      String
   email      String 
   password   String
+  TokenErp     TokenErp[]
   franchise  Franchise?
   franchiseId Int?
 }
@@ -36,6 +37,16 @@ model User {
   tariff             Tariff?   @relation(fields: [tariffId], references: [id], name: "UserTariffs")
 
   trips   Trip[]
+}
+
+model TokenErp {
+  token     String   @unique
+  exp       DateTime
+  erpUser      ErpUser     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
+  erpUserId    Int
+  userAgent String   @map("user_agent")
+
+  @@map("tokens")
 }
 
 model Trip {
