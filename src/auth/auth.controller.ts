@@ -1,4 +1,10 @@
-import { Body, Controller, Post, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDto, RegisterDto } from './dto';
@@ -9,10 +15,30 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {}
+  async register(@Body() dto: RegisterDto) {
+    const user = await this.authService.register(dto);
+    if (!user) {
+      throw new BadRequestException(
+        `Не удалось зарегистрировать пользователя с данными ${JSON.stringify(
+          dto,
+        )}`,
+      );
+    }
+    const message = 'Пользователь зарегистрирован';
+    return message;
+  }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {}
+  async login(@Body() dto: LoginDto) {
+    const tokens = await this.authService.login(dto);
+    if (!tokens) {
+      throw new BadRequestException(
+        `Не удалось войти с данными ${JSON.stringify(dto)}}`,
+      );
+    }
+    const { accessToken } = tokens;
+    return { token: accessToken };
+  }
 
   @Get('refresh')
   refresh(@Body() dto) {}

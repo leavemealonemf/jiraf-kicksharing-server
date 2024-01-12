@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dto';
 import { ErpUserService } from 'src/erp-user/erp-user.service';
 import { Tokens } from './interfaces';
@@ -19,6 +24,14 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
+    const findedUser = await this.erpUserService.findByEmail(dto.email);
+
+    if (findedUser) {
+      throw new ConflictException(
+        'Пользователь с таким email уже зарегистрирован',
+      );
+    }
+
     return this.erpUserService.create(dto).catch((err) => {
       this.logger.error(err);
       return null;
@@ -32,7 +45,7 @@ export class AuthService {
         this.logger.error(err);
         return null;
       });
-    if (!user || compareSync(dto.password, user.password)) {
+    if (!user || !compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Не верный логин или пароль');
     }
     const accessToken = this.jwtService.sign({
@@ -48,7 +61,7 @@ export class AuthService {
       data: {
         token: v4(),
         exp: add(new Date(), { months: 1 }),
-        userId,
+        erpUserId: userId,
       },
     });
   }

@@ -44,7 +44,7 @@ model TokenErp {
   exp       DateTime
   erpUser      ErpUser     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
   erpUserId    Int
-  userAgent String   @map("user_agent")
+  userAgent String?   @map("user_agent")
 
   @@map("tokens")
 }
