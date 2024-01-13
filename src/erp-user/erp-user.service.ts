@@ -3,13 +3,19 @@ import { CreateErpUserDto } from './dto/create-erp-user.dto';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ErpUserService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly mailService: MailService,
+  ) {}
 
   async create(createErpUserDto: CreateErpUserDto) {
     const hashedPassword = this.hashPassword(createErpUserDto.password);
+
+    // await this.mailService.sendUserConfirmation(createErpUserDto);
 
     return this.dbService.erpUser.create({
       data: {

@@ -4,7 +4,9 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true
+    "webpack": true,
+    "assets": ["mail/templates/**/*"],
+    "watchAssets": true
   },
   "projects": {
     "common": {

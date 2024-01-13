@@ -38,7 +38,7 @@ export class AuthService {
     });
   }
 
-  async login(dto: LoginDto): Promise<Tokens> {
+  async login(dto: LoginDto, agent: string): Promise<Tokens> {
     const user: ErpUser = await this.erpUserService
       .findByEmail(dto.email)
       .catch((err) => {
@@ -48,20 +48,59 @@ export class AuthService {
     if (!user || !compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Не верный логин или пароль');
     }
-    const accessToken = this.jwtService.sign({
-      id: user.id,
-      email: user.email,
+    return this.generateTokens(user, agent);
+  }
+
+  async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
+    const token = await this.dbService.tokenErp.findUnique({
+      where: { token: refreshToken },
     });
-    const refreshToken = await this.getRefreshToken(user.id);
+    if (!token) {
+      throw new UnauthorizedException();
+    }
+
+    await this.dbService.tokenErp.delete({ where: { token: refreshToken } });
+
+    if (new Date(token.exp) < new Date()) {
+      throw new UnauthorizedException();
+    }
+
+    const user = await this.erpUserService.findById(token.erpUserId);
+    return this.generateTokens(user, agent);
+  }
+
+  private async generateTokens(user: ErpUser, agent: string): Promise<Tokens> {
+    const accessToken =
+      'Bearer ' +
+      this.jwtService.sign({
+        id: user.id,
+        email: user.email,
+      });
+    const refreshToken = await this.getRefreshToken(user.id, agent);
     return { accessToken, refreshToken };
   }
 
-  private async getRefreshToken(userId: number): Promise<TokenErp> {
-    return this.dbService.tokenErp.create({
-      data: {
+  private async getRefreshToken(
+    userId: number,
+    agent: string,
+  ): Promise<TokenErp> {
+    const _token = await this.dbService.tokenErp.findFirst({
+      where: { erpUserId: userId, userAgent: agent },
+    });
+
+    const token = _token?.token ?? '';
+
+    return this.dbService.tokenErp.upsert({
+      where: { token },
+      update: {
+        token: v4(),
+        exp: add(new Date(), { months: 1 }),
+      },
+      create: {
         token: v4(),
         exp: add(new Date(), { months: 1 }),
         erpUserId: userId,
+        userAgent: agent,
       },
     });
   }

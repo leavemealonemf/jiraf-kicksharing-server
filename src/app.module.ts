@@ -3,6 +3,7 @@ import { ErpUserModule } from './erp-user/erp-user.module';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
     DbModule,
     AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    MailModule,
   ],
   controllers: [],
   providers: [],
