@@ -23,6 +23,7 @@ export class ErpUserService {
         name: createErpUserDto.name,
         phone: createErpUserDto.phone,
         password: hashedPassword,
+        role: createErpUserDto.role,
         franchiseId: createErpUserDto.franchiseId,
       },
     });

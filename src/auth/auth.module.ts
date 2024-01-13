@@ -8,6 +8,7 @@ import { options } from './config';
 import { DbModule } from 'src/db/db.module';
 import { STRATEGIES } from './strategies';
 import { GUARDS } from './guards';
+import { FranchiseModule } from 'src/franchise/franchise.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { GUARDS } from './guards';
     JwtModule.registerAsync(options()),
     ErpUserModule,
     DbModule,
+    FranchiseModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, ...STRATEGIES, ...GUARDS],

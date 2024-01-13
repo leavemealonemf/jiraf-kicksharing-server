@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DbService } from 'src/db/db.service';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
+import { FranchiseService } from 'src/franchise/franchise.service';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
     private readonly erpUserService: ErpUserService,
     private readonly jwtService: JwtService,
     private readonly dbService: DbService,
+    private readonly franchiseService: FranchiseService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -32,10 +34,20 @@ export class AuthService {
       );
     }
 
-    return this.erpUserService.create(dto).catch((err) => {
+    const user: ErpUser = await this.erpUserService.create(dto).catch((err) => {
       this.logger.error(err);
       return null;
     });
+
+    if (user && user.role === 'FRANCHISE') {
+      const franchise = await this.franchiseService.createFirstTime(user);
+      if (franchise) {
+        await this.erpUserService.update(user.id, {
+          franchiseId: franchise.id,
+        });
+      }
+    }
+    return user;
   }
 
   async login(dto: LoginDto, agent: string): Promise<Tokens> {

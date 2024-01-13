@@ -15,6 +15,8 @@ import { Tokens } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { Cookie, Public, UserAgent } from '@common/decorators';
+import { ErpUser } from '@prisma/client';
+import { FranchiseService } from 'src/franchise/franchise.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
@@ -25,11 +27,12 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly franchiseService: FranchiseService,
   ) {}
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    const user = await this.authService.register(dto);
+    const user: ErpUser = await this.authService.register(dto);
     if (!user) {
       throw new BadRequestException(
         `Не удалось зарегистрировать пользователя с данными ${JSON.stringify(

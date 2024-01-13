@@ -15,16 +15,17 @@ model ErpUser {
   password   String
   TokenErp     TokenErp[]
   franchise  Franchise?
+  role      ErpUserRoles @default(WORKER)
   franchiseId Int?
 }
 
 model Franchise {
   id       Int      @id @default(autoincrement())
   erpUserId   Int      @unique
-  eprUser     ErpUser     @relation(fields: [erpUserId], references: [id])
+  eprUser     ErpUser     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
   scooters Scooter[] @relation("FranchiseScooters")
-  city     String
-  income   Int
+  city     String?
+  income   Int?
 }
 
 model User {
@@ -106,4 +107,10 @@ model Tariff {
 enum ScooterStatus {
   RENTED
   NOTRENTED
+}
+
+enum ErpUserRoles {
+  ADMIN
+  WORKER
+  FRANCHISE
 }

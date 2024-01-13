@@ -1,4 +1,4 @@
-import { ErpUser } from '@prisma/client';
+import { $Enums, ErpUser } from '@prisma/client';
 import { Exclude } from 'class-transformer';
 
 export class ErpUserResponse implements ErpUser {
@@ -8,6 +8,7 @@ export class ErpUserResponse implements ErpUser {
   email: string;
   @Exclude()
   password: string;
+  role: $Enums.ErpUserRoles;
   franchiseId: number;
 
   constructor(user: ErpUser) {

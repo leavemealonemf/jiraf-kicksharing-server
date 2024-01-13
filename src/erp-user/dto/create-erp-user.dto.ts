@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { $Enums } from '@prisma/client';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class CreateErpUserDto {
@@ -23,5 +24,10 @@ export class CreateErpUserDto {
     message: 'Ошибка. Пароль должен содержать минимум 8 символов',
   })
   password: string;
+  @ApiProperty({ default: 'FRANCHISE' })
+  @IsNotEmpty({
+    message: 'Поле не должно быть пустым',
+  })
+  role: $Enums.ErpUserRoles;
   franchiseId?: number;
 }
