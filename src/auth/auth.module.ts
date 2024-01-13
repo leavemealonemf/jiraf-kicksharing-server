@@ -6,6 +6,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ErpUserModule } from 'src/erp-user/erp-user.module';
 import { options } from './config';
 import { DbModule } from 'src/db/db.module';
+import { STRATEGIES } from './strategies';
+import { GUARDS } from './guards';
 
 @Module({
   imports: [
@@ -15,6 +17,6 @@ import { DbModule } from 'src/db/db.module';
     DbModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ...STRATEGIES, ...GUARDS],
 })
 export class AuthModule {}
