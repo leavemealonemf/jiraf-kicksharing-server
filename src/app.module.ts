@@ -7,6 +7,8 @@ import { MailModule } from './mail/mail.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { FranchiseModule } from './franchise/franchise.module';
+import { ParkingModule } from './parking/parking.module';
+import { ScooterModule } from './scooter/scooter.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { FranchiseModule } from './franchise/franchise.module';
     ConfigModule.forRoot({ isGlobal: true }),
     MailModule,
     FranchiseModule,
+    ParkingModule,
+    ScooterModule,
   ],
   controllers: [],
   providers: [

@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param } from '@nestjs/common';
 import { FranchiseService } from './franchise.service';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
-import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Franchise (Франшиза)')
@@ -17,11 +8,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @Controller('franchise')
 export class FranchiseController {
   constructor(private readonly franchiseService: FranchiseService) {}
-
-  // @Post()
-  // create(@Body() dto: CreateFranchiseDto) {
-  //   return this.franchiseService.create(dto);
-  // }
 
   @Get()
   findAll() {
@@ -40,9 +26,4 @@ export class FranchiseController {
   ) {
     return this.franchiseService.update(+id, updateFranchiseDto);
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.franchiseService.remove(+id);
-  // }
 }
