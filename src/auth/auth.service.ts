@@ -63,6 +63,13 @@ export class AuthService {
     return this.generateTokens(user, agent);
   }
 
+  async logout(token: string) {
+    return this.dbService.tokenErp.delete({ where: { token } }).catch((err) => {
+      this.logger.error(err);
+      return null;
+    });
+  }
+
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
     const token = await this.dbService.tokenErp.findUnique({
       where: { token: refreshToken },
