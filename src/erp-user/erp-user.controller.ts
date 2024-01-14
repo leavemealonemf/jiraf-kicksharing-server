@@ -12,6 +12,8 @@ import { ErpUserService } from './erp-user.service';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ErpUserResponse } from './responses';
+import { CurrentUser } from '@common/decorators';
+import { ErpUser } from '@prisma/client';
 
 @ApiTags('ErpUser (Пользователь ERP системы)')
 @ApiBearerAuth()
@@ -41,8 +43,8 @@ export class ErpUserController {
   }
   @UseInterceptors(ClassSerializerInterceptor)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const user = await this.erpUserService.remove(+id);
+  async remove(@Param('id') id: string, @CurrentUser() decUser: ErpUser) {
+    const user = await this.erpUserService.remove(+id, decUser);
     return new ErpUserResponse(user);
   }
 }

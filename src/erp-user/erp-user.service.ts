@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateErpUserDto } from './dto/create-erp-user.dto';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
+import { ErpUser } from '@prisma/client';
 
 @Injectable()
 export class ErpUserService {
@@ -42,7 +43,12 @@ export class ErpUserService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: number, decUser: ErpUser) {
+    console.log(decUser);
+    if (decUser.role !== 'ADMIN') {
+      throw new ForbiddenException('У вас недостаточно прав!');
+    }
+
     const user = await this.dbService.erpUser.findFirst({ where: { id: id } });
 
     if (!user) {

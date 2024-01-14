@@ -43,8 +43,8 @@ export class AuthController {
       );
     }
     await this.mailService.sendUserConfirmation(dto);
-    const message = 'Пользователь зарегистрирован';
-    return message;
+    const message = `Пользователь ${dto.email} успешно приглашен`;
+    return { message: message };
   }
 
   @Post('login')
