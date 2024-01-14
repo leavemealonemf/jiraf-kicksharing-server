@@ -1,21 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateErpUserDto } from './dto/create-erp-user.dto';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
-import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ErpUserService {
-  constructor(
-    private readonly dbService: DbService,
-    private readonly mailService: MailService,
-  ) {}
+  constructor(private readonly dbService: DbService) {}
 
   async create(createErpUserDto: CreateErpUserDto) {
     const hashedPassword = this.hashPassword(createErpUserDto.password);
-
-    // await this.mailService.sendUserConfirmation(createErpUserDto);
 
     return this.dbService.erpUser.create({
       data: {
@@ -49,6 +43,12 @@ export class ErpUserService {
   }
 
   async remove(id: number) {
+    const user = await this.dbService.erpUser.findFirst({ where: { id: id } });
+
+    if (!user) {
+      throw new NotFoundException('Такого пользователя не существует');
+    }
+
     return this.dbService.erpUser.delete({ where: { id: id } });
   }
 

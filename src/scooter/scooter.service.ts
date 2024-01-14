@@ -5,6 +5,7 @@ import { DbService } from 'src/db/db.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
+import { Scooter } from '@prisma/client';
 
 @Injectable()
 export class ScooterService {
@@ -73,9 +74,16 @@ export class ScooterService {
     if (!scooter) {
       throw new NotFoundException('Такой записи не существует');
     }
-    return this.dbService.scooter.delete({
+
+    const deletedItem: Scooter = await this.dbService.scooter.delete({
       where: { id: id },
     });
+
+    fs.rmSync(`uploads/images/scooters/${deletedItem.deviceId}`, {
+      recursive: true,
+    });
+
+    return deletedItem;
   }
 
   private saveFile(photo: string, entityPath: string) {
@@ -117,7 +125,7 @@ export class ScooterService {
       /(\d{3})(\d{3})/,
       '$1-$2',
     );
-  
+
     return formattedNumber;
   }
 }

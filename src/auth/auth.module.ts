@@ -9,6 +9,7 @@ import { DbModule } from 'src/db/db.module';
 import { STRATEGIES } from './strategies';
 import { GUARDS } from './guards';
 import { FranchiseModule } from 'src/franchise/franchise.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FranchiseModule } from 'src/franchise/franchise.module';
     ErpUserModule,
     DbModule,
     FranchiseModule,
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, ...STRATEGIES, ...GUARDS],

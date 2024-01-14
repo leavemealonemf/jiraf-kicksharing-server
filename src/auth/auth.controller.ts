@@ -17,6 +17,7 @@ import { Response } from 'express';
 import { Cookie, Public, UserAgent } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
 import { FranchiseService } from 'src/franchise/franchise.service';
+import { MailService } from 'src/mail/mail.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
@@ -28,6 +29,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
     private readonly franchiseService: FranchiseService,
+    private readonly mailService: MailService,
   ) {}
 
   @Post('register')
@@ -40,6 +42,7 @@ export class AuthController {
         )}`,
       );
     }
+    await this.mailService.sendUserConfirmation(dto);
     const message = 'Пользователь зарегистрирован';
     return message;
   }

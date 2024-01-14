@@ -3,29 +3,30 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.mail.ru',
-        port: 465,
-        secure: true,
-        auth: {
-          user: 'smasters.zakaz@mail.ru',
-          pass: 'vy1YNAKuhTkVX5v6EhYn',
+    MailerModule.forRootAsync({
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: 'smtp.yandex.ru',
+          port: 465,
+          secure: true,
+          auth: {
+            user: config.get('SMTP_USER'),
+            pass: config.get('SMTP_PASSWORD'),
+          },
         },
-      },
-      defaults: {
-        from: '"No Reply" <noreply@example.com>',
-      },
-      template: {
-        dir: join(__dirname, 'mail/templates'),
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
+        template: {
+          dir: join(__dirname, 'mail/templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
         },
-      },
+      }),
+      inject: [ConfigService],
     }),
   ],
   providers: [MailService],
