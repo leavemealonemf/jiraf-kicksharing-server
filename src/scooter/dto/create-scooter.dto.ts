@@ -38,7 +38,7 @@ export class CreateScooterDto {
     message: 'Поле не должно быть пустым',
   })
   addedDate: Date;
-  @ApiProperty({ default: '/images/scooters/id/photo/photo.png' })
+  @ApiProperty({ default: null })
   photo?: string;
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',

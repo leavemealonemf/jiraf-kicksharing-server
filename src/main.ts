@@ -11,6 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   app.use(cookieParser());
@@ -20,7 +21,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Jiraf Kicksharing API')
-    .setDescription('Документация JirafKicksharing REST API')
+    .setDescription('Документация Jiraf Kicksharing REST API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
