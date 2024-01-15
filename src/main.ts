@@ -10,7 +10,10 @@ import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  app.enableCors({
+    credentials: true,
+    origin: ['http://localhost:5173'],
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));

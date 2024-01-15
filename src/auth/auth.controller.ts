@@ -21,7 +21,6 @@ import { MailService } from 'src/mail/mail.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
-@Public()
 @ApiTags('Auth (Регистрация, вход, refresh token)')
 @Controller('auth')
 export class AuthController {
@@ -32,6 +31,7 @@ export class AuthController {
     private readonly mailService: MailService,
   ) {}
 
+  @Public()
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     const user: ErpUser = await this.authService.register(dto);
@@ -47,6 +47,7 @@ export class AuthController {
     return { message: message };
   }
 
+  @Public()
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -62,6 +63,7 @@ export class AuthController {
     this.setRefreshTokenToCookies(tokens, res);
   }
 
+  @Public()
   @Get('logout')
   async logout(
     @Cookie(REFRESH_TOKEN) refreshToken: string,
@@ -80,6 +82,7 @@ export class AuthController {
     res.sendStatus(HttpStatus.OK);
   }
 
+  @Public()
   @Get('refresh-tokens')
   async refresh(
     @Cookie(REFRESH_TOKEN) refreshToken: string,

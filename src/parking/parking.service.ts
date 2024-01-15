@@ -19,7 +19,11 @@ export class ParkingService {
   }
 
   async findAll() {
-    return this.dbService.parking.findMany();
+    return this.dbService.parking.findMany({
+      include: {
+        scooters: true,
+      },
+    });
   }
 
   async findOne(id: number) {
