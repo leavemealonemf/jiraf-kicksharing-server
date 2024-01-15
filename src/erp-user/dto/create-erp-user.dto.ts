@@ -24,7 +24,7 @@ export class CreateErpUserDto {
     message: 'Ошибка. Пароль должен содержать минимум 8 символов',
   })
   password: string;
-  @ApiProperty({ default: 'FRANCHISE' })
+  @ApiProperty({ default: 'ADMIN' })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
   })
