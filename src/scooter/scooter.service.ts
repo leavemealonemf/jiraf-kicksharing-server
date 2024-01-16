@@ -38,6 +38,7 @@ export class ScooterService {
           status: createScooterDto.status,
           photo: createScooterDto.photo ? path : null,
         },
+        include: { model: true },
       })
       .catch((err) => {
         this.logger.error(err);
