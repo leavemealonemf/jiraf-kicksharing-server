@@ -3,11 +3,11 @@ import { $Enums } from '@prisma/client';
 import { IsNotEmpty } from 'class-validator';
 
 export class CreateScooterDto {
-  @ApiProperty({ default: 'Ninebot Max Plus' })
+  @ApiProperty({ default: 1 })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
   })
-  modelName: string;
+  modelId: number;
   @ApiProperty({ default: '1231241324124212' })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',

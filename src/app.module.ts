@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { FranchiseModule } from './franchise/franchise.module';
 import { ParkingModule } from './parking/parking.module';
 import { ScooterModule } from './scooter/scooter.module';
+import { ScooterModelModule } from './scooter-model/scooter-model.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ScooterModule } from './scooter/scooter.module';
     FranchiseModule,
     ParkingModule,
     ScooterModule,
+    ScooterModelModule,
   ],
   controllers: [],
   providers: [

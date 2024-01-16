@@ -66,7 +66,6 @@ model Scooter {
   id               Int      @id @default(autoincrement())
   deviceId         String   @unique
   qrCode           String
-  modelName        String
   serialNumber     String
   franchiseId      Int?
   franchise        Franchise? @relation(fields: [franchiseId], references: [id], name: "FranchiseScooters")
@@ -80,6 +79,16 @@ model Scooter {
 
   parkingId        Int
   parking          Parking  @relation(fields: [parkingId], references: [id])
+
+  modelId        Int     
+  model          ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
+}
+
+model ScooterModel {
+  id               Int      @id @default(autoincrement())
+  modelName        String   @unique
+  scooters         Scooter[]   @relation("ScooterModels")
+
 }
 
 model Parking {

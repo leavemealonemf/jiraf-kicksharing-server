@@ -28,7 +28,7 @@ export class ScooterService {
         data: {
           batteryLevel: createScooterDto.batteryLevel,
           deviceId: deviceId,
-          modelName: createScooterDto.modelName,
+          modelId: createScooterDto.modelId,
           qrCode: qrPath,
           serialNumber: createScooterDto.serialNumber,
           active: createScooterDto.active,
@@ -46,7 +46,7 @@ export class ScooterService {
   }
 
   async findAll() {
-    return this.dbService.scooter.findMany();
+    return this.dbService.scooter.findMany({ include: { model: true } });
   }
 
   async findOne(id: number) {
