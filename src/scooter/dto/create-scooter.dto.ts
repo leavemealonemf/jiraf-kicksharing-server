@@ -23,7 +23,7 @@ export class CreateScooterDto {
     message: 'Поле не должно быть пустым',
   })
   batteryLevel: number;
-  @ApiProperty({ default: 'NOTRENTED' })
+  @ApiProperty({ default: 'ACTIVE' })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
   })
@@ -32,7 +32,7 @@ export class CreateScooterDto {
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
   })
-  active: boolean;
+  power: boolean;
   @ApiProperty({ default: new Date() })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',

@@ -71,8 +71,8 @@ model Scooter {
   franchise        Franchise? @relation(fields: [franchiseId], references: [id], name: "FranchiseScooters")
   // city          String   Возможно заменю на ENUM
   batteryLevel     Int     
-  status           ScooterStatus @default(NOTRENTED)
-  active           Boolean @default(false) // В аренде самокат или нет
+  status           ScooterStatus @default(ACTIVE)
+  power            Boolean @default(false) 
 
   addedDate        DateTime   @default(now()) // Дата добавления
   photo            String?    // Путь к файлу фотографии или URL
@@ -114,8 +114,8 @@ model Tariff {
 }
 
 enum ScooterStatus {
-  RENTED
-  NOTRENTED
+  ACTIVE
+  SERVICE
 }
 
 enum ErpUserRoles {

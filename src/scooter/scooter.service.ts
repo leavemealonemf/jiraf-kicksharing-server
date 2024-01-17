@@ -31,7 +31,7 @@ export class ScooterService {
           modelId: createScooterDto.modelId,
           qrCode: qrPath,
           serialNumber: createScooterDto.serialNumber,
-          active: createScooterDto.active,
+          power: createScooterDto.power,
           addedDate: createScooterDto.addedDate,
           franchiseId: createScooterDto.franchiseId,
           parkingId: createScooterDto.parkingId,
@@ -47,7 +47,11 @@ export class ScooterService {
   }
 
   async findAll() {
-    return this.dbService.scooter.findMany({ include: { model: true } });
+    const scooters = await this.dbService.scooter.findMany({
+      include: { model: true },
+    });
+    const sortedScooters = scooters.sort((a, b) => a.id - b.id);
+    return sortedScooters;
   }
 
   async findOne(id: number) {
@@ -61,7 +65,7 @@ export class ScooterService {
 
   async update(id: number, updateScooterDto: UpdateScooterDto) {
     return this.dbService.scooter
-      .update({ where: { id: id }, data: updateScooterDto })
+      .update({ where: { id: id }, data: updateScooterDto, include: { model: true },})
       .catch((err) => {
         this.logger.error(err);
         return null;

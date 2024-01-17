@@ -19,7 +19,9 @@ export class ScooterModelService {
   }
 
   async findAll() {
-    return this.dbService.scooterModel.findMany();
+    const models = await this.dbService.scooterModel.findMany();
+    const sortedModels = models.sort((a, b) => a.id - b.id);
+    return sortedModels;
   }
 
   async findOne(id: number) {
