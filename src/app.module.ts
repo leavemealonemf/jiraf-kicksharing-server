@@ -10,6 +10,7 @@ import { FranchiseModule } from './franchise/franchise.module';
 import { ParkingModule } from './parking/parking.module';
 import { ScooterModule } from './scooter/scooter.module';
 import { ScooterModelModule } from './scooter-model/scooter-model.module';
+import { WsGateway } from './socket/socket.service';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ScooterModelModule } from './scooter-model/scooter-model.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    WsGateway,
   ],
 })
 export class AppModule {}

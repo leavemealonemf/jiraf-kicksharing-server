@@ -65,7 +65,11 @@ export class ScooterService {
 
   async update(id: number, updateScooterDto: UpdateScooterDto) {
     return this.dbService.scooter
-      .update({ where: { id: id }, data: updateScooterDto, include: { model: true },})
+      .update({
+        where: { id: id },
+        data: updateScooterDto,
+        include: { model: true },
+      })
       .catch((err) => {
         this.logger.error(err);
         return null;
