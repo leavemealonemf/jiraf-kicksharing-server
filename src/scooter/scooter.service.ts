@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { DbService } from 'src/db/db.service';
@@ -6,15 +11,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
 import { Scooter } from '@prisma/client';
+import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
 
 @Injectable()
 export class ScooterService {
   private readonly logger = new Logger();
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly rightechScooterService: RightechScooterService,
+  ) {}
 
   async create(createScooterDto: CreateScooterDto) {
     const deviceId = this.generateDeviceId();
+
+    const res = await this.rightechScooterService.create(deviceId);
+
+    if (!res) {
+      throw new ConflictException('Не удалось создать самокат');
+    }
 
     const path = `uploads/images/scooters/${deviceId}/save/image.png`;
     if (createScooterDto.photo) {
@@ -23,7 +38,7 @@ export class ScooterService {
 
     const qrPath = await this.qrQenerator(deviceId);
 
-    return this.dbService.scooter
+    const instance = await this.dbService.scooter
       .create({
         data: {
           batteryLevel: createScooterDto.batteryLevel,
@@ -44,14 +59,28 @@ export class ScooterService {
         this.logger.error(err);
         return null;
       });
+
+    return {
+      scooter: instance,
+      rightechScooter: res,
+    };
   }
 
   async findAll() {
+    const res = await this.rightechScooterService.getAll();
+
+    if (!res) {
+      throw new ConflictException('Не удалось получить самокаты');
+    }
+
     const scooters = await this.dbService.scooter.findMany({
       include: { model: true },
     });
     const sortedScooters = scooters.sort((a, b) => a.id - b.id);
-    return sortedScooters;
+    return {
+      scooters: sortedScooters,
+      rightechScooters: res,
+    };
   }
 
   async findOne(id: number) {
@@ -76,13 +105,15 @@ export class ScooterService {
       });
   }
 
-  async remove(id: number) {
+  async remove(id: number, rightechScooterId: string) {
     const scooter = await this.dbService.scooter.findFirst({
       where: { id: id },
     });
     if (!scooter) {
       throw new NotFoundException('Такой записи не существует');
     }
+
+    await this.rightechScooterService.delete(rightechScooterId);
 
     const deletedItem: Scooter = await this.dbService.scooter.delete({
       where: { id: id },

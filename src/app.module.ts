@@ -11,6 +11,7 @@ import { ParkingModule } from './parking/parking.module';
 import { ScooterModule } from './scooter/scooter.module';
 import { ScooterModelModule } from './scooter-model/scooter-model.module';
 import { WsGateway } from './socket/socket.service';
+import { RightechScooterService } from './rightech-scooter/rightech-scooter.service';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WsGateway } from './socket/socket.service';
       useClass: JwtAuthGuard,
     },
     WsGateway,
+    RightechScooterService,
   ],
 })
 export class AppModule {}

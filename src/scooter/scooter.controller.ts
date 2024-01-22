@@ -38,8 +38,11 @@ export class ScooterController {
     return this.scooterService.update(+id, updateScooterDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.scooterService.remove(+id);
+  @Delete(':scooterId/:rightechScooterId')
+  remove(
+    @Param('scooterId') id: string,
+    @Param('rightechScooterId') rightechScooterId: string,
+  ) {
+    return this.scooterService.remove(+id, rightechScooterId);
   }
 }
