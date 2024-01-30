@@ -75,10 +75,10 @@ export class ScooterService {
 
     const scooters = await this.dbService.scooter.findMany({
       include: { model: true },
+      orderBy: { addedDate: 'desc' },
     });
-    const sortedScooters = scooters.sort((a, b) => a.id - b.id);
     return {
-      scooters: sortedScooters,
+      scooters: scooters,
       rightechScooters: res,
     };
   }

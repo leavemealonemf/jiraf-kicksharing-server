@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -14,6 +15,8 @@ import { DbService } from 'src/db/db.service';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import { FranchiseService } from 'src/franchise/franchise.service';
+import { ConfigService } from '@nestjs/config';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +26,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly dbService: DbService,
     private readonly franchiseService: FranchiseService,
+    private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -68,6 +73,17 @@ export class AuthService {
       this.logger.error(err);
       return null;
     });
+  }
+
+  async resetPassword(email: string) {
+    const user = await this.erpUserService.findByEmail(email);
+    if (!user) {
+      throw new ForbiddenException('Такого пользователя не существует');
+    }
+    const resetToken = this.erpUserService.generateResetToken();
+    const link =
+      this.configService.get('FRONTEND_URL') + `/?token=${resetToken}`;
+    await this.mailService.sendResetPassword(user, link);
   }
 
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {

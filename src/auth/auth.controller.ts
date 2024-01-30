@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
   Res,
   HttpStatus,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -99,6 +100,14 @@ export class AuthController {
     }
 
     this.setRefreshTokenToCookies(tokens, res);
+  }
+
+  @Public()
+  @Get('reset-password/:email')
+  async resetPassword(@Param('email') email: string) {
+    console.log(email);
+    await this.authService.resetPassword(email);
+    return { message: `Письмо успешно отправлено на почту ${email}` };
   }
 
   private setRefreshTokenToCookies(tokens: Tokens, res: Response) {

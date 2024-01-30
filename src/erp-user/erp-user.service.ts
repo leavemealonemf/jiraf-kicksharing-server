@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateErpUserDto } from './dto/create-erp-user.dto';
@@ -8,9 +9,12 @@ import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { ErpUser } from '@prisma/client';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ErpUserService {
+  logger = new Logger();
+
   constructor(private readonly dbService: DbService) {}
 
   async create(createErpUserDto: CreateErpUserDto) {
@@ -37,7 +41,12 @@ export class ErpUserService {
   }
 
   async findByEmail(email: string) {
-    return await this.dbService.erpUser.findFirst({ where: { email: email } });
+    return await this.dbService.erpUser
+      .findFirst({ where: { email: email } })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
   }
 
   update(id: number, updateErpUserDto: UpdateErpUserDto) {
@@ -64,5 +73,9 @@ export class ErpUserService {
 
   private hashPassword(password: string) {
     return hashSync(password, genSaltSync(10));
+  }
+
+  generateResetToken() {
+    return crypto.randomBytes(32).toString('hex');
   }
 }

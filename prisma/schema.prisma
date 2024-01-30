@@ -107,9 +107,11 @@ model Tariff {
   name               String
   boardingCost       Float
   minuteCost         Float
-  fixedCost          Float
-  colorRGB           String   // Предполагается, что это будет строка в формате RGB (например, "255,0,0")
-  
+  pauseCost         Float
+  fixedCost          Float?
+  reservationCost   Float
+  colorHex           String
+  status             TariffStatus @default(ACTIVE)  
   users              User[]   @relation("UserTariffs")
 }
 
@@ -122,4 +124,9 @@ enum ErpUserRoles {
   ADMIN
   WORKER
   FRANCHISE
+}
+
+enum TariffStatus {
+  ACTIVE
+  ARCHIVE
 }
