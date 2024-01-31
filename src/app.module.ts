@@ -13,6 +13,7 @@ import { ScooterModelModule } from './scooter-model/scooter-model.module';
 import { WsGateway } from './socket/socket.service';
 import { RightechScooterService } from './rightech-scooter/rightech-scooter.service';
 import { TariffModule } from './tariff/tariff.module';
+import { PromocodeModule } from './promocode/promocode.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TariffModule } from './tariff/tariff.module';
     ScooterModule,
     ScooterModelModule,
     TariffModule,
+    PromocodeModule,
   ],
   controllers: [],
   providers: [

@@ -115,6 +115,17 @@ model Tariff {
   users              User[]   @relation("UserTariffs")
 }
 
+model Promocode {
+  id                 Int      @id @default(autoincrement())
+  code               String
+  sum                String
+  addedDate          DateTime   @default(now())
+  dateStart          DateTime
+  dateEnd            DateTime
+  type               PromocodeType @default(BALANCE)
+  status             PromocodeStatus @default(ACTIVE)
+}
+
 enum ScooterStatus {
   ACTIVE
   SERVICE
@@ -129,4 +140,13 @@ enum ErpUserRoles {
 enum TariffStatus {
   ACTIVE
   ARCHIVE
+}
+
+enum PromocodeStatus {
+  ACTIVE
+  ARCHIVE
+}
+
+enum PromocodeType {
+  BALANCE
 }
