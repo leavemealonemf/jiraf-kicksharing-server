@@ -14,6 +14,7 @@ import { WsGateway } from './socket/socket.service';
 import { RightechScooterService } from './rightech-scooter/rightech-scooter.service';
 import { TariffModule } from './tariff/tariff.module';
 import { PromocodeModule } from './promocode/promocode.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PromocodeModule } from './promocode/promocode.module';
     ScooterModelModule,
     TariffModule,
     PromocodeModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [],
   providers: [

@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreatePromocodeDto } from './dto/create-promocode.dto';
 import { UpdatePromocodeDto } from './dto/update-promocode.dto';
 import { DbService } from 'src/db/db.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PromocodeService {
@@ -66,5 +67,32 @@ export class PromocodeService {
         this.logger.error(err);
         return null;
       });
+  }
+
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async checkPromoExp() {
+    const promocodes = await this.dbService.promocode.findMany({
+      where: {
+        dateEnd: {
+          lt: new Date(),
+        },
+        status: 'ACTIVE',
+      },
+    });
+
+    if (promocodes.length === 0) {
+      return;
+    }
+
+    promocodes.forEach(async (promocode) => {
+      await this.dbService.promocode.update({
+        where: { id: promocode.id },
+        data: {
+          status: 'ARCHIVE',
+        },
+      });
+
+      this.logger.log(`Промокод ${promocode.code} истек`);
+    });
   }
 }
