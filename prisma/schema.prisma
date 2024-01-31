@@ -112,6 +112,7 @@ model Tariff {
   reservationCost   Float
   colorHex           String
   status             TariffStatus @default(ACTIVE)  
+  addedDate          DateTime @default(now())
   users              User[]   @relation("UserTariffs")
 }
 
