@@ -45,6 +45,7 @@ export class TripService {
 
   async findAll() {
     return this.dbService.trip.findMany({
+      orderBy: { startTime: 'desc' },
       include: { scooter: true, tariff: true, user: true },
     });
   }
