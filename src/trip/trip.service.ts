@@ -3,6 +3,8 @@ import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class TripService {
@@ -13,11 +15,17 @@ export class TripService {
   async create(createTripDto: CreateTripDto) {
     const uuid = generateUUID();
 
+    const path = `uploads/images/trips/${uuid}/photo/image.png`;
+
+    if (createTripDto.photo) {
+      this.saveFile(createTripDto.photo, path);
+    }
+
     return this.dbService.trip
       .create({
         data: {
           endTime: createTripDto.endTime,
-          photo: createTripDto.photo,
+          photo: createTripDto.photo ? path : null,
           price: createTripDto.price,
           startTime: createTripDto.startTime,
           travelTime: createTripDto.travelTime,
@@ -71,9 +79,33 @@ export class TripService {
         `Не получается удалить. Записи с id ${id} не существует!`,
       );
     }
-    return this.dbService.trip.delete({ where: { id: id } }).catch((err) => {
-      this.logger.error(err);
-      return null;
-    });
+    return this.dbService.trip
+      .delete({ where: { id: id } })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      })
+      .then((res) => {
+        fs.rmSync(`uploads/images/trips/${res.tripId}`, {
+          recursive: true,
+        });
+        return res;
+      });
+  }
+
+  private saveFile(photo: string, entityPath: string) {
+    const base64String = photo;
+    const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const filePath = entityPath;
+
+    const directoryPath = path.dirname(filePath);
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, buffer);
   }
 }
