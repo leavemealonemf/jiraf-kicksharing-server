@@ -30,6 +30,7 @@ model Franchise {
 
 model User {
   id       Int      @id @default(autoincrement())
+  clientId String
   name     String?
   phone    String
   email    String?
@@ -52,12 +53,15 @@ model TokenErp {
 
 model Trip {
   id             Int      @id @default(autoincrement())
+  tripId         String
   startTime      DateTime
   endTime        DateTime
   travelTime     String
   photo          String 
   price          Int
+  distance       Float?
   userId         Int
+  rating         Int?
   user           User     @relation(fields: [userId], references: [id])
   tariffId       Int?    
   tariff         Tariff?   @relation(fields: [tariffId], references: [id])

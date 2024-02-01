@@ -33,4 +33,8 @@ export class CreateTripDto {
   tariffId?: number;
   @ApiProperty({ default: 52 })
   scooterId?: number;
+  @ApiProperty({ default: 5 })
+  rating?: number;
+  @ApiProperty({ default: 1.2 })
+  distance?: number;
 }

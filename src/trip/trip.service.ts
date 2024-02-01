@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { DbService } from 'src/db/db.service';
+import { generateUUID } from '@common/utils';
 
 @Injectable()
 export class TripService {
@@ -10,6 +11,8 @@ export class TripService {
   constructor(private readonly dbService: DbService) {}
 
   async create(createTripDto: CreateTripDto) {
+    const uuid = generateUUID();
+
     return this.dbService.trip
       .create({
         data: {
@@ -21,6 +24,9 @@ export class TripService {
           scooterId: createTripDto.scooterId,
           tariffId: createTripDto.tariffId,
           userId: createTripDto.userId,
+          rating: createTripDto.rating,
+          distance: createTripDto.distance,
+          tripId: uuid,
         },
       })
       .catch((err) => {

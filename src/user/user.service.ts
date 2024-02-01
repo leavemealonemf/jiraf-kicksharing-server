@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DbService } from 'src/db/db.service';
+import { generateUUID } from '@common/utils';
 
 @Injectable()
 export class UserService {
@@ -10,10 +11,21 @@ export class UserService {
   constructor(private readonly dbService: DbService) {}
 
   async create(createUserDto: CreateUserDto) {
-    return this.dbService.user.create({ data: createUserDto }).catch((err) => {
-      this.logger.error(err);
-      return null;
-    });
+    const uuid = generateUUID();
+
+    return this.dbService.user
+      .create({
+        data: {
+          clientId: uuid,
+          phone: createUserDto.phone,
+          name: createUserDto.name,
+          email: createUserDto.email,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
   }
 
   async findAll() {
