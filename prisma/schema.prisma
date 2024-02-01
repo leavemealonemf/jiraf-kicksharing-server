@@ -30,13 +30,13 @@ model Franchise {
 
 model User {
   id       Int      @id @default(autoincrement())
-  name     String
+  name     String?
   phone    String
   email    String?
-
-  tariffId           Int?      // Внешний ключ для связи с тарифом
-  tariff             Tariff?   @relation(fields: [tariffId], references: [id], name: "UserTariffs")
-
+  balance  Float  @default(0.0)
+  spending Float? 
+  lastActivity DateTime @default(now())
+  dateTimeCreated DateTime @default(now())
   trips   Trip[]
 }
 
@@ -57,9 +57,12 @@ model Trip {
   travelTime     String
   photo          String 
   price          Int
-  scooterId      Int
   userId         Int
   user           User     @relation(fields: [userId], references: [id])
+  tariffId       Int?    
+  tariff         Tariff?   @relation(fields: [tariffId], references: [id])
+  scooterId      Int?      
+  scooter        Scooter?  @relation(fields: [scooterId], references: [id])
 }
 
 model Scooter {
@@ -69,19 +72,19 @@ model Scooter {
   serialNumber     String
   franchiseId      Int?
   franchise        Franchise? @relation(fields: [franchiseId], references: [id], name: "FranchiseScooters")
-  // city          String   Возможно заменю на ENUM
   batteryLevel     Int     
   status           ScooterStatus @default(ACTIVE)
   power            Boolean @default(false) 
 
-  addedDate        DateTime   @default(now()) // Дата добавления
-  photo            String?    // Путь к файлу фотографии или URL
+  addedDate        DateTime   @default(now())
+  photo            String?   
 
   parkingId        Int
   parking          Parking  @relation(fields: [parkingId], references: [id])
 
-  modelId        Int     
-  model          ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
+  modelId         Int     
+  model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
+  trips           Trip[]
 }
 
 model ScooterModel {
@@ -113,7 +116,7 @@ model Tariff {
   colorHex           String
   status             TariffStatus @default(ACTIVE)  
   addedDate          DateTime @default(now())
-  users              User[]   @relation("UserTariffs")
+  trips              Trip[]
 }
 
 model Promocode {

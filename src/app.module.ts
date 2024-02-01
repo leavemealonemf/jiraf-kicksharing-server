@@ -15,6 +15,8 @@ import { RightechScooterService } from './rightech-scooter/rightech-scooter.serv
 import { TariffModule } from './tariff/tariff.module';
 import { PromocodeModule } from './promocode/promocode.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UserModule } from './user/user.module';
+import { TripModule } from './trip/trip.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     TariffModule,
     PromocodeModule,
     ScheduleModule.forRoot(),
+    UserModule,
+    TripModule,
   ],
   controllers: [],
   providers: [
