@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
@@ -24,8 +25,8 @@ export class TripController {
   }
 
   @Get()
-  findAll() {
-    return this.tripService.findAll();
+  findAll(@Query('interval') interval: string) {
+    return this.tripService.findAll(interval);
   }
 
   @Get(':id')

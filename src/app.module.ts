@@ -17,6 +17,8 @@ import { PromocodeModule } from './promocode/promocode.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UserModule } from './user/user.module';
 import { TripModule } from './trip/trip.module';
+import { StatsService } from './stats/stats.service';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { TripModule } from './trip/trip.module';
     ScheduleModule.forRoot(),
     UserModule,
     TripModule,
+    StatsModule,
   ],
   controllers: [],
   providers: [
@@ -43,6 +46,7 @@ import { TripModule } from './trip/trip.module';
     },
     WsGateway,
     RightechScooterService,
+    StatsService,
   ],
 })
 export class AppModule {}

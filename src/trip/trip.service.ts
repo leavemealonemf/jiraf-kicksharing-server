@@ -43,8 +43,54 @@ export class TripService {
       });
   }
 
-  async findAll() {
+  async findAll(interval: string) {
+    const currentDate = new Date();
+    let startDate: Date;
+
+    switch (interval) {
+      case 'day':
+        startDate = new Date(currentDate);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate = new Date(currentDate);
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      case 'all':
+        startDate = new Date(0);
+        break;
+      case 'yesterday':
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(currentDate);
+        endDate.setHours(0, 0, 0, 0);
+        return this.dbService.trip.findMany({
+          where: {
+            startTime: {
+              gte: startDate.toISOString(),
+              lte: endDate.toISOString(),
+            },
+          },
+          orderBy: { startTime: 'desc' },
+          include: { scooter: true, tariff: true, user: true },
+        });
+      default:
+        startDate = new Date(0);
+        break;
+    }
+
     return this.dbService.trip.findMany({
+      where: {
+        startTime: {
+          gte: startDate.toISOString(),
+          lte: currentDate.toISOString(),
+        },
+      },
       orderBy: { startTime: 'desc' },
       include: { scooter: true, tariff: true, user: true },
     });

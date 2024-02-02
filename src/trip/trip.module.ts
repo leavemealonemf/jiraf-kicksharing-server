@@ -7,5 +7,6 @@ import { DbModule } from 'src/db/db.module';
   imports: [DbModule],
   controllers: [TripController],
   providers: [TripService],
+  exports: [TripService],
 })
 export class TripModule {}
