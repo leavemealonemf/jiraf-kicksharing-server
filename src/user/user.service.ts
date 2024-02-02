@@ -20,6 +20,7 @@ export class UserService {
           phone: createUserDto.phone,
           name: createUserDto.name,
           email: createUserDto.email,
+          status: createUserDto.status,
         },
       })
       .catch((err) => {

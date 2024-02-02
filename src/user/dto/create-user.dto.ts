@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserStatus } from '@prisma/client';
 import { IsNotEmpty } from 'class-validator';
 
 export class CreateUserDto {
@@ -11,4 +12,6 @@ export class CreateUserDto {
   phone: string;
   @ApiProperty({ default: 'vano@bk.ru' })
   email: string;
+  @ApiProperty({ default: UserStatus.ACTIVE })
+  status?: UserStatus;
 }
