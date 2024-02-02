@@ -10,9 +10,19 @@ import { STRATEGIES } from './strategies';
 import { GUARDS } from './guards';
 import { FranchiseModule } from 'src/franchise/franchise.module';
 import { MailModule } from 'src/mail/mail.module';
+import { TwilioModule } from 'nestjs-twilio';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    TwilioModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        accountSid: config.get('SMS_SID'),
+        authToken: config.get('SMS_TOKEN'),
+      }),
+      inject: [ConfigService],
+    }),
     PassportModule,
     JwtModule.registerAsync(options()),
     ErpUserModule,

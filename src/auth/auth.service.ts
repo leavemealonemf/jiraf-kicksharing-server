@@ -17,6 +17,7 @@ import { add } from 'date-fns';
 import { FranchiseService } from 'src/franchise/franchise.service';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
+import { TwilioService } from 'nestjs-twilio';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly franchiseService: FranchiseService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly twilioService: TwilioService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -65,6 +67,12 @@ export class AuthService {
     if (!user || !compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Не верный логин или пароль');
     }
+    await this.twilioService.client.messages.create({
+      body: `${user.email} успешно залогинен`,
+      from: '+16315097031',
+      to: '+79606425333',
+    });
+
     return this.generateTokens(user, agent);
   }
 
