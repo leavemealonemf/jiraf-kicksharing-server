@@ -12,6 +12,7 @@ import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { SaveCoordinatesDto } from './dto/coordinates.dto';
 
 @ApiTags('Trips (Поездки)')
 @ApiBearerAuth()
@@ -22,6 +23,11 @@ export class TripController {
   @Post()
   create(@Body() createTripDto: CreateTripDto) {
     return this.tripService.create(createTripDto);
+  }
+
+  @Post('/coordinates')
+  saveCoordinates(@Body() dto: SaveCoordinatesDto) {
+    return this.tripService.saveCoordinates(dto);
   }
 
   @Get()

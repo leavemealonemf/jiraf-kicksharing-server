@@ -5,6 +5,7 @@ import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SaveCoordinatesDto } from './dto/coordinates.dto';
 
 @Injectable()
 export class TripService {
@@ -77,7 +78,12 @@ export class TripService {
             },
           },
           orderBy: { startTime: 'desc' },
-          include: { scooter: true, tariff: true, user: true },
+          include: {
+            scooter: true,
+            tariff: true,
+            user: true,
+            coordinates: true,
+          },
         });
       default:
         startDate = new Date(0);
@@ -92,7 +98,7 @@ export class TripService {
         },
       },
       orderBy: { startTime: 'desc' },
-      include: { scooter: true, tariff: true, user: true },
+      include: { scooter: true, tariff: true, user: true, coordinates: true },
     });
   }
 
@@ -154,5 +160,19 @@ export class TripService {
     }
 
     fs.writeFileSync(filePath, buffer);
+  }
+
+  async saveCoordinates(dto: SaveCoordinatesDto) {
+    return this.dbService.tripCoordinates
+      .create({
+        data: {
+          latLon: dto.latLon,
+          tripId: dto.tripId,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
   }
 }

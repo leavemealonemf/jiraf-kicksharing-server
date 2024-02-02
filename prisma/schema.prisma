@@ -68,6 +68,14 @@ model Trip {
   tariff         Tariff?   @relation(fields: [tariffId], references: [id])
   scooterId      Int?      
   scooter        Scooter?  @relation(fields: [scooterId], references: [id])
+  coordinates    TripCoordinates[]
+}
+
+model TripCoordinates {
+  id             Int      @id @default(autoincrement())
+  latLon         Float[]
+  tripId         Int?
+  trip           Trip?    @relation(fields: [tripId], references: [id])
 }
 
 model Scooter {
@@ -133,6 +141,21 @@ model Promocode {
   dateEnd            DateTime
   type               PromocodeType @default(BALANCE)
   status             PromocodeStatus @default(ACTIVE)
+}
+
+model Geofence {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  typeId             Int?      
+  type               GeofenceType?  @relation(fields: [typeId], references: [id])
+
+}
+
+model GeofenceType {
+  id                 Int      @id @default(autoincrement())
+  name               String   @unique
+  img                String
+  geofences          Geofence[]
 }
 
 enum ScooterStatus {
