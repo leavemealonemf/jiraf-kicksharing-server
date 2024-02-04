@@ -19,6 +19,8 @@ import { UserModule } from './user/user.module';
 import { TripModule } from './trip/trip.module';
 import { StatsService } from './stats/stats.service';
 import { StatsModule } from './stats/stats.module';
+import { GeofenceService } from './geofence/geofence.service';
+import { GeofenceModule } from './geofence/geofence.module';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { StatsModule } from './stats/stats.module';
     UserModule,
     TripModule,
     StatsModule,
+    GeofenceModule,
   ],
   controllers: [],
   providers: [
@@ -47,6 +50,7 @@ import { StatsModule } from './stats/stats.module';
     WsGateway,
     RightechScooterService,
     StatsService,
+    GeofenceService,
   ],
 })
 export class AppModule {}

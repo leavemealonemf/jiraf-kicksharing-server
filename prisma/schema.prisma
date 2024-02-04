@@ -148,14 +148,31 @@ model Geofence {
   name               String
   typeId             Int?      
   type               GeofenceType?  @relation(fields: [typeId], references: [id])
-
 }
 
 model GeofenceType {
   id                 Int      @id @default(autoincrement())
   name               String   @unique
-  img                String
+  img                String?
+  canParking         Boolean @default(false)
+  canRiding          Boolean @default(false)
+  description        String?
+  colorHex           String
+  isParkingFine      Boolean @default(false)
+  isScooterBehavior  Boolean @default(false)
+  noiceToTheClient   Boolean @default(false)
   geofences          Geofence[]
+  params             GeofenceTypeParams?
+}
+
+model GeofenceTypeParams {
+  id                          Int      @id @default(autoincrement())
+  zoneTimeCondition           String?
+  parkingFinePrice            Float?
+  speedReduction              Int?
+  notificationMessage         String?
+  geofenceTypeId              Int      @unique
+  geofenceType                GeofenceType @relation(fields: [geofenceTypeId], references: [id])
 }
 
 enum ScooterStatus {
