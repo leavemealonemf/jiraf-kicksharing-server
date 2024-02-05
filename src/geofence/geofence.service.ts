@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
+import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
 
 @Injectable()
 export class GeofenceService {
@@ -8,7 +9,7 @@ export class GeofenceService {
   constructor(private readonly dbService: DbService) {}
 
   async getGeofenceTypes() {
-    return this.dbService.geofenceType.findMany({ include: { params: true } });
+    return this.dbService.geofenceType.findMany({ include: { params: true }, orderBy: {id: 'asc'} });
   }
 
   async createGeofenceType() {
@@ -59,5 +60,44 @@ export class GeofenceService {
             });
         });
     });
+  }
+
+  async updateGeofenceType(id: number, dto: UpdateGeofenceTypeDto) {
+    try {
+      const updatedType = await this.dbService.geofenceType.update({
+        where: { id: id },
+        // include: { params: true },
+        data: {
+          canParking: dto.type.canParking,
+          canRiding: dto.type.canRiding,
+          colorHex: dto.type.colorHex,
+          description: dto.type.description,
+          isParkingFine: dto.type.isParkingFine,
+          isScooterBehavior: dto.type.isScooterBehavior,
+          noiceToTheClient: dto.type.noiceToTheClient,
+        },
+      });
+  
+      if (updatedType.id) {
+        const params = await this.dbService.geofenceTypeParams.update({
+          where: { geofenceTypeId: updatedType.id },
+          data: {
+            notificationMessage: dto.params.notificationMessage,
+            parkingFinePrice: dto.params.parkingFinePrice,
+            speedReduction: dto.params.speedReduction,
+            zoneTimeCondition: dto.params.zoneTimeCondition,
+          },
+        });
+        // console.log(params);
+        return {
+          ...updatedType, params: params
+        }
+      }
+  
+      // return updatedType;
+    } catch (err) {
+      this.logger.error(err);
+      return null;
+    }
   }
 }
