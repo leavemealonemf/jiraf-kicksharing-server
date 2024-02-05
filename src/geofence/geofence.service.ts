@@ -9,7 +9,10 @@ export class GeofenceService {
   constructor(private readonly dbService: DbService) {}
 
   async getGeofenceTypes() {
-    return this.dbService.geofenceType.findMany({ include: { params: true }, orderBy: {id: 'asc'} });
+    return this.dbService.geofenceType.findMany({
+      include: { params: true },
+      orderBy: { id: 'asc' },
+    });
   }
 
   async createGeofenceType() {
@@ -77,7 +80,7 @@ export class GeofenceService {
           noiceToTheClient: dto.type.noiceToTheClient,
         },
       });
-  
+
       if (updatedType.id) {
         const params = await this.dbService.geofenceTypeParams.update({
           where: { geofenceTypeId: updatedType.id },
@@ -90,10 +93,11 @@ export class GeofenceService {
         });
         // console.log(params);
         return {
-          ...updatedType, params: params
-        }
+          ...updatedType,
+          params: params,
+        };
       }
-  
+
       // return updatedType;
     } catch (err) {
       this.logger.error(err);
