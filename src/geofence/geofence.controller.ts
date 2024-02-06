@@ -2,12 +2,23 @@ import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { GeofenceService } from './geofence.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
+import { CreateGeofenceDto } from './dto/create-geofence.dto';
 
 @ApiTags('Геозоны и типы')
 @ApiBearerAuth()
 @Controller('geofence')
 export class GeofenceController {
   constructor(private readonly geofenceService: GeofenceService) {}
+
+  @Get()
+  async getGeofences() {
+    return this.geofenceService.getGeofences();
+  }
+
+  @Post()
+  async createGeofence(@Body() dto: CreateGeofenceDto) {
+    return this.geofenceService.createGeofence(dto);
+  }
 
   @Get('types')
   async getGeofenceTypes() {

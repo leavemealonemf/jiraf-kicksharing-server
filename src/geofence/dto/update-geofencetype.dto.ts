@@ -1,6 +1,6 @@
 export class UpdateGeofenceTypeDto {
   type: {
-    canParking: boolean;
+    canParking?: boolean;
     canRiding: boolean;
     description: string;
     colorHex: string;

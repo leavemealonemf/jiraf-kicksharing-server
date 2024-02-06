@@ -146,17 +146,27 @@ model Promocode {
 model Geofence {
   id                 Int      @id @default(autoincrement())
   name               String
+  coordinates        String?
+  radius             Float?
+  dateTimeCreated    DateTime @default(now())
   typeId             Int?      
   type               GeofenceType?  @relation(fields: [typeId], references: [id])
 }
 
+
 model GeofenceType {
   id                 Int      @id @default(autoincrement())
+  uuid               String
   name               String   @unique
+  subTitle           String?
+  slug               String
   img                String?
+  drawType           GeofenceDrawType @default(POLYGON)
   canParking         Boolean @default(false)
   canRiding          Boolean @default(false)
   description        String?
+  secondDescription  String?
+  parkingPrice       Float?
   colorHex           String
   isParkingFine      Boolean @default(false)
   isScooterBehavior  Boolean @default(false)
@@ -203,4 +213,10 @@ enum PromocodeType {
 enum UserStatus {
   ACTIVE
   DELETED
+}
+
+enum GeofenceDrawType {
+  POLYGON
+  POLYLINE
+  CIRCLE
 }

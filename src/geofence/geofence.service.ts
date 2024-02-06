@@ -1,12 +1,28 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
+import { CreateGeofenceDto } from './dto/create-geofence.dto';
+import { GeofenceDrawType } from '@prisma/client';
+import { generateUUID } from '@common/utils';
 
 @Injectable()
 export class GeofenceService {
   private readonly logger = new Logger();
 
   constructor(private readonly dbService: DbService) {}
+
+  async getGeofences() {
+    return this.dbService.geofence.findMany({
+      orderBy: { dateTimeCreated: 'desc' },
+    });
+  }
+
+  async createGeofence(dto: CreateGeofenceDto) {
+    return this.dbService.geofence.create({ data: dto }).catch((err) => {
+      this.logger.error(err);
+      return null;
+    });
+  }
 
   async getGeofenceTypes() {
     return this.dbService.geofenceType.findMany({
@@ -18,50 +34,147 @@ export class GeofenceService {
   async createGeofenceType() {
     const data = [
       {
-        colorHex: '#000',
-        name: 'Зона парковки',
+        colorHex: '#F32C2C',
+        uuid: generateUUID(),
+        name: 'Зона аренды',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'mainZone',
+        canParking: true,
+        canRiding: true,
+        isScooterBehavior: true,
+        noiceToTheClient: true,
+
+        speedReduction: 5,
+        notificationMessage:
+          'Внимание! Вы заехали в зону, где кататься запрещено. Вернитесь обратно.',
       },
       {
-        colorHex: '#000',
+        colorHex: '#52F66C',
+        uuid: generateUUID(),
+        name: 'Парковка платная (круговая)',
+        subTitle: 'Здесь начинают и завершают аренду',
+        drawType: GeofenceDrawType.CIRCLE,
+        slug: 'paidParkingCircle',
+        canParking: true,
+        canRiding: true,
+        description: 'Здесь вы можете завершить аренду за деньги',
+        parkingPrice: 50,
+      },
+      {
+        colorHex: '#2CABF3',
+        uuid: generateUUID(),
+        subTitle: 'Здесь начинают и завершают аренду',
+        name: 'Зона парковки (полигон)',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'parkingPolygon',
+        canParking: true,
+        canRiding: true,
+      },
+      {
+        colorHex: '#2CABF3',
+        uuid: generateUUID(),
+        name: 'Парковка (круговая)',
+        subTitle: 'Здесь начинают и завершают аренду',
+        drawType: GeofenceDrawType.CIRCLE,
+        slug: 'parkingCircle',
+        canParking: true,
+        canRiding: true,
+      },
+      {
+        colorHex: '#414044',
+        uuid: generateUUID(),
         name: 'Зона запрета парковки',
+        subTitle: 'Круглосуточно',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'notParking',
+        canParking: false,
+        canRiding: true,
+        description:
+          'Здесь нельзя парковаться и оставлять самокаты, даже ненадолго',
+        parkingFinePrice: 100,
       },
       {
-        colorHex: '#000',
-        name: 'Зона платной парковки',
+        colorHex: '#F32C2C',
+        uuid: generateUUID(),
+        name: 'Зона запрета поездок',
+        subTitle: 'Круглосуточно',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'notScooters',
+        canParking: false,
+        canRiding: false,
+        description:
+          'Здесь запрещено кататься. Наслаждайтесь остальной частью города',
+        isScooterBehavior: true,
+        noiceToTheClient: true,
+
+        parkingFinePrice: 100,
+        speedReduction: 5,
+        notificationMessage:
+          'Внимание! Вы заехали в зону, где кататься запрещено. Вернитесь обратно.',
       },
       {
-        colorHex: '#000',
-        name: 'Зона запрета самокатов',
-      },
-      {
-        colorHex: '#000',
+        colorHex: '#414044',
+        uuid: generateUUID(),
         name: 'Зона контроля скорости: круглосуточно',
+        subTitle: 'Круглосуточно',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'speedLimitAllDay',
+        canParking: false,
+        canRiding: true,
+        description:
+          'Скорость самоката автоматически снизится, так безопаснее для всех',
       },
       {
-        colorHex: '#000',
+        colorHex: '#414044',
+        uuid: generateUUID(),
         name: 'Зона контроля скорости: по расписанию',
+        subTitle: 'По расписанию',
+        drawType: GeofenceDrawType.POLYGON,
+        slug: 'speedLimitSchedule',
+        canParking: false,
+        canRiding: true,
+        description:
+          'Скорость самоката автоматически снизится, так безопаснее для всех',
+        secondDescription:
+          'Сейчас нет никаких ограничений, скорость самоката не измениться',
       },
     ];
 
-    data.forEach((obj) => {
-      this.dbService.geofenceType
-        .create({
-          data: {
-            colorHex: obj.colorHex,
-            name: obj.name,
-          },
-        })
-        .then((res) => {
-          this.dbService.geofenceTypeParams
-            .create({
-              data: {
-                geofenceTypeId: res.id,
-              },
-            })
-            .catch((err) => {
-              this.logger.error(err);
-            });
-        });
+    data.forEach(async (obj) => {
+      const res = await this.dbService.geofenceType.create({
+        data: {
+          colorHex: obj.colorHex,
+          uuid: obj.uuid,
+          slug: obj.slug,
+          name: obj.name,
+          drawType: obj.drawType,
+          subTitle: obj.subTitle,
+          canParking: obj.canParking,
+          canRiding: obj.canRiding,
+          description: obj.description,
+          parkingPrice: obj.parkingPrice,
+          isScooterBehavior: obj.isScooterBehavior,
+          noiceToTheClient: obj.noiceToTheClient,
+          secondDescription: obj.secondDescription,
+        },
+      });
+
+      if (!res) {
+        throw new ForbiddenException('Ошибка при создании типов зон');
+      }
+
+      const elementIndex = data.findIndex((element) => {
+        return element.uuid === res.uuid;
+      });
+
+      await this.dbService.geofenceTypeParams.create({
+        data: {
+          geofenceTypeId: res.id,
+          parkingFinePrice: data[elementIndex]?.parkingFinePrice,
+          speedReduction: data[elementIndex]?.speedReduction,
+          notificationMessage: data[elementIndex]?.notificationMessage,
+        },
+      });
     });
   }
 
@@ -69,7 +182,6 @@ export class GeofenceService {
     try {
       const updatedType = await this.dbService.geofenceType.update({
         where: { id: id },
-        // include: { params: true },
         data: {
           canParking: dto.type.canParking,
           canRiding: dto.type.canRiding,
@@ -91,14 +203,11 @@ export class GeofenceService {
             zoneTimeCondition: dto.params.zoneTimeCondition,
           },
         });
-        // console.log(params);
         return {
           ...updatedType,
           params: params,
         };
       }
-
-      // return updatedType;
     } catch (err) {
       this.logger.error(err);
       return null;
