@@ -144,13 +144,23 @@ model Promocode {
 }
 
 model Geofence {
-  id                 Int      @id @default(autoincrement())
-  name               String
-  coordinates        String?
-  radius             Float?
-  dateTimeCreated    DateTime @default(now())
-  typeId             Int?      
-  type               GeofenceType?  @relation(fields: [typeId], references: [id])
+  id                      Int      @id @default(autoincrement())
+  uuid                    String?
+  name                    String?   @unique
+  coordinates             String?
+  radius                  Float?
+  dateTimeCreated         DateTime @default(now())
+  allTimeSpeedLimit       Int?
+  firtsTimePeriodStart    String?
+  firstTimePeriodEnd      String?
+  firstSpeedLimit         Int?
+  secondTimePeriodStart   String?
+  secondTimePeriodEnd     String?
+  secondSpeedLimit        Int?
+  address                 String?
+  img                     String?
+  typeId                  Int?      
+  type                    GeofenceType?  @relation(fields: [typeId], references: [id])
 }
 
 

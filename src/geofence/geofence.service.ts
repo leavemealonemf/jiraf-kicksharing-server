@@ -4,6 +4,8 @@ import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
 import { CreateGeofenceDto } from './dto/create-geofence.dto';
 import { GeofenceDrawType } from '@prisma/client';
 import { generateUUID } from '@common/utils';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class GeofenceService {
@@ -18,10 +20,37 @@ export class GeofenceService {
   }
 
   async createGeofence(dto: CreateGeofenceDto) {
-    return this.dbService.geofence.create({ data: dto }).catch((err) => {
-      this.logger.error(err);
-      return null;
-    });
+    const uuid = generateUUID();
+    const path = `uploads/images/geofences/${uuid}/photo/image.png`;
+
+    if (dto.img) {
+      this.saveFile(dto.img, path);
+    }
+
+    return this.dbService.geofence
+      .create({
+        data: {
+          uuid: uuid,
+          address: dto.address,
+          allTimeSpeedLimit: dto.allTimeSpeedLimit,
+          coordinates: dto.coordinates,
+          firstSpeedLimit: dto.firstSpeedLimit,
+          firstTimePeriodEnd: dto.firstTimePeriodEnd,
+          firtsTimePeriodStart: dto.firtsTimePeriodStart,
+          img: dto.img,
+          name: dto.name,
+          radius: dto.radius,
+          secondSpeedLimit: dto.secondSpeedLimit,
+          secondTimePeriodEnd: dto.secondTimePeriodEnd,
+          secondTimePeriodStart: dto.secondTimePeriodStart,
+          typeId: dto.typeId,
+        },
+        include: { type: true },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
   }
 
   async getGeofenceTypes() {
@@ -212,5 +241,21 @@ export class GeofenceService {
       this.logger.error(err);
       return null;
     }
+  }
+
+  private saveFile(photo: string, entityPath: string) {
+    const base64String = photo;
+    const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const filePath = entityPath;
+
+    const directoryPath = path.dirname(filePath);
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, buffer);
   }
 }
