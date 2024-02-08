@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ErpUserResponse } from './responses';
 import { CurrentUser } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
+import { JwtPayload } from 'src/auth/interfaces';
 
 @ApiTags('ErpUser (Пользователь ERP системы)')
 @ApiBearerAuth()
@@ -21,11 +22,11 @@ import { ErpUser } from '@prisma/client';
 export class ErpUserController {
   constructor(private readonly erpUserService: ErpUserService) {}
 
-  @Get()
-  async findAll() {
-    const users = await this.erpUserService.findAll();
-    return users;
-  }
+  // @Get()
+  // async findAll() {
+  //   const users = await this.erpUserService.findAll();
+  //   return users;
+  // }
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -46,5 +47,10 @@ export class ErpUserController {
   async remove(@Param('id') id: string, @CurrentUser() decUser: ErpUser) {
     const user = await this.erpUserService.remove(+id, decUser);
     return new ErpUserResponse(user);
+  }
+
+  @Get()
+  async getMe(@CurrentUser() user: JwtPayload) {
+    return user;
   }
 }

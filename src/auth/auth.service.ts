@@ -67,11 +67,6 @@ export class AuthService {
     if (!user || !compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Не верный логин или пароль');
     }
-    await this.twilioService.client.messages.create({
-      body: `${user.email} успешно залогинен`,
-      from: '+16315097031',
-      to: '+79606425333',
-    });
 
     return this.generateTokens(user, agent);
   }
@@ -118,6 +113,10 @@ export class AuthService {
       this.jwtService.sign({
         id: user.id,
         email: user.email,
+        name: user.name,
+        uuid: user.uuid,
+        avatar: user.avatar,
+        phone: user.phone,
         role: user.role,
       });
     const refreshToken = await this.getRefreshToken(user.id, agent);

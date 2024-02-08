@@ -10,6 +10,9 @@ import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
 import { ErpUser } from '@prisma/client';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
+import { generateUUID } from '@common/utils';
 
 @Injectable()
 export class ErpUserService {
@@ -19,9 +22,11 @@ export class ErpUserService {
 
   async create(createErpUserDto: CreateErpUserDto) {
     const hashedPassword = this.hashPassword(createErpUserDto.password);
+    const uuid = generateUUID();
 
     return this.dbService.erpUser.create({
       data: {
+        uuid: uuid,
         email: createErpUserDto.email,
         name: createErpUserDto.name,
         phone: createErpUserDto.phone,
@@ -49,10 +54,36 @@ export class ErpUserService {
       });
   }
 
-  update(id: number, updateErpUserDto: UpdateErpUserDto) {
+  async update(id: number, updateErpUserDto: UpdateErpUserDto) {
+    const user = await this.dbService.erpUser.findFirst({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `Не удалось обновить. Пользователя с id ${id} не существует`,
+      );
+    }
+
+    const path = `uploads/images/erp-user/${
+      user.uuid
+    }/photo/avatar${Math.random()}.png`;
+
+    if (updateErpUserDto.avatar) {
+      this.saveFile(updateErpUserDto.avatar, path);
+    }
+
     return this.dbService.erpUser.update({
       where: { id },
-      data: updateErpUserDto,
+      data: {
+        avatar: path,
+        email: updateErpUserDto.email,
+        franchiseId: updateErpUserDto.franchiseId,
+        name: updateErpUserDto.name,
+        password: updateErpUserDto.password,
+        phone: updateErpUserDto.phone,
+        role: updateErpUserDto.role,
+      },
     });
   }
 
@@ -77,5 +108,21 @@ export class ErpUserService {
 
   generateResetToken() {
     return crypto.randomBytes(32).toString('hex');
+  }
+
+  private saveFile(photo: string, entityPath: string) {
+    const base64String = photo;
+    const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const filePath = entityPath;
+
+    const directoryPath = path.dirname(filePath);
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, buffer);
   }
 }

@@ -10,7 +10,9 @@ datasource db {
 model ErpUser {
   id         Int       @id @default(autoincrement())
   name       String
+  uuid       String?
   phone      String
+  avatar     String?
   email      String 
   password   String
   TokenErp     TokenErp[]

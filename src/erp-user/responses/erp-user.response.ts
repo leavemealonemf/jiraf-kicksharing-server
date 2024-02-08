@@ -5,6 +5,8 @@ export class ErpUserResponse implements ErpUser {
   id: number;
   name: string;
   phone: string;
+  avatar: string;
+  uuid: string;
   email: string;
   @Exclude()
   password: string;
