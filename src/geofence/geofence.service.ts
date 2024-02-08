@@ -16,6 +16,7 @@ export class GeofenceService {
   async getGeofences() {
     return this.dbService.geofence.findMany({
       orderBy: { dateTimeCreated: 'desc' },
+      include: { type: true },
     });
   }
 
@@ -37,7 +38,7 @@ export class GeofenceService {
           firstSpeedLimit: dto.firstSpeedLimit,
           firstTimePeriodEnd: dto.firstTimePeriodEnd,
           firtsTimePeriodStart: dto.firtsTimePeriodStart,
-          img: dto.img,
+          img: dto.img ? path : null,
           name: dto.name,
           radius: dto.radius,
           secondSpeedLimit: dto.secondSpeedLimit,
