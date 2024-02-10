@@ -74,7 +74,23 @@ export class ScooterService {
     }
 
     const scooters = await this.dbService.scooter.findMany({
-      include: { model: true },
+      include: {
+        model: true,
+        trips: {
+          include: {
+            user: {
+              include: {
+                trips: {
+                  include: { scooter: true, tariff: true },
+                },
+              },
+            },
+            scooter: true,
+            tariff: true,
+            coordinates: true,
+          },
+        },
+      },
       orderBy: { addedDate: 'desc' },
     });
     return {

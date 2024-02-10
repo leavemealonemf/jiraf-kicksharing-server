@@ -12,6 +12,7 @@ export class ErpUserResponse implements ErpUser {
   password: string;
   role: $Enums.ErpUserRoles;
   franchiseId: number;
+  status: $Enums.ErpUserStatus;
 
   constructor(user: ErpUser) {
     Object.assign(this, user);

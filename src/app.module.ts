@@ -21,6 +21,7 @@ import { StatsService } from './stats/stats.service';
 import { StatsModule } from './stats/stats.module';
 import { GeofenceService } from './geofence/geofence.service';
 import { GeofenceModule } from './geofence/geofence.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GeofenceModule } from './geofence/geofence.module';
     TripModule,
     StatsModule,
     GeofenceModule,
+    SubscriptionModule,
   ],
   controllers: [],
   providers: [

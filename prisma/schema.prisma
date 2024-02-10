@@ -15,6 +15,7 @@ model ErpUser {
   avatar     String?
   email      String 
   password   String
+  status     ErpUserStatus @default(ACTIVE)
   TokenErp     TokenErp[]
   franchise  Franchise?
   role      ErpUserRoles @default(WORKER)
@@ -42,6 +43,8 @@ model User {
   dateTimeCreated DateTime @default(now())
   status          UserStatus @default(ACTIVE)
   trips   Trip[]
+  subscriptionId         Int?     
+  subscription           Subscription?   @relation(fields: [subscriptionId], references: [id], name: "UserSubsctiption")
 }
 
 model TokenErp {
@@ -197,6 +200,15 @@ model GeofenceTypeParams {
   geofenceType                GeofenceType @relation(fields: [geofenceTypeId], references: [id])
 }
 
+model Subscription {
+  id                          Int      @id @default(autoincrement())
+  uuid  String
+  dateTimeCreated  DateTime @default(now())
+  name  String
+  price Float
+  users User[] @relation("UserSubsctiption")
+}
+
 enum ScooterStatus {
   ACTIVE
   SERVICE
@@ -206,6 +218,11 @@ enum ErpUserRoles {
   ADMIN
   WORKER
   FRANCHISE
+}
+
+enum ErpUserStatus {
+  ACTIVE
+  DELETED
 }
 
 enum TariffStatus {
