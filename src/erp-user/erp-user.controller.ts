@@ -22,11 +22,12 @@ import { JwtPayload } from 'src/auth/interfaces';
 export class ErpUserController {
   constructor(private readonly erpUserService: ErpUserService) {}
 
-  // @Get()
-  // async findAll() {
-  //   const users = await this.erpUserService.findAll();
-  //   return users;
-  // }
+  @Get('all')
+  async findAll() {
+    const users = await this.erpUserService.findAll();
+    return users;
+  }
+
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id') id: string) {
