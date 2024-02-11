@@ -47,14 +47,14 @@ export class AuthService {
       return null;
     });
 
-    if (user && user.role === 'FRANCHISE') {
-      const franchise = await this.franchiseService.createFirstTime(user);
-      if (franchise) {
-        await this.erpUserService.update(user.id, {
-          franchiseId: franchise.id,
-        });
-      }
-    }
+    // if (user && user.role === 'FRANCHISE') {
+    //   const franchise = await this.franchiseService.createFirstTime(user);
+    //   if (franchise) {
+    //     await this.erpUserService.update(user.id, {
+    //       franchiseId: franchise.id,
+    //     });
+    //   }
+    // }
     return user;
   }
 
@@ -80,13 +80,14 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
+    console.log(email);
     const user = await this.erpUserService.findByEmail(email);
     if (!user) {
       throw new ForbiddenException('Такого пользователя не существует');
     }
     const resetToken = await this.erpUserService.generateResetToken(user);
     const link =
-      this.configService.get('FRONTEND_URL') + `/?token=${resetToken}`;
+      this.configService.get('FRONTEND_URL') + `/reset-password/${resetToken}`;
     await this.mailService.sendResetPassword(user, link);
   }
 

@@ -11,14 +11,15 @@ model ErpUser {
   id         Int       @id @default(autoincrement())
   name       String
   uuid       String?
-  phone      String
+  phone      String?
+  dateTimeCreated   DateTime @default(now())
   avatar     String?
   email      String 
   password   String
   status     ErpUserStatus @default(ACTIVE)
   TokenErp     TokenErp[]
   franchise  Franchise?
-  role      ErpUserRoles @default(WORKER)
+  role      ErpUserRoles @default(MANAGER)
   franchiseId Int?
   forgotPassToken ForgotPasswordModel?
 }
@@ -223,12 +224,13 @@ model Subscription {
 enum ScooterStatus {
   ACTIVE
   SERVICE
+  REPAIR
 }
 
 enum ErpUserRoles {
   ADMIN
-  WORKER
-  FRANCHISE
+  MANAGER
+  TECHNICIAN
 }
 
 enum ErpUserStatus {

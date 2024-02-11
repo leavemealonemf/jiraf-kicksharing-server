@@ -44,9 +44,7 @@ export class AuthController {
         )}`,
       );
     }
-    await this.mailService.sendUserConfirmation(dto);
-    const message = `Пользователь ${dto.email} успешно приглашен`;
-    return { message: message };
+    return user;
   }
 
   @Public()

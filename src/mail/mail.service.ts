@@ -9,7 +9,7 @@ export class MailService {
 
   constructor(private mailerService: MailerService) {}
 
-  async sendUserConfirmation(user: RegisterDto) {
+  async sendUserConfirmation(user: RegisterDto, password: string) {
     await this.mailerService
       .sendMail({
         to: user.email,
@@ -19,7 +19,7 @@ export class MailService {
         context: {
           name: user.name,
           email: user.email,
-          password: user.password,
+          password: password,
         },
       })
       .catch((err) => {

@@ -13,16 +13,25 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { generateUUID } from '@common/utils';
+import * as generator from 'generate-password';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ErpUserService {
   logger = new Logger();
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly mailService: MailService,
+  ) {}
 
   async create(createErpUserDto: CreateErpUserDto) {
-    const hashedPassword = this.hashPassword(createErpUserDto.password);
+    const password = this.generatePassword();
+
+    const hashedPassword = this.hashPassword(password);
     const uuid = generateUUID();
+
+    await this.mailService.sendUserConfirmation(createErpUserDto, password);
 
     return this.dbService.erpUser.create({
       data: {
@@ -38,7 +47,9 @@ export class ErpUserService {
   }
 
   async findAll() {
-    return this.dbService.erpUser.findMany();
+    return this.dbService.erpUser.findMany({
+      orderBy: { dateTimeCreated: 'desc' },
+    });
   }
 
   async findById(id: number) {
@@ -83,6 +94,7 @@ export class ErpUserService {
         password: updateErpUserDto.password,
         phone: updateErpUserDto.phone,
         role: updateErpUserDto.role,
+        status: updateErpUserDto.status,
       },
     });
   }
@@ -120,12 +132,15 @@ export class ErpUserService {
       return alreadyToken;
     }
 
-    const deleteExpiredToken = await this.dbService.forgotPasswordModel.delete({
-      where: { id: isTokenExist.id },
-    });
+    if (isTokenExist && isTokenExist.expiredTime < new Date()) {
+      const deleteExpiredToken =
+        await this.dbService.forgotPasswordModel.delete({
+          where: { id: isTokenExist.id },
+        });
 
-    if (!deleteExpiredToken) {
-      throw new ForbiddenException('Не удалось удалить просроченный токен');
+      if (!deleteExpiredToken) {
+        throw new ForbiddenException('Не удалось удалить просроченный токен');
+      }
     }
 
     const generateToken = await this.dbService.forgotPasswordModel.create({
@@ -160,5 +175,15 @@ export class ErpUserService {
     }
 
     fs.writeFileSync(filePath, buffer);
+  }
+
+  private generatePassword() {
+    const password = generator.generate({
+      length: 10,
+      numbers: true,
+      uppercase: true,
+    });
+
+    return password;
   }
 }
