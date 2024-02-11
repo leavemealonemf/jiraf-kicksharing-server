@@ -18,6 +18,7 @@ import { FranchiseService } from 'src/franchise/franchise.service';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
 import { TwilioService } from 'nestjs-twilio';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -78,15 +79,60 @@ export class AuthService {
     });
   }
 
-  async resetPassword(email: string) {
+  async forgotPassword(email: string) {
     const user = await this.erpUserService.findByEmail(email);
     if (!user) {
       throw new ForbiddenException('Такого пользователя не существует');
     }
-    const resetToken = this.erpUserService.generateResetToken();
+    const resetToken = await this.erpUserService.generateResetToken(user);
     const link =
       this.configService.get('FRONTEND_URL') + `/?token=${resetToken}`;
     await this.mailService.sendResetPassword(user, link);
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const forgotPassData = await this.dbService.forgotPasswordModel.findFirst({
+      where: { token: dto.token },
+    });
+
+    if (!forgotPassData) {
+      throw new ForbiddenException('Предоставленного токена не существует');
+    }
+
+    const user = await this.erpUserService.findById(forgotPassData.userId);
+
+    if (!user) {
+      throw new ForbiddenException('Данного пользователя больше не существует');
+    }
+
+    if (forgotPassData.expiredTime < new Date()) {
+      throw new ForbiddenException(
+        'Срок действия токена истек, повторите попытку',
+      );
+    }
+
+    const hashedPassword = this.erpUserService.hashPassword(dto.password);
+
+    const isPasswordReset = await this.dbService.erpUser.update({
+      where: { id: forgotPassData.userId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    if (!isPasswordReset) {
+      throw new ForbiddenException(
+        'Не удалось восстановить пароль, попробуйте еще раз либо повторите позже',
+      );
+    }
+
+    await this.dbService.forgotPasswordModel.delete({
+      where: { id: forgotPassData.id },
+    });
+
+    return {
+      message: 'Пароль успешно изменен',
+    };
   }
 
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {

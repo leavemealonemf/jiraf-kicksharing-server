@@ -19,6 +19,7 @@ import { Cookie, Public, UserAgent } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
 import { FranchiseService } from 'src/franchise/franchise.service';
 import { MailService } from 'src/mail/mail.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
@@ -103,11 +104,16 @@ export class AuthController {
   }
 
   @Public()
-  @Get('reset-password/:email')
+  @Get('forgot-password/:email')
   async resetPassword(@Param('email') email: string) {
-    console.log(email);
-    await this.authService.resetPassword(email);
+    await this.authService.forgotPassword(email);
     return { message: `Письмо успешно отправлено на почту ${email}` };
+  }
+
+  @Public()
+  @Post('reset-password')
+  async resetPasswordFinally(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   private setRefreshTokenToCookies(tokens: Tokens, res: Response) {

@@ -102,12 +102,48 @@ export class ErpUserService {
     return this.dbService.erpUser.delete({ where: { id: id } });
   }
 
-  private hashPassword(password: string) {
+  hashPassword(password: string) {
     return hashSync(password, genSaltSync(10));
   }
 
-  generateResetToken() {
-    return crypto.randomBytes(32).toString('hex');
+  async generateResetToken(user: ErpUser) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expTime = new Date();
+    expTime.setHours(expTime.getHours() + 1);
+
+    const isTokenExist = await this.dbService.forgotPasswordModel.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (isTokenExist && isTokenExist.expiredTime > new Date()) {
+      const { token: alreadyToken } = isTokenExist;
+      return alreadyToken;
+    }
+
+    const deleteExpiredToken = await this.dbService.forgotPasswordModel.delete({
+      where: { id: isTokenExist.id },
+    });
+
+    if (!deleteExpiredToken) {
+      throw new ForbiddenException('Не удалось удалить просроченный токен');
+    }
+
+    const generateToken = await this.dbService.forgotPasswordModel.create({
+      data: {
+        token: token,
+        userId: user.id,
+        expiredTime: expTime,
+      },
+    });
+
+    if (!generateToken) {
+      throw new ForbiddenException(
+        'Не удалось сгенерировать токен восстановления пароля',
+      );
+    }
+
+    const { token: newToken } = generateToken;
+    return newToken;
   }
 
   private saveFile(photo: string, entityPath: string) {
