@@ -42,13 +42,16 @@ export class ErpUserService {
         password: hashedPassword,
         role: createErpUserDto.role,
         franchiseId: createErpUserDto.franchiseId,
+        inviterId: createErpUserDto.inviterId,
       },
+      include: { inviter: true },
     });
   }
 
   async findAll() {
     return this.dbService.erpUser.findMany({
       orderBy: { dateTimeCreated: 'desc' },
+      include: { inviter: true },
     });
   }
 

@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
 import { CreateGeofenceDto } from './dto/create-geofence.dto';
@@ -242,6 +247,25 @@ export class GeofenceService {
       this.logger.error(err);
       return null;
     }
+  }
+
+  async deleteGeofence(id: number) {
+    const geofence = await this.dbService.geofence.findFirst({
+      where: { id: id },
+    });
+
+    if (!geofence) {
+      throw new NotFoundException(
+        `Невозможно удалить. Записи с id ${id} не существует`,
+      );
+    }
+
+    return this.dbService.geofence
+      .delete({ where: { id: id } })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
   }
 
   private saveFile(photo: string, entityPath: string) {

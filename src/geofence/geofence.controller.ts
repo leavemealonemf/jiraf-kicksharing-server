@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { GeofenceService } from './geofence.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
@@ -18,6 +26,11 @@ export class GeofenceController {
   @Post()
   async createGeofence(@Body() dto: CreateGeofenceDto) {
     return this.geofenceService.createGeofence(dto);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.geofenceService.deleteGeofence(+id);
   }
 
   @Get('types')

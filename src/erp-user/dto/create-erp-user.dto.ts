@@ -22,4 +22,5 @@ export class CreateErpUserDto {
   })
   role: $Enums.ErpUserRoles;
   franchiseId?: number;
+  inviterId?: number;
 }
