@@ -8,7 +8,7 @@ import { CreateErpUserDto } from './dto/create-erp-user.dto';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { DbService } from 'src/db/db.service';
 import { genSaltSync, hashSync } from 'bcrypt';
-import { ErpUser } from '@prisma/client';
+import { $Enums, ErpUser } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -24,6 +24,26 @@ export class ErpUserService {
     private readonly dbService: DbService,
     private readonly mailService: MailService,
   ) {}
+
+  async createBaseUser() {
+    const data = {
+      name: 'Jack',
+      phone: '+79202475351',
+      email: 'jackminijack@ya.ru',
+      password: 'qwertyQWERTY1',
+      role: $Enums.ErpUserRoles.ADMIN,
+    };
+
+    return this.dbService.erpUser.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: data.password,
+        phone: data.phone,
+        role: data.role,
+      },
+    });
+  }
 
   async create(createErpUserDto: CreateErpUserDto) {
     const password = this.generatePassword();

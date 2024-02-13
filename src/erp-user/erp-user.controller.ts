@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   UseInterceptors,
+  Post,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ErpUserService } from './erp-user.service';
@@ -26,6 +27,11 @@ export class ErpUserController {
   async findAll() {
     const users = await this.erpUserService.findAll();
     return users;
+  }
+
+  @Post('create-base-user')
+  async createBaseUser() {
+    return this.erpUserService.createBaseUser();
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
