@@ -21,7 +21,7 @@ import { ConfigService } from '@nestjs/config';
           },
         },
         template: {
-          dir: join(__dirname, 'mail/templates'),
+          dir: join(__dirname, '../dist/mail/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: false,
