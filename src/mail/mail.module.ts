@@ -22,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
           dir: join(__dirname, 'mail/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
-            strict: true,
+            strict: false,
           },
         },
       }),
