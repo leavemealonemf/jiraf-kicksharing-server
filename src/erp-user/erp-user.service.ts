@@ -26,12 +26,16 @@ export class ErpUserService {
   ) {}
 
   async createBaseUser() {
+    const hashedPassword = this.hashPassword('qwerty123BET');
+    const uuid = generateUUID();
+
     const data = {
       name: 'Jack',
       phone: '+79202475351',
-      email: 'vano812@ya.ru',
-      password: 'qwertyQWERTY1',
+      email: 'vano@ya.ru',
+      password: hashedPassword,
       role: $Enums.ErpUserRoles.ADMIN,
+      uuid: uuid,
     };
 
     return this.dbService.erpUser.create({
