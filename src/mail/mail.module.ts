@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
         transport: {
           host: 'smtp.yandex.ru',
           port: 465,
-          secure: true,
+          secure: false,
           auth: {
             user: config.get('SMTP_USER'),
             pass: config.get('SMTP_PASSWORD'),
