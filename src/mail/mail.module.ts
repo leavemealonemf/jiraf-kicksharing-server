@@ -10,12 +10,14 @@ import { ConfigService } from '@nestjs/config';
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'smtp.yandex.ru',
+          host: 'smtp.mail.ru',
           port: 465,
-          secure: false,
+          secure: true,
           auth: {
-            user: config.get('SMTP_USER'),
-            pass: config.get('SMTP_PASSWORD'),
+            // user: config.get('SMTP_USER'),
+            user: 'smasters.zakaz@mail.ru',
+            // pass: config.get('SMTP_PASSWORD'),
+            pass: 'vy1YNAKuhTkVX5v6EhYn',
           },
         },
         template: {
