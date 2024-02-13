@@ -11,6 +11,7 @@ import { GeofenceDrawType } from '@prisma/client';
 import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { UpdateGeofenceDto } from './dto/update-geofence.dto';
 
 @Injectable()
 export class GeofenceService {
@@ -53,6 +54,30 @@ export class GeofenceService {
         },
         include: { type: true },
       })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+  }
+
+  async updateGeofence(id: number, dto: UpdateGeofenceDto) {
+    const path = `uploads/images/geofences/${dto.uuid}/photo/image.png`;
+
+    if (dto.img === path) {
+      return this.dbService.geofence
+        .update({ where: { id: id }, data: dto, include: { type: true } })
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
+    }
+
+    if (dto.img) {
+      this.saveFile(dto.img, path);
+    }
+
+    return this.dbService.geofence
+      .update({ where: { id: id }, data: dto, include: { type: true } })
       .catch((err) => {
         this.logger.error(err);
         return null;

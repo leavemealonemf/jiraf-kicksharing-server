@@ -13,11 +13,6 @@ export class CreateScooterDto {
     message: 'Поле не должно быть пустым',
   })
   serialNumber: string;
-  @ApiProperty({ default: 1 })
-  @IsNotEmpty({
-    message: 'Поле не должно быть пустым',
-  })
-  franchiseId: number;
   @ApiProperty({ default: 100 })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
@@ -40,12 +35,4 @@ export class CreateScooterDto {
   addedDate: Date;
   @ApiProperty({ default: null })
   photo?: string;
-  @IsNotEmpty({
-    message: 'Поле не должно быть пустым',
-  })
-  @ApiProperty({ default: 3 })
-  @IsNotEmpty({
-    message: 'Поле не должно быть пустым',
-  })
-  parkingId: number;
 }

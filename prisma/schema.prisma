@@ -31,7 +31,6 @@ model Franchise {
   id       Int      @id @default(autoincrement())
   erpUserId   Int      @unique
   eprUser     ErpUser     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
-  scooters Scooter[] @relation("FranchiseScooters")
   city     String?
   income   Int?
 }
@@ -93,17 +92,12 @@ model Scooter {
   deviceId         String   @unique
   qrCode           String
   serialNumber     String
-  franchiseId      Int?
-  franchise        Franchise? @relation(fields: [franchiseId], references: [id], name: "FranchiseScooters")
   batteryLevel     Int     
   status           ScooterStatus @default(ACTIVE)
   power            Boolean @default(false) 
 
   addedDate        DateTime   @default(now())
   photo            String?   
-
-  parkingId        Int
-  parking          Parking  @relation(fields: [parkingId], references: [id])
 
   modelId         Int     
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
@@ -123,9 +117,7 @@ model Parking {
   photo    String?  // Предполагается, что это будет ссылка на файл/фотографию
   latitude Float
   longitude Float
-  radius   Int      // Замените на тип, который отражает радиус
-  
-  scooters Scooter[]
+  radius   Int      // Замените на тип, который отражает радиус  
 }
 
 model Tariff {

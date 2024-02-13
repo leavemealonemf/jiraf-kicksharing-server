@@ -9,7 +9,11 @@ export class StatsController {
   constructor(private readonly statsService: StatsService) {}
 
   @Get()
-  getStats(@Query('interval') interval: string) {
-    return this.statsService.getStats(interval);
+  getStats(
+    @Query('interval') interval: string,
+    @Query('start') start: string,
+    @Query('end') end: string,
+  ) {
+    return this.statsService.getStats(interval, start, end);
   }
 }

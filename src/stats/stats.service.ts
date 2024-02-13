@@ -11,8 +11,8 @@ export class StatsService {
     private readonly tripService: TripService,
   ) {}
 
-  async getStats(interval: string) {
-    const trips = await this.tripService.findAll(interval);
+  async getStats(interval: string, start: string, end: string) {
+    const trips = await this.tripService.findAll(interval, start, end);
 
     const totalTrips = trips.length;
     const totalPrice = trips.reduce(

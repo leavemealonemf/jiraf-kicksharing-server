@@ -31,8 +31,12 @@ export class TripController {
   }
 
   @Get()
-  findAll(@Query('interval') interval: string) {
-    return this.tripService.findAll(interval);
+  findAll(
+    @Query('interval') interval: string,
+    @Query('start') start?: string,
+    @Query('end') end?: string,
+  ) {
+    return this.tripService.findAll(interval, start, end);
   }
 
   @Get(':id')

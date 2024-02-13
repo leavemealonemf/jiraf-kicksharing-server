@@ -48,8 +48,6 @@ export class ScooterService {
           serialNumber: createScooterDto.serialNumber,
           power: createScooterDto.power,
           addedDate: createScooterDto.addedDate,
-          franchiseId: createScooterDto.franchiseId,
-          parkingId: createScooterDto.parkingId,
           status: createScooterDto.status,
           photo: createScooterDto.photo ? path : null,
         },

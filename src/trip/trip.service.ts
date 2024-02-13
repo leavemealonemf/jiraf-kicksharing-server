@@ -44,7 +44,7 @@ export class TripService {
       });
   }
 
-  async findAll(interval: string) {
+  async findAll(interval: string, start: string, end: string) {
     const currentDate = new Date();
     let startDate: Date;
 
@@ -75,6 +75,23 @@ export class TripService {
             startTime: {
               gte: startDate.toISOString(),
               lte: endDate.toISOString(),
+            },
+          },
+          orderBy: { startTime: 'desc' },
+          include: {
+            scooter: true,
+            tariff: true,
+            user: true,
+            coordinates: true,
+          },
+        });
+
+      case 'custom':
+        return this.dbService.trip.findMany({
+          where: {
+            startTime: {
+              gte: start,
+              lte: end,
             },
           },
           orderBy: { startTime: 'desc' },
