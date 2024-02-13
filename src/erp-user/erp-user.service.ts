@@ -29,7 +29,7 @@ export class ErpUserService {
     const data = {
       name: 'Jack',
       phone: '+79202475351',
-      email: 'jackminijack@ya.ru',
+      email: 'vano812@ya.ru',
       password: 'qwertyQWERTY1',
       role: $Enums.ErpUserRoles.ADMIN,
     };

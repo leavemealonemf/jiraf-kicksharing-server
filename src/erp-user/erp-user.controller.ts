@@ -13,7 +13,7 @@ import { ErpUserService } from './erp-user.service';
 import { UpdateErpUserDto } from './dto/update-erp-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ErpUserResponse } from './responses';
-import { CurrentUser } from '@common/decorators';
+import { CurrentUser, Public } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
 import { JwtPayload } from 'src/auth/interfaces';
 
@@ -29,6 +29,7 @@ export class ErpUserController {
     return users;
   }
 
+  @Public()
   @Post('create-base-user')
   async createBaseUser() {
     return this.erpUserService.createBaseUser();
