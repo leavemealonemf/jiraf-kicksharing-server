@@ -18,7 +18,7 @@ import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ErpUserService {
-  logger = new Logger();
+  private readonly logger = new Logger();
 
   constructor(
     private readonly dbService: DbService,
@@ -114,7 +114,7 @@ export class ErpUserService {
     return this.dbService.erpUser.update({
       where: { id },
       data: {
-        avatar: path,
+        avatar: updateErpUserDto.avatar ? path : user.avatar,
         email: updateErpUserDto.email,
         franchiseId: updateErpUserDto.franchiseId,
         name: updateErpUserDto.name,
@@ -127,7 +127,6 @@ export class ErpUserService {
   }
 
   async remove(id: number, decUser: ErpUser) {
-    console.log(decUser);
     if (decUser.role !== 'ADMIN') {
       throw new ForbiddenException('У вас недостаточно прав!');
     }
@@ -199,6 +198,13 @@ export class ErpUserService {
     const directoryPath = path.dirname(filePath);
     if (!fs.existsSync(directoryPath)) {
       fs.mkdirSync(directoryPath, { recursive: true });
+    }
+
+    const filesInDirectory = fs.readdirSync(directoryPath);
+
+    if (filesInDirectory.length > 0) {
+      const fileToDelete = path.join(directoryPath, filesInDirectory[0]);
+      fs.unlinkSync(fileToDelete);
     }
 
     fs.writeFileSync(filePath, buffer);
