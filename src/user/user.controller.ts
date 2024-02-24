@@ -11,6 +11,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '@common/decorators';
 
 @ApiTags('User (Пользователь мобилки)')
 @ApiBearerAuth()
@@ -23,7 +24,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
+  @Get('all')
   findAll() {
     return this.userService.findAll();
   }
@@ -41,5 +42,10 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @Get()
+  async getMe(@CurrentUser() user: any) {
+    return this.userService.findOne(user.id);
   }
 }

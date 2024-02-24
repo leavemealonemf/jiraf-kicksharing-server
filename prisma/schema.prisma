@@ -47,8 +47,20 @@ model User {
   dateTimeCreated DateTime @default(now())
   status          UserStatus @default(ACTIVE)
   trips   Trip[]
+  paymentMethods         PaymentMethod[]
+  activePaymentMethod    Int?
   subscriptionId         Int?     
   subscription           Subscription?   @relation(fields: [subscriptionId], references: [id], name: "UserSubsctiption")
+}
+
+model PaymentMethod {
+  id Int @id @default(autoincrement())
+  paymentId String
+  idempotenceKey String
+  active Boolean
+  userId Int
+  user           User     @relation(fields: [userId], references: [id])
+  type PaymentMethodType
 }
 
 model TokenErp {
@@ -256,4 +268,10 @@ enum GeofenceDrawType {
   POLYGON
   POLYLINE
   CIRCLE
+}
+
+enum PaymentMethodType {
+  CARD
+  SBP
+  SBERPAY
 }

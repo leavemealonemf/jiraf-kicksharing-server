@@ -43,6 +43,7 @@ export class UserService {
             tariff: true,
           },
         },
+        paymentMethods: true,
       },
     });
   }

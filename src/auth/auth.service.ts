@@ -217,7 +217,8 @@ export class AuthService {
           phone: user.phone,
           email: user.email,
           balance: user.balance,
-          staus: user.status,
+          status: user.status,
+          activePaymentMethod: user.activePaymentMethod,
         },
         { expiresIn: this.configService.get('JWT_EXP_MOBILE') },
       );

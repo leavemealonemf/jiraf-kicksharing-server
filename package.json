@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@a2seven/yoo-checkout": "^1.1.4",
     "@nestjs-modules/mailer": "^1.10.3",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
