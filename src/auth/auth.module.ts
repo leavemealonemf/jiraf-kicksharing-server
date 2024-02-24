@@ -12,6 +12,7 @@ import { FranchiseModule } from 'src/franchise/franchise.module';
 import { MailModule } from 'src/mail/mail.module';
 import { TwilioModule } from 'nestjs-twilio';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     PassportModule,
     JwtModule.registerAsync(options()),
     ErpUserModule,
+    UserModule,
     DbModule,
     FranchiseModule,
     MailModule,

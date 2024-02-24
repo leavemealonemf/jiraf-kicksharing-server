@@ -22,6 +22,7 @@ import { StatsModule } from './stats/stats.module';
 import { GeofenceService } from './geofence/geofence.service';
 import { GeofenceModule } from './geofence/geofence.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     StatsModule,
     GeofenceModule,
     SubscriptionModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [
@@ -49,7 +51,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    WsGateway,
+    // WsGateway,
     RightechScooterService,
     StatsService,
     GeofenceService,

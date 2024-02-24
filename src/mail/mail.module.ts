@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
       useFactory: async (config: ConfigService) => ({
         transport: {
           host: 'smtp.yandex.ru',
-          port: 25,
+          port: 465,
           secure: true,
           auth: {
             user: config.get('SMTP_USER'),

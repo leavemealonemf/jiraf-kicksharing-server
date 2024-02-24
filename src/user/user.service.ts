@@ -11,6 +11,14 @@ export class UserService {
   constructor(private readonly dbService: DbService) {}
 
   async create(createUserDto: CreateUserDto) {
+    const user = await this.dbService.user.findFirst({
+      where: { phone: createUserDto.phone },
+    });
+
+    if (user) {
+      return user;
+    }
+
     const uuid = generateUUID();
 
     return this.dbService.user
@@ -18,9 +26,6 @@ export class UserService {
         data: {
           clientId: uuid,
           phone: createUserDto.phone,
-          name: createUserDto.name,
-          email: createUserDto.email,
-          status: createUserDto.status,
         },
       })
       .catch((err) => {
@@ -46,6 +51,16 @@ export class UserService {
     const user = await this.dbService.user.findFirst({ where: { id: id } });
     if (!user) {
       throw new NotFoundException(`Пользователь с id ${id} не найден`);
+    }
+    return user;
+  }
+
+  async findOneByPhone(phone: string) {
+    const user = await this.dbService.user.findFirst({
+      where: { phone: phone },
+    });
+    if (!user) {
+      throw new NotFoundException(`Пользователь с phone ${phone} не найден`);
     }
     return user;
   }

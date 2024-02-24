@@ -9,7 +9,7 @@ import { LoginDto, RegisterDto } from './dto';
 import { ErpUserService } from 'src/erp-user/erp-user.service';
 import { Tokens } from './interfaces';
 import { compareSync } from 'bcrypt';
-import { ErpUser, TokenErp } from '@prisma/client';
+import { ErpUser, TokenErp, User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { DbService } from 'src/db/db.service';
 import { v4 } from 'uuid';
@@ -19,12 +19,15 @@ import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
 import { TwilioService } from 'nestjs-twilio';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UserService } from 'src/user/user.service';
+import { MobileAuthDto } from './dto/auth-mobile.dto';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly erpUserService: ErpUserService,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly dbService: DbService,
     private readonly franchiseService: FranchiseService,
@@ -136,6 +139,14 @@ export class AuthService {
     };
   }
 
+  async authMobile(dto: MobileAuthDto) {
+    const user = await this.userService.create(dto);
+    if (!user) {
+      throw new UnauthorizedException('Ошибка при авторизации мобилы');
+    }
+    return this.generateMobileToken(user);
+  }
+
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
     const token = await this.dbService.tokenErp.findUnique({
       where: { token: refreshToken },
@@ -193,5 +204,23 @@ export class AuthService {
         userAgent: agent,
       },
     });
+  }
+
+  private async generateMobileToken(user: User): Promise<string> {
+    const accessToken =
+      'Bearer ' +
+      this.jwtService.sign(
+        {
+          id: user.id,
+          clientId: user.clientId,
+          name: user.name,
+          phone: user.phone,
+          email: user.email,
+          balance: user.balance,
+          staus: user.status,
+        },
+        { expiresIn: this.configService.get('JWT_EXP_MOBILE') },
+      );
+    return accessToken;
   }
 }

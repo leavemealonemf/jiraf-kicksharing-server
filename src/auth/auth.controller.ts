@@ -20,6 +20,7 @@ import { ErpUser } from '@prisma/client';
 import { FranchiseService } from 'src/franchise/franchise.service';
 import { MailService } from 'src/mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MobileAuthDto } from './dto/auth-mobile.dto';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
@@ -45,6 +46,18 @@ export class AuthController {
       );
     }
     return user;
+  }
+
+  @Public()
+  @Post('mobile/auth')
+  async authMobile(@Body() dto: MobileAuthDto) {
+    const token = await this.authService.authMobile(dto);
+    if (!token) {
+      throw new BadRequestException(
+        `Не удалось войти с данными ${JSON.stringify(dto)}}`,
+      );
+    }
+    return token;
   }
 
   @Public()
