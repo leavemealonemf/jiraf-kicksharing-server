@@ -24,12 +24,17 @@ import { GeofenceModule } from './geofence/geofence.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentsModule } from './payments/payments.module';
 
+const ENV = process.env.NODE_ENV;
+
 @Module({
   imports: [
     ErpUserModule,
     DbModule,
     AuthModule,
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ENV === 'development' ? '.env.development' : '.env.prod',
+    }),
     MailModule,
     FranchiseModule,
     ParkingModule,
@@ -51,7 +56,7 @@ import { PaymentsModule } from './payments/payments.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    // WsGateway,
+    WsGateway,
     RightechScooterService,
     StatsService,
     GeofenceService,
