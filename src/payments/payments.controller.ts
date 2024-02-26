@@ -9,6 +9,8 @@ import { PaymentsService } from './payments.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '@common/decorators';
 import { AddPaymentMethodDto } from './dto/add-payment-method.dto';
+import { PaymentStatusDto } from './dto/payment-status.dto';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Public()
 @ApiTags('Payments (Платежи)')
@@ -22,27 +24,32 @@ export class PaymentsController {
   }
 
   @Post('create-payment')
-  async createPayment() {
-    const payment = await this.paymentsService.createPayment();
+  async createPayment(dto: CreatePaymentDto) {
+    const payment = await this.paymentsService.createPayment(dto);
     return payment;
   }
 
-  @Get('get-payment')
-  async getPayment() {
-    return this.paymentsService.getPayment();
+  // @Get('get-payment')
+  // async getPayment() {
+  //   return this.paymentsService.getPayment();
+  // }
+
+  @Post('get-payment-status')
+  async getPaymentStatus(@Body() dto: PaymentStatusDto) {
+    return this.paymentsService.getPaymentStatus(dto);
   }
 
-  @Get('capture-payment')
-  async capturePayment() {
-    return this.paymentsService.capturePayment();
-  }
+  // @Get('capture-payment')
+  // async capturePayment() {
+  //   return this.paymentsService.capturePayment();
+  // }
 
-  @Get('cancel-payment')
-  async cancelPayment() {
-    const payment = await this.paymentsService.cancelPayment();
-    if (!payment) {
-      throw new BadRequestException('Ошибка при отмене платежа');
-    }
-    return payment;
-  }
+  // @Get('cancel-payment')
+  // async cancelPayment() {
+  //   const payment = await this.paymentsService.cancelPayment();
+  //   if (!payment) {
+  //     throw new BadRequestException('Ошибка при отмене платежа');
+  //   }
+  //   return payment;
+  // }
 }

@@ -4,9 +4,11 @@ import { UserStatus } from '@prisma/client';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({ default: 'vano@bk.ru' })
-  email: string;
+  email?: string;
   @ApiProperty({ default: UserStatus.ACTIVE })
   status?: UserStatus;
   @ApiProperty({ default: 'Ваня' })
-  name: string;
+  name?: string;
+  @ApiProperty({ default: '1' })
+  activePaymentMethod?: number;
 }

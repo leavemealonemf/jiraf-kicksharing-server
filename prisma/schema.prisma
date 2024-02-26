@@ -55,14 +55,14 @@ model User {
 
 model PaymentMethod {
   id Int @id @default(autoincrement())
-  paymentId String
+  paymentId String @unique
   idempotenceKey String
   active Boolean
   userId Int
   user           User     @relation(fields: [userId], references: [id])
   type PaymentMethodType
   cardFirstSix String?
-  cardFirstFour String?
+  cardLastFour String?
   expYear String?
   expMonth String?
   cardType String?
