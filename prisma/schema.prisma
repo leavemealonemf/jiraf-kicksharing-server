@@ -61,6 +61,11 @@ model PaymentMethod {
   userId Int
   user           User     @relation(fields: [userId], references: [id])
   type PaymentMethodType
+  cardFirstSix String?
+  cardFirstFour String?
+  expYear String?
+  expMonth String?
+  cardType String?
 }
 
 model TokenErp {
