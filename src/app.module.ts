@@ -31,7 +31,7 @@ import { PaymentsModule } from './payments/payments.module';
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env.prod',
+      envFilePath: '../.env.prod',
     }),
     MailModule,
     FranchiseModule,
