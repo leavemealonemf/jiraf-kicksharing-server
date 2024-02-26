@@ -182,6 +182,14 @@ export class PaymentsService {
     }
   }
 
+  async getAllPayments() {
+    return this.dbService.paymentMethod.findMany();
+  }
+
+  async deletePayment(id: number) {
+    return this.dbService.paymentMethod.delete({ where: { id } });
+  }
+
   async cancelPayment(paymentId: string) {
     return this.checkout.cancelPayment(paymentId, uuidv4()).catch((err) => {
       this.logger.error(err);

@@ -4,6 +4,8 @@ import {
   Get,
   BadRequestException,
   Body,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -29,6 +31,15 @@ export class PaymentsController {
     return payment;
   }
 
+  @Get()
+  async getAllPayments() {
+    return await this.paymentsService.getAllPayments();
+  }
+
+  @Delete(':id')
+  async deletePayment(@Param() id: string) {
+    return await this.paymentsService.deletePayment(+id);
+  }
   // @Get('get-payment')
   // async getPayment() {
   //   return this.paymentsService.getPayment();
