@@ -24,8 +24,6 @@ import { GeofenceModule } from './geofence/geofence.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentsModule } from './payments/payments.module';
 
-const ENV = process.env.NODE_ENV;
-
 @Module({
   imports: [
     ErpUserModule,
@@ -33,8 +31,7 @@ const ENV = process.env.NODE_ENV;
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        ENV === 'development' ? '../.env.development' : '../.env.prod',
+      envFilePath: '../.env.prod',
     }),
     MailModule,
     FranchiseModule,
