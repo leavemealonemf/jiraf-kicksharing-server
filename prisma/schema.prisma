@@ -66,6 +66,8 @@ model PaymentMethod {
   expYear String?
   expMonth String?
   cardType String?
+
+  @@map("payment-method")
 }
 
 model TokenErp {
