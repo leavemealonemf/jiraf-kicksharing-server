@@ -176,6 +176,7 @@ export class AuthService {
         avatar: user.avatar,
         phone: user.phone,
         role: user.role,
+        platform: user.platform,
       });
     const refreshToken = await this.getRefreshToken(user.id, agent);
     return { accessToken, refreshToken };
@@ -219,6 +220,7 @@ export class AuthService {
           balance: user.balance,
           status: user.status,
           activePaymentMethod: user.activePaymentMethod,
+          platform: user.platform,
         },
         { expiresIn: this.configService.get('JWT_EXP_MOBILE') },
       );

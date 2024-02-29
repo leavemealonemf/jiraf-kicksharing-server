@@ -25,6 +25,7 @@ model ErpUser {
   inviter         ErpUser?            @relation("Inviter", fields: [inviterId], references: [id])
   inviterId       Int?
   invitedUsers    ErpUser[]           @relation("Inviter")
+  platform UserPlatform @default(WEB)
 }
 
 model Franchise {
@@ -49,6 +50,7 @@ model User {
   trips   Trip[]
   paymentMethods         PaymentMethod[]
   payments               Payment[]
+  platform               UserPlatform @default(MOBILE)
 
   activePaymentMethod    Int?
   subscriptionId         Int?     
@@ -312,4 +314,9 @@ enum PaymentMethodType {
   CARD
   SBP
   SBERPAY
+}
+
+enum UserPlatform {
+  WEB
+  MOBILE
 }

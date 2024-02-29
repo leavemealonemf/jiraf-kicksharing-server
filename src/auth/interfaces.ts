@@ -1,4 +1,4 @@
-import { TokenErp } from '@prisma/client';
+import { $Enums, TokenErp } from '@prisma/client';
 
 export interface Tokens {
   accessToken: string;
@@ -12,4 +12,5 @@ export interface JwtPayload {
   avatar: string | null;
   phone: string | null;
   uuid: string;
+  platform: $Enums.UserPlatform;
 }

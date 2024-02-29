@@ -15,6 +15,8 @@ export class ErpUserResponse implements ErpUser {
   status: $Enums.ErpUserStatus;
   dateTimeCreated: Date;
   inviterId: number;
+  @Exclude()
+  platform: $Enums.UserPlatform;
 
   constructor(user: ErpUser) {
     Object.assign(this, user);

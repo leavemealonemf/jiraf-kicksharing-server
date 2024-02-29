@@ -2,8 +2,10 @@ import { JwtPayload } from '../interfaces';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
+import { ErpUser, User } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ErpUserService } from 'src/erp-user/erp-user.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -11,6 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly erpUserService: ErpUserService,
+    private readonly userService: UserService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,10 +22,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: JwtPayload) {
-    const user = await this.erpUserService.findById(payload.id).catch((err) => {
-      this.logger.error(err);
-      return null;
-    });
+    let user: ErpUser | User;
+
+    if (payload.platform === 'WEB') {
+      const webUser = await this.erpUserService
+        .findById(payload.id)
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
+      user = webUser;
+    } else {
+      const mobileUser = await this.userService
+        .findOne(payload.id)
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
+      user = mobileUser;
+    }
+
     if (!user) {
       throw new UnauthorizedException();
     }
