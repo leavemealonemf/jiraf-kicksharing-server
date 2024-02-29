@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Geofence" ADD COLUMN     "dateTimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

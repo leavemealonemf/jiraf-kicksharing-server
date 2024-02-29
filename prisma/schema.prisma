@@ -48,16 +48,31 @@ model User {
   status          UserStatus @default(ACTIVE)
   trips   Trip[]
   paymentMethods         PaymentMethod[]
+  payments               Payment[]
+
   activePaymentMethod    Int?
   subscriptionId         Int?     
   subscription           Subscription?   @relation(fields: [subscriptionId], references: [id], name: "UserSubsctiption")
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+  service PaymentService
+  type PaymentType
+  status PaymentStatus
+  amount Float?
+  description String?
+  paymentMethodId      Int?      
+  paymentMethod        PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
+  userId      Int?      
+  user        User?  @relation(fields: [userId], references: [id])
 }
 
 model PaymentMethod {
   id Int @id @default(autoincrement())
   paymentId String @unique
   idempotenceKey String
-  active Boolean
+  active Boolean  @default(false)
   userId Int
   user           User     @relation(fields: [userId], references: [id])
   type PaymentMethodType
@@ -66,6 +81,7 @@ model PaymentMethod {
   expYear String?
   expMonth String?
   cardType String?
+  payments Payment[]
 }
 
 model TokenErp {
@@ -231,6 +247,23 @@ model Subscription {
   name  String
   price Float
   users User[] @relation("UserSubsctiption")
+}
+
+enum PaymentService {
+  TRIP
+  SUBSCRIPTION
+  BALANCE
+}
+
+enum PaymentType {
+  WRITEOFF
+  REPLACEMENT
+}
+
+enum PaymentStatus {
+  PAID
+  CANCELED
+  CAPTURE
 }
 
 enum ScooterStatus {

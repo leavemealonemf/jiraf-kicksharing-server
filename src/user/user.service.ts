@@ -51,7 +51,7 @@ export class UserService {
   async findOne(id: number) {
     const user = await this.dbService.user.findFirst({
       where: { id: id },
-      include: { paymentMethods: true },
+      include: { paymentMethods: true, payments: true },
     });
     if (!user) {
       throw new NotFoundException(`Пользователь с id ${id} не найден`);

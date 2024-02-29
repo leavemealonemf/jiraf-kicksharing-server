@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import {
   YooCheckout,
   ICreatePayment,
@@ -76,7 +81,6 @@ export class PaymentsService {
   }
 
   async createPayment(dto: CreatePaymentDto) {
-    // const idempotenceKey = uuidv4();
     const createPayload: ICreatePayment = {
       amount: {
         value: dto.value.toFixed(),
@@ -86,16 +90,59 @@ export class PaymentsService {
         type: 'redirect',
         return_url: 'http://localhost:3000/api',
       },
+      metadata: {
+        type: dto.metadata.type,
+        description: dto.metadata.description,
+      },
       capture: true,
-      description: 'Аренда скутера',
-      payment_method_id: '2d6c3c94-000f-5000-8000-1941e9e48ae2',
+      description: dto.description,
     };
+
+    if (dto.paymentMethodStringId) {
+      createPayload['payment_method_id'] = dto.paymentMethodStringId;
+    }
 
     try {
       const payment = await this.checkout.createPayment(
         createPayload,
         uuidv4(),
       );
+      if (payment.status === 'succeeded') {
+        const activePayment = await this.dbService.payment.create({
+          data: {
+            service:
+              dto.metadata.type === 'SUBSCRIPTION'
+                ? 'SUBSCRIPTION'
+                : dto.metadata.type === 'BALANCE'
+                  ? 'BALANCE'
+                  : 'TRIP',
+            status: 'PAID',
+            type: dto.metadata.type === 'BALANCE' ? 'REPLACEMENT' : 'WRITEOFF',
+            description: dto.metadata.description,
+            userId: dto.userId,
+            paymentMethodId: dto.paymentMethodId,
+            amount: dto.value,
+          },
+        });
+
+        if (!activePayment) {
+          throw new ForbiddenException('Не удалось зарегистрировать платеж');
+        }
+
+        const user = await this.userService.findOne(activePayment.userId);
+
+        if (dto.metadata.type === 'BALANCE') {
+          this.userService.update(activePayment.userId, {
+            balance: user.balance + dto.value,
+          });
+        }
+
+        return activePayment;
+      }
+      if (payment.status === 'canceled') {
+        throw new BadRequestException('Недостаточно средств');
+      }
+
       console.log(payment);
       return payment;
     } catch (error) {
@@ -122,7 +169,7 @@ export class PaymentsService {
       }
 
       const cancelPayment = await this.cancelPayment(dto.object.id);
-      
+
       if (!cancelPayment) {
         throw new ForbiddenException('Не удалось отменить платеж');
       }
@@ -223,7 +270,7 @@ export class PaymentsService {
     }
 
     await this.dbService.paymentMethod
-      .delete({ where: { id: existedCard.id }})
+      .delete({ where: { id: existedCard.id } })
       .catch((err) => {
         this.logger.error(err);
       });

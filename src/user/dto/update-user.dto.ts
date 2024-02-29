@@ -11,4 +11,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   name?: string;
   @ApiProperty({ default: '1' })
   activePaymentMethod?: number;
+  @ApiProperty({ default: 100.2 })
+  balance?: number;
 }

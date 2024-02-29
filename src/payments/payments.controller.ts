@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  BadRequestException,
-  Body,
-  Delete,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Delete, Param } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '@common/decorators';
@@ -26,7 +18,7 @@ export class PaymentsController {
   }
 
   @Post('create-payment')
-  async createPayment(dto: CreatePaymentDto) {
+  async createPayment(@Body() dto: CreatePaymentDto) {
     const payment = await this.paymentsService.createPayment(dto);
     return payment;
   }
@@ -37,7 +29,7 @@ export class PaymentsController {
   }
 
   @Delete(':id')
-  async deletePayment(@Param() id: string) {
+  async deletePayment(@Param('id') id: string) {
     return await this.paymentsService.deletePayment(+id);
   }
   // @Get('get-payment')
