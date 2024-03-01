@@ -66,7 +66,8 @@ model Payment {
   description String?
   paymentMethodId      Int?      
   paymentMethod        PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
-  userId      Int?      
+  userId      Int?
+  datetimeCreated DateTime @default(now())      
   user        User?  @relation(fields: [userId], references: [id])
 }
 
