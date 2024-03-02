@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DbService } from 'src/db/db.service';
@@ -79,6 +84,15 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException(`Пользователь с id ${id} не найден`);
+    }
+
+    if (updateUserDto.email) {
+      const isEmailExist = await this.dbService.user.findFirst({
+        where: { email: updateUserDto.email },
+      });
+      if (isEmailExist) {
+        throw new ForbiddenException('Данный email уже занят');
+      }
     }
 
     return this.dbService.user
