@@ -46,6 +46,6 @@ export class UserController {
 
   @Get()
   async getMe(@CurrentUser() user: any) {
-    return this.userService.findOne(user.id);
+    return this.userService.findOneByUUID(user.clientId);
   }
 }
