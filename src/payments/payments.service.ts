@@ -149,15 +149,22 @@ export class PaymentsService {
             Number(dto.metadata.description.split(' ')[1]),
           );
 
-          this.dbService.userSubscriptionsOptions.create({
-            data: {
-              expDate: new Date(
-                new Date().getTime() + subscription.days * 24 * 60 * 60 * 1000,
-              ),
-              userId: user.id,
-              subscriptionId: subscription.id,
-            },
-          });
+          const subscriptionParams =
+            await this.dbService.userSubscriptionsOptions.create({
+              data: {
+                expDate: new Date(
+                  new Date().getTime() +
+                    subscription.days * 24 * 60 * 60 * 1000,
+                ),
+                userId: user.id,
+                subscriptionId: subscription.id,
+              },
+            });
+          if (!subscriptionParams) {
+            throw new ForbiddenException(
+              'Не удалось создать параметры подписки',
+            );
+          }
         }
 
         return activePayment;
