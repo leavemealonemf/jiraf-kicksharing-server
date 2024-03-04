@@ -34,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       user = webUser;
     } else {
       const mobileUser = await this.userService
-        .findOne(payload.id)
+        .findOneByUUID(payload.uuid)
         .catch((err) => {
           this.logger.error(err);
           return null;

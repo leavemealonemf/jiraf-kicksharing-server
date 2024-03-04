@@ -69,6 +69,22 @@ export class UserService {
     return user;
   }
 
+  async findOneByUUID(uuid: string) {
+    const user = await this.dbService.user.findFirst({
+      where: { clientId: uuid },
+      include: {
+        paymentMethods: true,
+        payments: {
+          include: { paymentMethod: true },
+        },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(`Пользователь с id ${uuid} не найден`);
+    }
+    return user;
+  }
+
   async findOneByPhone(phone: string) {
     const user = await this.dbService.user.findFirst({
       where: { phone: phone },
