@@ -7,5 +7,6 @@ import { DbModule } from 'src/db/db.module';
   imports: [DbModule],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],
+  exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

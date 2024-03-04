@@ -19,6 +19,7 @@ export class SubscriptionService {
           name: dto.name,
           price: dto.price,
           uuid: uuid,
+          days: dto.days,
         },
       })
       .catch((err) => {

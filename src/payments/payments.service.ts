@@ -21,6 +21,7 @@ import {
 } from './dto/payment-status.dto';
 import { UserService } from 'src/user/user.service';
 import { PaymentMethod } from '@prisma/client';
+import { SubscriptionService } from 'src/subscription/subscription.service';
 
 @Injectable()
 export class PaymentsService {
@@ -34,6 +35,7 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     private readonly dbService: DbService,
     private readonly userService: UserService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   async addPaymentMethod(dto: AddPaymentMethodDto) {
@@ -62,15 +64,20 @@ export class PaymentsService {
         idempotence,
       );
 
-      const savedPayment = await this.dbService.paymentMethod.create({
-        data: {
-          active: true,
-          idempotenceKey: idempotence,
-          type: 'CARD',
-          userId: dto.userId,
-          paymentId: payment.id,
-        },
-      });
+      const savedPayment = await this.dbService.paymentMethod
+        .create({
+          data: {
+            active: true,
+            idempotenceKey: idempotence,
+            type: 'CARD',
+            userId: dto.userId,
+            paymentId: payment.id,
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
 
       // console.log(payment);
       return { payment: payment, savedPayment: savedPayment };
@@ -118,7 +125,7 @@ export class PaymentsService {
                   : 'TRIP',
             status: 'PAID',
             type: dto.metadata.type === 'BALANCE' ? 'REPLACEMENT' : 'WRITEOFF',
-            description: dto.metadata.description,
+            description: dto.description,
             userId: dto.userId,
             paymentMethodId: dto.paymentMethodId,
             amount: dto.value,
@@ -134,6 +141,22 @@ export class PaymentsService {
         if (dto.metadata.type === 'BALANCE') {
           this.userService.update(activePayment.userId, {
             balance: user.balance + dto.value,
+          });
+        }
+
+        if (dto.metadata.type === 'SUBSCRIPTION') {
+          const subscription = await this.subscriptionService.findOne(
+            Number(dto.metadata.description.split(' ')[1]),
+          );
+
+          this.dbService.userSubscriptionsOptions.create({
+            data: {
+              expDate: new Date(
+                new Date().getTime() + subscription.days * 24 * 60 * 60 * 1000,
+              ),
+              userId: user.id,
+              subscriptionId: subscription.id,
+            },
           });
         }
 
