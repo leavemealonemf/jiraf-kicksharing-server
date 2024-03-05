@@ -52,7 +52,7 @@ export class PaymentsService {
       },
       confirmation: {
         type: 'redirect',
-        return_url: 'http://localhost:3000/api',
+        return_url: this.configService.get('CASSA_RETURN_URL'),
       },
       // capture: true,
       description: 'Привязка метода',
@@ -64,6 +64,12 @@ export class PaymentsService {
         createPayload,
         idempotence,
       );
+
+      if (payment.status === 'canceled') {
+        throw new ForbiddenException(
+          'Не удалось привязать способ оплаты, ошибка при обработке платежа',
+        );
+      }
 
       const savedPayment = await this.dbService.paymentMethod
         .create({
@@ -96,7 +102,7 @@ export class PaymentsService {
       },
       confirmation: {
         type: 'redirect',
-        return_url: 'http://localhost:3000/api',
+        return_url: this.configService.get('CASSA_RETURN_URL'),
       },
       metadata: {
         type: dto.metadata.type,
@@ -155,7 +161,7 @@ export class PaymentsService {
               data: {
                 expDate: new Date(
                   new Date().getTime() +
-                    subscription.days * 24 * 60 * 60 * 1000,
+                    this.getSubscriptionExpDate(subscription.days),
                 ),
                 userId: user.id,
                 subscriptionId: subscription.id,
@@ -312,7 +318,7 @@ export class PaymentsService {
         },
         confirmation: {
           type: 'redirect',
-          return_url: 'http://localhost:3000/api',
+          return_url: this.configService.get('CASSA_RETURN_URL'),
         },
         metadata: {
           type: 'SUBSCRIPTION',
@@ -334,9 +340,10 @@ export class PaymentsService {
               .update({
                 where: { id: x.id },
                 data: {
+                  purchaseDate: new Date(),
                   expDate: new Date(
                     new Date().getTime() +
-                      subscription.days * 24 * 60 * 60 * 1000,
+                      this.getSubscriptionExpDate(subscription.days),
                   ),
                 },
               })
@@ -426,5 +433,9 @@ export class PaymentsService {
         activePaymentMethod: payment.id,
       });
     }
+  }
+
+  private getSubscriptionExpDate(days: number) {
+    return days * 24 * 60 * 60 * 1000;
   }
 }
