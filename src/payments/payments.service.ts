@@ -22,6 +22,7 @@ import {
 import { UserService } from 'src/user/user.service';
 import { PaymentMethod } from '@prisma/client';
 import { SubscriptionService } from 'src/subscription/subscription.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PaymentsService {
@@ -270,6 +271,105 @@ export class PaymentsService {
   async cancelPayment(paymentId: string) {
     return this.checkout.cancelPayment(paymentId, uuidv4()).catch((err) => {
       this.logger.error(err);
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async checkSubscriptionExp() {
+    const subscriptions =
+      await this.dbService.userSubscriptionsOptions.findMany();
+    if (subscriptions.length === 0) return;
+
+    subscriptions.forEach(async (x) => {
+      if (x.expDate > new Date()) {
+        this.logger.log(`Есть отложенный платеж ${x.id}`);
+        return;
+      }
+
+      const user = await this.userService.findOne(x.userId);
+      const subscription = await this.subscriptionService.findOne(
+        x.subscriptionId,
+      );
+
+      if (!x.autoPayment) {
+        await this.dbService.userSubscriptionsOptions
+          .delete({ where: { id: x.id } })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+        this.logger.log(`Удалили подписку без автоплатежа под id: ${x.id}`);
+        return;
+      }
+
+      const activePaymentMethod = user.paymentMethods.find(
+        (y) => y.id === user.activePaymentMethod,
+      );
+
+      const createPayload: ICreatePayment = {
+        amount: {
+          value: subscription.price.toFixed(),
+          currency: 'RUB',
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: 'http://localhost:3000/api',
+        },
+        metadata: {
+          type: 'SUBSCRIPTION',
+          description: `Подписка ${subscription.id}`,
+        },
+        capture: true,
+        description: 'Автопродление подписки',
+        payment_method_id: activePaymentMethod.paymentId,
+      };
+
+      try {
+        const payment = await this.checkout.createPayment(
+          createPayload,
+          uuidv4(),
+        );
+        if (payment.status === 'succeeded') {
+          const updatedSubscription =
+            await this.dbService.userSubscriptionsOptions
+              .update({
+                where: { id: x.id },
+                data: {
+                  expDate: new Date(
+                    new Date().getTime() +
+                      subscription.days * 24 * 60 * 60 * 1000,
+                  ),
+                },
+              })
+              .catch((err) => {
+                this.logger.error(
+                  err,
+                  undefined,
+                  `Не удалось обновить опции подписки с id: ${x.id}`,
+                );
+              });
+          this.logger.log(
+            `Провели списание и обновили подписку под id ${x.id}`,
+          );
+          return updatedSubscription;
+        }
+
+        if (payment.status === 'canceled') {
+          await this.dbService.userSubscriptionsOptions
+            .delete({ where: { id: x.id } })
+            .catch((err) => {
+              this.logger.error(err);
+            });
+
+          this.logger.log(`Платеж в статусе отмены, подписка с id ${x.id}`);
+
+          throw new BadRequestException(
+            'Ошибка, возможно недостаточно средств',
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        return error.message;
+      }
     });
   }
 
