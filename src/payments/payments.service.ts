@@ -347,6 +347,22 @@ export class PaymentsService {
                   `Не удалось обновить опции подписки с id: ${x.id}`,
                 );
               });
+
+          await this.dbService.payment
+            .create({
+              data: {
+                service: 'SUBSCRIPTION',
+                status: 'PAID',
+                type: 'WRITEOFF',
+                description: `На ${subscription.days} дней`,
+                userId: x.userId,
+                paymentMethodId: activePaymentMethod.id,
+                amount: subscription.price,
+              },
+            })
+            .catch((err) => {
+              this.logger.error(err);
+            });
           this.logger.log(
             `Провели списание и обновили подписку под id ${x.id}`,
           );
