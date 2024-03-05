@@ -3,6 +3,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
+import { UpdateSubscriptionOptionsDto } from './dto/update-subscription-options.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -76,5 +77,23 @@ export class SubscriptionService {
         this.logger.error(err);
         return null;
       });
+  }
+
+  async updateOptions(id: number, dto: UpdateSubscriptionOptionsDto) {
+    const subscriptionOptions =
+      await this.dbService.userSubscriptionsOptions.findFirst({
+        where: { id: id },
+      });
+
+    if (!subscriptionOptions) {
+      throw new NotFoundException('Опции для данной подписки не найдены');
+    }
+
+    return this.dbService.userSubscriptionsOptions.update({
+      where: { id: id },
+      data: {
+        autoPayment: dto.autoPayment,
+      },
+    });
   }
 }

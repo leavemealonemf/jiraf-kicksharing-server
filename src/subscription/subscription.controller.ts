@@ -11,6 +11,7 @@ import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UpdateSubscriptionOptionsDto } from './dto/update-subscription-options.dto';
 
 @ApiTags('Subscription (Подписка пользователя)')
 @ApiBearerAuth()
@@ -21,6 +22,14 @@ export class SubscriptionController {
   @Post()
   create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
     return this.subscriptionService.create(createSubscriptionDto);
+  }
+
+  @Patch('options/:id')
+  updateOptions(
+    @Param('id') id: string,
+    @Body() dto: UpdateSubscriptionOptionsDto,
+  ) {
+    return this.subscriptionService.updateOptions(+id, dto);
   }
 
   @Get()
