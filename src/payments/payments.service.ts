@@ -282,13 +282,31 @@ export class PaymentsService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async checkSubscriptionExp() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const subscriptions =
-      await this.dbService.userSubscriptionsOptions.findMany();
+      await this.dbService.userSubscriptionsOptions.findMany({
+        where: {
+          expDate: today,
+        },
+      });
     if (subscriptions.length === 0) return;
 
     subscriptions.forEach(async (x) => {
-      if (x.expDate > new Date()) {
-        this.logger.log(`Есть отложенный платеж ${x.id}`);
+      // if (x.expDate > new Date()) {
+      //   this.logger.log(`Есть отложенный платеж ${x.id}`);
+      //   return;
+      // }
+
+      if (!x.autoPayment) {
+        await this.dbService.userSubscriptionsOptions
+          .delete({ where: { id: x.id } })
+          .catch((err) => {
+            this.logger.error(err);
+            return null;
+          });
+        this.logger.log(`Удалили подписку без автоплатежа под id: ${x.id}`);
         return;
       }
 
@@ -296,16 +314,6 @@ export class PaymentsService {
       const subscription = await this.subscriptionService.findOne(
         x.subscriptionId,
       );
-
-      if (!x.autoPayment) {
-        await this.dbService.userSubscriptionsOptions
-          .delete({ where: { id: x.id } })
-          .catch((err) => {
-            this.logger.error(err);
-          });
-        this.logger.log(`Удалили подписку без автоплатежа под id: ${x.id}`);
-        return;
-      }
 
       const activePaymentMethod = user.paymentMethods.find(
         (y) => y.id === user.activePaymentMethod,
@@ -353,6 +361,7 @@ export class PaymentsService {
                   undefined,
                   `Не удалось обновить опции подписки с id: ${x.id}`,
                 );
+                return null;
               });
 
           await this.dbService.payment
@@ -369,6 +378,7 @@ export class PaymentsService {
             })
             .catch((err) => {
               this.logger.error(err);
+              return null;
             });
           this.logger.log(
             `Провели списание и обновили подписку под id ${x.id}`,
@@ -381,6 +391,7 @@ export class PaymentsService {
             .delete({ where: { id: x.id } })
             .catch((err) => {
               this.logger.error(err);
+              return null;
             });
 
           this.logger.log(`Платеж в статусе отмены, подписка с id ${x.id}`);
