@@ -280,7 +280,7 @@ export class PaymentsService {
     });
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkSubscriptionExp() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
