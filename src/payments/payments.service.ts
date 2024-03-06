@@ -280,7 +280,7 @@ export class PaymentsService {
     });
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkSubscriptionExp() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -288,10 +288,16 @@ export class PaymentsService {
     const subscriptions =
       await this.dbService.userSubscriptionsOptions.findMany({
         where: {
-          expDate: today,
+          expDate: {
+            gte: today,
+            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          },
         },
       });
-    if (subscriptions.length === 0) return;
+
+    if (subscriptions.length === 0) {
+      return;
+    }
 
     subscriptions.forEach(async (x) => {
       // if (x.expDate > new Date()) {
