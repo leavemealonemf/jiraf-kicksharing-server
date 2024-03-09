@@ -8,5 +8,6 @@ import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.se
   imports: [DbModule],
   controllers: [ScooterController],
   providers: [ScooterService, RightechScooterService],
+  exports: [ScooterService],
 })
 export class ScooterModule {}

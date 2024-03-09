@@ -23,6 +23,8 @@ import { GeofenceService } from './geofence/geofence.service';
 import { GeofenceModule } from './geofence/geofence.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentsModule } from './payments/payments.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -41,12 +43,14 @@ import { PaymentsModule } from './payments/payments.module';
     TariffModule,
     PromocodeModule,
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     UserModule,
     TripModule,
     StatsModule,
     GeofenceModule,
     SubscriptionModule,
     PaymentsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [

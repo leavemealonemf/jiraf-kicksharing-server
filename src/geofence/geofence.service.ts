@@ -12,18 +12,36 @@ import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UpdateGeofenceDto } from './dto/update-geofence.dto';
+import { ScooterService } from 'src/scooter/scooter.service';
 
 @Injectable()
 export class GeofenceService {
   private readonly logger = new Logger();
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly scooterService: ScooterService,
+  ) {}
 
   async getGeofences() {
-    return this.dbService.geofence.findMany({
+    const geofences = await this.dbService.geofence.findMany({
       orderBy: { dateTimeCreated: 'desc' },
       include: { type: true },
     });
+
+    if (geofences.length === 0) {
+      return;
+    }
+
+    const scooters = await this.sortScootersInArray();
+
+    if (!scooters && scooters.length === 0) return;
+
+    const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
+      geofences,
+      scooters,
+    );
+    return geofencesWithOrWithoutScooters;
   }
 
   async createGeofence(dto: CreateGeofenceDto) {
@@ -307,5 +325,102 @@ export class GeofenceService {
     }
 
     fs.writeFileSync(filePath, buffer);
+  }
+
+  private async sortScootersInArray() {
+    const scooters = await this.scooterService.findAll();
+
+    if (scooters.scooters.length === 0) {
+      return null;
+    }
+
+    const scootersWithCoords = [];
+
+    for (let i = 0; i < scooters.scooters.length; i++) {
+      const rightechScooters = scooters.rightechScooters.filter(
+        (x) => x.id === scooters.scooters[i].deviceId,
+      );
+
+      if (rightechScooters.length === 0) return;
+
+      for (let j = 0; j < rightechScooters.length; j++) {
+        if (
+          rightechScooters[j].state &&
+          rightechScooters[j].state.lat &&
+          rightechScooters[j].state.lon &&
+          rightechScooters[j].id === scooters.scooters[i].deviceId
+        ) {
+          scootersWithCoords.push({
+            scooterId: scooters.scooters[i].id,
+            lat: rightechScooters[j].state.lat,
+            lng: rightechScooters[j].state.lon,
+          });
+        }
+      }
+    }
+    return scootersWithCoords;
+  }
+
+  private sortScootersInParkingZone(geofences: any[], scooters: any[]) {
+    const geofencesWithScooters = [];
+
+    for (let i = 0; i < geofences.length; i++) {
+      if (geofences[i].type.slug !== 'parkingCircle') {
+        return null;
+      }
+
+      const zoneScooters = [];
+
+      for (let j = 0; j < scooters.length; j++) {
+        const scooterCoordinates = {
+          lat: scooters[j].lat,
+          lng: scooters[j].lng,
+        };
+
+        const coordinates = JSON.parse(geofences[i].coordinates);
+
+        const radius = geofences[i].radius;
+
+        const scooterInZone = this.isScooterInZone(
+          scooterCoordinates,
+          coordinates,
+          radius,
+        );
+
+        if (scooterInZone) {
+          zoneScooters.push(scooters[j]);
+        }
+      }
+
+      geofencesWithScooters.push({
+        ...geofences[i],
+        scooters: zoneScooters,
+        noScooters: zoneScooters.length === 0,
+      });
+    }
+    return geofencesWithScooters;
+  }
+
+  private isScooterInZone(scooterCoordinates, zoneCenter, zoneRadius) {
+    const earthRadius = 6371000;
+
+    const scooterLatRad = this.toRadians(scooterCoordinates.lat);
+    const scooterLngRad = this.toRadians(scooterCoordinates.lng);
+    const zoneCenterLatRad = this.toRadians(zoneCenter.lat);
+    const zoneCenterLngRad = this.toRadians(zoneCenter.lng);
+
+    const distance =
+      Math.acos(
+        Math.sin(scooterLatRad) * Math.sin(zoneCenterLatRad) +
+          Math.cos(scooterLatRad) *
+            Math.cos(zoneCenterLatRad) *
+            Math.cos(scooterLngRad - zoneCenterLngRad),
+      ) * earthRadius;
+
+    return distance <= zoneRadius;
+  }
+
+  private toRadians(degrees) {
+    return (degrees * Math.PI) / 180;
   }
 }
