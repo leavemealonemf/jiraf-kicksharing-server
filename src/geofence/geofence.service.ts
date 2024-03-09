@@ -372,9 +372,9 @@ export class GeofenceService {
     const geofencesWithScooters = [];
 
     for (let i = 0; i < geofences.length; i++) {
-      if (geofences[i].type.slug !== 'parkingCircle') {
-        return null;
-      }
+      // if (geofences[i].type.slug !== 'parkingCircle') {
+      //   return null;
+      // }
 
       const zoneScooters = [];
 
