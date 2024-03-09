@@ -24,6 +24,13 @@ export class GeofenceService {
   ) {}
 
   async getGeofences() {
+    return this.dbService.geofence.findMany({
+      orderBy: { dateTimeCreated: 'desc' },
+      include: { type: true },
+    });
+  }
+
+  async getGeofencesInMobile() {
     const geofences = await this.dbService.geofence.findMany({
       orderBy: { dateTimeCreated: 'desc' },
       include: { type: true },

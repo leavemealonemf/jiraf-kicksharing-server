@@ -29,6 +29,11 @@ export class GeofenceController {
     return this.geofenceService.createGeofence(dto);
   }
 
+  @Get('mobile')
+  async getMobileGeofences() {
+    return this.geofenceService.getGeofencesInMobile();
+  }
+
   @Patch(':id')
   async updateGeofence(
     @Param('id') id: string,
