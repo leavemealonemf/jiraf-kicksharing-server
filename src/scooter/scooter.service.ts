@@ -186,9 +186,6 @@ export class ScooterService {
   }
 
   private generateQrPath(deviceId: string) {
-    if (this.configService.get('NODE_ENV') === 'dev') {
-      return `uploads/images/scooters/${deviceId}/qr/qr-code.png`;
-    }
-    return `dist/uploads/images/scooters/${deviceId}/qr/qr-code.png`;
+    return `uploads/images/scooters/${deviceId}/qr/qr-code.png`;
   }
 }
