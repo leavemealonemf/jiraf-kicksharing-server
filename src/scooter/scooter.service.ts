@@ -12,6 +12,7 @@ import * as path from 'path';
 import axios from 'axios';
 import { Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ScooterService {
@@ -20,6 +21,7 @@ export class ScooterService {
   constructor(
     private readonly dbService: DbService,
     private readonly rightechScooterService: RightechScooterService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createScooterDto: CreateScooterDto) {
@@ -162,7 +164,7 @@ export class ScooterService {
       { responseType: 'arraybuffer' },
     );
 
-    const filePath = `uploads/images/scooters/${deviceId}/qr/qr-code.png`;
+    const filePath = this.generateQrPath(deviceId);
 
     const directoryPath = path.dirname(filePath);
     if (!fs.existsSync(directoryPath)) {
@@ -181,5 +183,12 @@ export class ScooterService {
     );
 
     return formattedNumber;
+  }
+
+  private generateQrPath(deviceId: string) {
+    if (this.configService.get('NODE_ENV') === 'dev') {
+      return `uploads/images/scooters/${deviceId}/qr/qr-code.png`;
+    }
+    return `dist/uploads/images/scooters/${deviceId}/qr/qr-code.png`;
   }
 }
