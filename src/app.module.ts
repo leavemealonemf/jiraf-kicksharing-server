@@ -26,6 +26,10 @@ import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
+const NODE_ENV = process.env.NODE_ENV;
+
+console.log(NODE_ENV);
+
 @Module({
   imports: [
     ErpUserModule,
@@ -33,7 +37,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env.development',
+      envFilePath:
+        NODE_ENV === 'development' ? '.env.development' : '.env.prod',
     }),
     MailModule,
     FranchiseModule,

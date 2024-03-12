@@ -12,7 +12,6 @@ import * as path from 'path';
 import axios from 'axios';
 import { Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ScooterService {
@@ -21,7 +20,6 @@ export class ScooterService {
   constructor(
     private readonly dbService: DbService,
     private readonly rightechScooterService: RightechScooterService,
-    private readonly configService: ConfigService,
   ) {}
 
   async create(createScooterDto: CreateScooterDto) {
