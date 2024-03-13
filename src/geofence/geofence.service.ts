@@ -48,7 +48,11 @@ export class GeofenceService {
       geofences,
       scooters,
     );
-    return geofencesWithOrWithoutScooters;
+
+    const geofencesWithLimit = this.getCurrentSpeedLimit(
+      geofencesWithOrWithoutScooters,
+    );
+    return geofencesWithLimit;
   }
 
   async createGeofence(dto: CreateGeofenceDto) {
@@ -429,5 +433,63 @@ export class GeofenceService {
 
   private toRadians(degrees) {
     return (degrees * Math.PI) / 180;
+  }
+
+  private getCurrentSpeedLimit(geofences: any[]) {
+    const result = [];
+
+    for (const geofence of geofences) {
+      if (geofence.type.slug === 'speedLimitSchedule') {
+        const currentDate = new Date();
+        const currentTime =
+          currentDate.getHours() * 60 + currentDate.getMinutes();
+
+        const parseInterval = (start: any, end: any) => {
+          const startTime =
+            Number(start.split(':')[0]) * 60 + Number(start.split(':')[1]);
+          const endTime =
+            Number(end.split(':')[0]) * 60 + Number(end.split(':')[1]);
+          return { startTime, endTime };
+        };
+
+        const firstInterval = parseInterval(
+          geofence.firtsTimePeriodStart,
+          geofence.firstTimePeriodEnd,
+        );
+
+        const secondInterval = parseInterval(
+          geofence.secondTimePeriodStart,
+          geofence.secondTimePeriodEnd,
+        );
+
+        if (secondInterval.endTime < secondInterval.startTime) {
+          secondInterval.endTime += 24 * 60;
+        }
+
+        let intervalType = 'noInterval';
+
+        if (
+          currentTime >= firstInterval.startTime &&
+          currentTime <= firstInterval.endTime
+        ) {
+          intervalType = 'firstInterval';
+        } else if (
+          currentTime >= secondInterval.startTime &&
+          currentTime <= secondInterval.endTime
+        ) {
+          intervalType = 'secondInterval';
+        }
+
+        const updatedGeofence = {
+          ...geofence,
+          currentSpeedLimit: intervalType,
+        };
+        result.push(updatedGeofence);
+      } else {
+        result.push(geofence);
+      }
+    }
+
+    return result;
   }
 }
