@@ -42,8 +42,6 @@ export class GeofenceService {
 
     const scooters = await this.sortScootersInArray();
 
-    if (!scooters && scooters.length === 0) return;
-
     const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
       geofences,
       scooters,
@@ -52,6 +50,7 @@ export class GeofenceService {
     const geofencesWithLimit = this.getCurrentSpeedLimit(
       geofencesWithOrWithoutScooters,
     );
+
     return geofencesWithLimit;
   }
 
@@ -341,11 +340,11 @@ export class GeofenceService {
   private async sortScootersInArray() {
     const scooters = await this.scooterService.findAll();
 
-    if (scooters.scooters.length === 0) {
-      return null;
-    }
-
     const scootersWithCoords = [];
+
+    if (scooters.scooters.length === 0) {
+      return scootersWithCoords;
+    }
 
     for (let i = 0; i < scooters.scooters.length; i++) {
       const rightechScooters = scooters.rightechScooters.filter(
@@ -376,9 +375,13 @@ export class GeofenceService {
     const geofencesWithScooters = [];
 
     for (let i = 0; i < geofences.length; i++) {
-      // if (geofences[i].type.slug !== 'parkingCircle') {
-      //   return null;
-      // }
+      if (geofences.length === 0) {
+        geofencesWithScooters.push({
+          ...geofences[i],
+          scooters: [],
+          noScooters: true,
+        });
+      }
 
       const zoneScooters = [];
 
@@ -436,6 +439,8 @@ export class GeofenceService {
   }
 
   private getCurrentSpeedLimit(geofences: any[]) {
+    if (geofences.length === 0) return;
+
     const result = [];
 
     for (const geofence of geofences) {
