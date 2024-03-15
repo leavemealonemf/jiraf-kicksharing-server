@@ -1,8 +1,14 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePromocodeDto } from './dto/create-promocode.dto';
 import { UpdatePromocodeDto } from './dto/update-promocode.dto';
 import { DbService } from 'src/db/db.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PromocodeStatus } from '@prisma/client';
 
 @Injectable()
 export class PromocodeService {
@@ -19,8 +25,17 @@ export class PromocodeService {
       });
   }
 
-  async findAll() {
+  async findAll(status?: PromocodeStatus) {
+    if (!status) {
+      return this.dbService.promocode.findMany({
+        include: {
+          usedByUsers: true,
+        },
+        orderBy: { addedDate: 'desc' },
+      });
+    }
     return this.dbService.promocode.findMany({
+      where: { status: status },
       orderBy: { addedDate: 'desc' },
     });
   }
@@ -31,6 +46,17 @@ export class PromocodeService {
     });
     if (!promo) {
       throw new NotFoundException(`Запись с id ${id} не найдена`);
+    }
+    return promo;
+  }
+
+  async findOneByCode(code: string) {
+    const promo = await this.dbService.promocode.findFirst({
+      where: { code: code },
+      include: { usedByUsers: true },
+    });
+    if (!promo) {
+      throw new NotFoundException(`Промокода ${code} не существует`);
     }
     return promo;
   }
@@ -67,6 +93,40 @@ export class PromocodeService {
         this.logger.error(err);
         return null;
       });
+  }
+
+  async usePromocode(userId: string, code: string) {
+    const promocode = await this.findOneByCode(code);
+    if (promocode.status === 'ARCHIVE') {
+      throw new ForbiddenException(`Промокод ${code} истек`);
+    }
+
+    const isPromocodeUsed = promocode.usedByUsers.some(
+      (user) => user.clientId === userId,
+    );
+
+    if (isPromocodeUsed) {
+      throw new ForbiddenException(`Вы уже использовали промокод ${code}`);
+    }
+
+    return this.dbService.promocode.update({
+      where: { id: promocode.id },
+      data: {
+        usedByUsers: {
+          connect: {
+            clientId: userId,
+          },
+          update: {
+            where: { clientId: userId },
+            data: {
+              balance: {
+                increment: Number(promocode.sum),
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   @Cron(CronExpression.EVERY_12_HOURS)
