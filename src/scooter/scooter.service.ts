@@ -120,7 +120,7 @@ export class ScooterService {
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
         if (scooter.deviceId === rightechScooter.id) {
-          response.push(...response, {
+          response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
           });
