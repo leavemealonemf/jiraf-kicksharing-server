@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { IRightechScooter } from './interfaces';
 
 @Injectable()
 export class RightechScooterService {
@@ -10,7 +11,7 @@ export class RightechScooterService {
     this.baseUrl = configService.get('RIGHTECH_URL');
   }
 
-  async getAll() {
+  async getAll(): Promise<IRightechScooter[]> {
     const { data } = await axios.get(`${this.baseUrl}/objects`, {
       headers: {
         Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,

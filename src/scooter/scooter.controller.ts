@@ -28,6 +28,11 @@ export class ScooterController {
     return this.scooterService.findAll();
   }
 
+  @Get('/mobile')
+  findAllMobile() {
+    return this.scooterService.findAllMobile();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.scooterService.findOne(+id);

@@ -97,6 +97,40 @@ export class ScooterService {
     };
   }
 
+  async findAllMobile() {
+    const res = await this.rightechScooterService.getAll();
+
+    if (!res) {
+      throw new ConflictException('Не удалось получить самокаты Rightech');
+    }
+
+    const scooters = await this.dbService.scooter.findMany({
+      include: {
+        model: true,
+      },
+      orderBy: { addedDate: 'desc' },
+    });
+
+    if (scooters.length === 0) {
+      return [];
+    }
+
+    const response = [];
+
+    for (const scooter of scooters) {
+      for (const rightechScooter of res) {
+        if (scooter.deviceId === rightechScooter.id) {
+          response.push(...response, {
+            scooter: scooter,
+            rightechScooter: rightechScooter,
+          });
+        }
+      }
+    }
+
+    return response;
+  }
+
   async findOne(id: number) {
     return this.dbService.scooter
       .findFirst({ where: { id: id } })
