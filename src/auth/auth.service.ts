@@ -218,6 +218,7 @@ export class AuthService {
           phone: user.phone,
           email: user.email,
           balance: user.balance,
+          bonuses: user.bonuses,
           status: user.status,
           activePaymentMethod: user.activePaymentMethod,
           platform: user.platform,

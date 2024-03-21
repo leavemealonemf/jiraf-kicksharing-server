@@ -37,4 +37,6 @@ export class CreateTripDto {
   rating?: number;
   @ApiProperty({ default: 1.2 })
   distance?: number;
+  @ApiProperty({ default: 'JSON LatLon string' })
+  coordinates?: string;
 }

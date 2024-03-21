@@ -119,7 +119,7 @@ export class PromocodeService {
           update: {
             where: { clientId: userId },
             data: {
-              balance: {
+              bonuses: {
                 increment: Number(promocode.sum),
               },
             },

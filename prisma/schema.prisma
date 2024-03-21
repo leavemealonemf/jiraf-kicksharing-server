@@ -43,6 +43,7 @@ model User {
   phone    String
   email    String?
   balance  Float  @default(0.0)
+  bonuses Float @default(0)
   spending Float? 
   lastActivity DateTime @default(now())
   dateTimeCreated DateTime @default(now())
@@ -102,7 +103,8 @@ model Trip {
   startTime      DateTime
   endTime        DateTime
   travelTime     String
-  photo          String 
+  photo          String
+  bonusesUsed    Int? 
   price          Int
   distance       Float?
   userId         Int
@@ -112,15 +114,9 @@ model Trip {
   tariff         Tariff?   @relation(fields: [tariffId], references: [id])
   scooterId      Int?      
   scooter        Scooter?  @relation(fields: [scooterId], references: [id])
-  coordinates    TripCoordinates[]
+  coordinates    String?
 }
 
-model TripCoordinates {
-  id             Int      @id @default(autoincrement())
-  latLon         Float[]
-  tripId         Int?
-  trip           Trip?    @relation(fields: [tripId], references: [id])
-}
 
 model Scooter {
   id               Int      @id @default(autoincrement())

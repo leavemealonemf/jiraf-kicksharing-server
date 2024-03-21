@@ -23,6 +23,16 @@ export class PaymentsController {
     return payment;
   }
 
+  @Get('/cassa')
+  async getPayment() {
+    return await this.paymentsService.getPayment();
+  }
+
+  @Get('/cassa/receipt')
+  async getReceipt() {
+    return await this.paymentsService.getReceipt();
+  }
+
   @Get()
   async getAllPayments() {
     return await this.paymentsService.getAllPayments();

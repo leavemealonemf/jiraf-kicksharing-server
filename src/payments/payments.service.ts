@@ -8,6 +8,7 @@ import {
   YooCheckout,
   ICreatePayment,
   ICapturePayment,
+  IReceipt,
 } from '@a2seven/yoo-checkout';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
@@ -110,6 +111,10 @@ export class PaymentsService {
       },
       capture: true,
       description: dto.description,
+      receipt: this.createReceipt(
+        dto.metadata.description,
+        dto.value.toFixed(),
+      ),
     };
 
     if (dto.paymentMethodStringId) {
@@ -235,13 +240,18 @@ export class PaymentsService {
   async getPayment() {
     try {
       const payment = await this.checkout.getPayment(
-        '2d6bf96d-000f-5000-8000-10e927cd181f',
+        '2d8bcf46-000f-5000-9000-1ec6ea25a9df',
       );
       console.log(payment);
       return payment;
     } catch (error) {
       console.error(error);
     }
+  }
+
+  async getReceipt() {
+    const receipts = await this.checkout.getReceiptList();
+    return receipts;
   }
 
   async capturePayment(paymentId: string) {
@@ -454,5 +464,26 @@ export class PaymentsService {
 
   private getSubscriptionExpDate(days: number) {
     return days * 24 * 60 * 60 * 1000;
+  }
+
+  private createReceipt(description: string, amount: string): IReceipt {
+    return {
+      customer: {
+        email: 'strangemisterio78@gmail.com',
+      },
+      items: [
+        {
+          description: description,
+          quantity: '1.00',
+          amount: {
+            value: amount,
+            currency: 'RUB',
+          },
+          vat_code: 2,
+          payment_mode: 'full_payment',
+          payment_subject: 'commodity',
+        },
+      ],
+    };
   }
 }
