@@ -107,9 +107,9 @@ model Trip {
   bonusesUsed    Int? 
   price          Int
   distance       Float?
-  userId         Int
+  userId         Int?
   rating         Int?
-  user           User     @relation(fields: [userId], references: [id])
+  user           User?     @relation(fields: [userId], references: [id])
   tariffId       Int?    
   tariff         Tariff?   @relation(fields: [tariffId], references: [id])
   scooterId      Int?      
