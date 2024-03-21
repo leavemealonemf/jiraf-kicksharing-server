@@ -12,6 +12,7 @@ import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '@common/decorators';
 
 @ApiTags('Trips (Поездки)')
 @ApiBearerAuth()
@@ -31,6 +32,11 @@ export class TripController {
     @Query('end') end?: string,
   ) {
     return this.tripService.findAll(interval, start, end);
+  }
+
+  @Get('user-trips')
+  getUserTrips(@CurrentUser() user: any) {
+    return this.tripService.getUserTrips(user.id);
   }
 
   @Get(':id')

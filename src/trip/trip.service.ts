@@ -8,7 +8,7 @@ import * as path from 'path';
 
 @Injectable()
 export class TripService {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(TripService.name);
 
   constructor(private readonly dbService: DbService) {}
 
@@ -42,6 +42,33 @@ export class TripService {
         this.logger.error(err);
         return null;
       });
+  }
+
+  async getUserTrips(userId: number) {
+    const trips = await this.dbService.trip
+      .findMany({
+        where: { userId: userId },
+        include: {
+          scooter: {
+            select: {
+              deviceId: true,
+            },
+          },
+          tariff: {
+            select: {
+              name: true,
+              minuteCost: true,
+              boardingCost: true,
+              colorHex: true,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+    return trips;
   }
 
   async findAll(interval: string, start: string, end: string) {
