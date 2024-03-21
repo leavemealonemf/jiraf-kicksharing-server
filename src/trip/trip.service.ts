@@ -25,7 +25,7 @@ export class TripService {
       .create({
         data: {
           endTime: createTripDto.endTime,
-          photo: createTripDto.photo ? path : null,
+          // photo: createTripDto.photo ? path : null,
           price: createTripDto.price,
           startTime: createTripDto.startTime,
           travelTime: createTripDto.travelTime,
