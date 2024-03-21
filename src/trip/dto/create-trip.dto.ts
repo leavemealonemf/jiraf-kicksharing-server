@@ -18,7 +18,7 @@ export class CreateTripDto {
   })
   travelTime: string;
   @ApiProperty({ default: 'image src' })
-  photo?: string;
+  photo?: string | null;
   @ApiProperty({ default: '200' })
   @IsNotEmpty({
     message: 'Поле price не должно быть пустым',
