@@ -103,7 +103,7 @@ model Trip {
   startTime      DateTime
   endTime        DateTime
   travelTime     String
-  photo          String
+  photo          String?
   bonusesUsed    Int? 
   price          Int
   distance       Float?
