@@ -71,6 +71,38 @@ export class TripService {
     return trips;
   }
 
+  async getOneTripMobile(tripId: number, userId: number) {
+    const trip = await this.dbService.trip
+      .findUnique({
+        where: { userId: userId, id: tripId },
+        include: {
+          scooter: {
+            select: {
+              deviceId: true,
+            },
+          },
+          tariff: {
+            select: {
+              name: true,
+              minuteCost: true,
+              boardingCost: true,
+              colorHex: true,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+
+    if (!trip) {
+      throw new NotFoundException(`Поездка с ${tripId} не найдена!`);
+    }
+
+    return trip;
+  }
+
   async findAll(interval: string, start: string, end: string) {
     const currentDate = new Date();
     let startDate: Date;

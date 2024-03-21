@@ -39,6 +39,11 @@ export class TripController {
     return this.tripService.getUserTrips(user.id);
   }
 
+  @Get('user-trips/:id')
+  getOneTripMobile(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.tripService.getOneTripMobile(+id, user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tripService.findOne(+id);
