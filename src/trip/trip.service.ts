@@ -35,6 +35,7 @@ export class TripService {
           rating: createTripDto.rating,
           distance: createTripDto.distance,
           tripId: uuid,
+          coordinates: createTripDto.coordinates,
         },
       })
       .catch((err) => {
