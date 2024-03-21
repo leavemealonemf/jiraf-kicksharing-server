@@ -85,7 +85,6 @@ export class ScooterService {
             },
             scooter: true,
             tariff: true,
-            coordinates: true,
           },
         },
       },
