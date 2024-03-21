@@ -17,11 +17,11 @@ export class TripService {
 
     const path = `uploads/images/trips/${uuid}/photo/image.png`;
 
-    if (createTripDto.photo) {
-      this.saveFile(createTripDto.photo, path);
-    }
+    // if (createTripDto.photo) {
+    //   this.saveFile(createTripDto.photo, path);
+    // }
 
-    return this.dbService.trip
+    return await this.dbService.trip
       .create({
         data: {
           endTime: createTripDto.endTime,
