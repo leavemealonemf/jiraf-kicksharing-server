@@ -106,7 +106,7 @@ model Trip {
   photo          String?
   bonusesUsed    Int? 
   price          Int
-  distance       Float?
+  distance       Int?
   userId         Int?
   rating         Int?
   user           User?     @relation(fields: [userId], references: [id])

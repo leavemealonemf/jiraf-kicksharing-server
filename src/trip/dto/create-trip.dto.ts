@@ -35,7 +35,7 @@ export class CreateTripDto {
   scooterId?: number;
   @ApiProperty({ default: 5 })
   rating?: number;
-  @ApiProperty({ default: 1.2 })
+  @ApiProperty({ default: 1500 })
   distance?: number;
   @ApiProperty({ default: 'JSON LatLon string' })
   coordinates?: string;
