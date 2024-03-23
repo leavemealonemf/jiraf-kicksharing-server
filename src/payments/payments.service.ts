@@ -63,6 +63,10 @@ export class PaymentsService {
   }
 
   async agreementPaymentMethodPhase(dto: AcquiringPaymentStatusDto) {
+    if (!dto) {
+      return null;
+    }
+
     if (
       dto.object.description !== AcquiringPaymentDescription.ADD_PAYMENT_METHOD
     ) {
@@ -83,6 +87,7 @@ export class PaymentsService {
       .update({
         where: { id: isPaymentMethodExist.id },
         data: {
+          cardType: dto.object.payment_method.card.card_type,
           cardFirstSix: dto.object.payment_method.card.first6,
           cardLastFour: dto.object.payment_method.card.last4,
           expYear: dto.object.payment_method.card.expiry_year,
@@ -93,6 +98,14 @@ export class PaymentsService {
         this.logger.error(err);
         return null;
       });
+
+    if (!updatedPaymentMethod) {
+      throw new Error(
+        'Не удалось подтвердить платежный метод ' + dto.object.id,
+      );
+    }
+
+    await this.checkIsCardAlreadyExist(dto, updatedPaymentMethod);
   }
 
   async addPaymentMethod(dto: AddPaymentMethodDto) {
@@ -286,7 +299,7 @@ export class PaymentsService {
         .catch((err) => {
           this.logger.error(err);
         });
-      await this.checkIsCardAlreadyExist(dto, payment);
+      // await this.checkIsCardAlreadyExist(dto, payment);
       console.log(dto);
     }
     return dto;
@@ -479,13 +492,13 @@ export class PaymentsService {
   }
 
   private async checkIsCardAlreadyExist(
-    dto: PaymentStatusDto,
+    dto: AcquiringPaymentStatusDto,
     payment: PaymentMethod,
   ) {
-    // const payment = await this.dbService.paymentMethod.findFirst({
-    //   where: { paymentId: dto.object.id },
-    // });
-    const user = await this.userService.findOne(payment.userId);
+    const user = await this.userService.findOne(payment.userId).catch((err) => {
+      this.logger.error(err);
+      return null;
+    });
 
     const existedCard = user.paymentMethods.find((card) => {
       return (
@@ -497,11 +510,11 @@ export class PaymentsService {
     });
 
     if (typeof existedCard === 'undefined') {
-      return;
+      return null;
     }
 
     if (existedCard.id === payment.id) {
-      return;
+      return null;
     }
 
     await this.dbService.paymentMethod
@@ -510,10 +523,14 @@ export class PaymentsService {
         this.logger.error(err);
       });
 
-    if (user.paymentMethods.length === 0) {
-      await this.userService.update(payment.userId, {
-        activePaymentMethod: payment.id,
-      });
+    if (user.paymentMethods.length > 0) {
+      await this.userService
+        .update(payment.userId, {
+          activePaymentMethod: payment.id,
+        })
+        .catch((err) => {
+          this.logger.error(err);
+        });
     }
   }
 
