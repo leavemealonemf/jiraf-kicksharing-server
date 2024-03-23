@@ -1,4 +1,13 @@
 -- CreateEnum
+CREATE TYPE "PaymentService" AS ENUM ('TRIP', 'SUBSCRIPTION', 'BALANCE');
+
+-- CreateEnum
+CREATE TYPE "PaymentType" AS ENUM ('WRITEOFF', 'REPLACEMENT');
+
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PAID', 'CANCELED', 'CAPTURE');
+
+-- CreateEnum
 CREATE TYPE "ScooterStatus" AS ENUM ('ACTIVE', 'SERVICE', 'REPAIR');
 
 -- CreateEnum
@@ -25,6 +34,9 @@ CREATE TYPE "GeofenceDrawType" AS ENUM ('POLYGON', 'POLYLINE', 'CIRCLE');
 -- CreateEnum
 CREATE TYPE "PaymentMethodType" AS ENUM ('CARD', 'SBP', 'SBERPAY');
 
+-- CreateEnum
+CREATE TYPE "UserPlatform" AS ENUM ('WEB', 'MOBILE');
+
 -- CreateTable
 CREATE TABLE "ErpUser" (
     "id" SERIAL NOT NULL,
@@ -39,6 +51,7 @@ CREATE TABLE "ErpUser" (
     "role" "ErpUserRoles" NOT NULL DEFAULT 'MANAGER',
     "franchiseId" INTEGER,
     "inviterId" INTEGER,
+    "platform" "UserPlatform" NOT NULL DEFAULT 'WEB',
 
     CONSTRAINT "ErpUser_pkey" PRIMARY KEY ("id")
 );
@@ -61,24 +74,40 @@ CREATE TABLE "User" (
     "phone" TEXT NOT NULL,
     "email" TEXT,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "bonuses" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "spending" DOUBLE PRECISION,
     "lastActivity" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateTimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
+    "platform" "UserPlatform" NOT NULL DEFAULT 'MOBILE',
     "activePaymentMethod" INTEGER,
-    "subscriptionId" INTEGER,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" SERIAL NOT NULL,
+    "service" "PaymentService" NOT NULL,
+    "type" "PaymentType" NOT NULL,
+    "status" "PaymentStatus" NOT NULL,
+    "amount" DOUBLE PRECISION,
+    "description" TEXT,
+    "paymentMethodId" INTEGER,
+    "userId" INTEGER,
+    "datetimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "PaymentMethod" (
     "id" SERIAL NOT NULL,
     "paymentId" TEXT NOT NULL,
-    "idempotenceKey" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL,
+    "idempotenceKey" TEXT,
+    "active" BOOLEAN NOT NULL DEFAULT false,
     "userId" INTEGER NOT NULL,
-    "type" "PaymentMethodType" NOT NULL,
+    "type" TEXT NOT NULL,
     "cardFirstSix" TEXT,
     "cardLastFour" TEXT,
     "expYear" TEXT,
@@ -103,24 +132,17 @@ CREATE TABLE "Trip" (
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
     "travelTime" TEXT NOT NULL,
-    "photo" TEXT NOT NULL,
+    "photo" TEXT,
+    "bonusesUsed" INTEGER,
     "price" INTEGER NOT NULL,
-    "distance" DOUBLE PRECISION,
-    "userId" INTEGER NOT NULL,
+    "distance" INTEGER,
+    "userId" INTEGER,
     "rating" INTEGER,
     "tariffId" INTEGER,
     "scooterId" INTEGER,
+    "coordinates" TEXT,
 
     CONSTRAINT "Trip_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "TripCoordinates" (
-    "id" SERIAL NOT NULL,
-    "latLon" DOUBLE PRECISION[],
-    "tripId" INTEGER,
-
-    CONSTRAINT "TripCoordinates_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -263,12 +285,35 @@ CREATE TABLE "Subscription" (
     "dateTimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "name" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "days" INTEGER NOT NULL,
+    "payForStartTrip" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "UserSubscriptionsOptions" (
+    "id" SERIAL NOT NULL,
+    "purchaseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expDate" TIMESTAMP(3) NOT NULL,
+    "autoPayment" BOOLEAN NOT NULL DEFAULT false,
+    "subscriptionId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "UserSubscriptionsOptions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_PromocodeToUser" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Franchise_erpUserId_key" ON "Franchise"("erpUserId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_clientId_key" ON "User"("clientId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PaymentMethod_paymentId_key" ON "PaymentMethod"("paymentId");
@@ -283,6 +328,9 @@ CREATE UNIQUE INDEX "Scooter_deviceId_key" ON "Scooter"("deviceId");
 CREATE UNIQUE INDEX "ScooterModel_modelName_key" ON "ScooterModel"("modelName");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Promocode_code_key" ON "Promocode"("code");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Geofence_name_key" ON "Geofence"("name");
 
 -- CreateIndex
@@ -294,6 +342,15 @@ CREATE UNIQUE INDEX "GeofenceTypeParams_geofenceTypeId_key" ON "GeofenceTypePara
 -- CreateIndex
 CREATE UNIQUE INDEX "forgot-password_userId_key" ON "forgot-password"("userId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "UserSubscriptionsOptions_userId_key" ON "UserSubscriptionsOptions"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_PromocodeToUser_AB_unique" ON "_PromocodeToUser"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_PromocodeToUser_B_index" ON "_PromocodeToUser"("B");
+
 -- AddForeignKey
 ALTER TABLE "ErpUser" ADD CONSTRAINT "ErpUser_inviterId_fkey" FOREIGN KEY ("inviterId") REFERENCES "ErpUser"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -301,7 +358,10 @@ ALTER TABLE "ErpUser" ADD CONSTRAINT "ErpUser_inviterId_fkey" FOREIGN KEY ("invi
 ALTER TABLE "Franchise" ADD CONSTRAINT "Franchise_erpUserId_fkey" FOREIGN KEY ("erpUserId") REFERENCES "ErpUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_paymentMethodId_fkey" FOREIGN KEY ("paymentMethodId") REFERENCES "PaymentMethod"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PaymentMethod" ADD CONSTRAINT "PaymentMethod_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -310,16 +370,13 @@ ALTER TABLE "PaymentMethod" ADD CONSTRAINT "PaymentMethod_userId_fkey" FOREIGN K
 ALTER TABLE "tokens" ADD CONSTRAINT "tokens_erpUserId_fkey" FOREIGN KEY ("erpUserId") REFERENCES "ErpUser"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Trip" ADD CONSTRAINT "Trip_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Trip" ADD CONSTRAINT "Trip_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Trip" ADD CONSTRAINT "Trip_tariffId_fkey" FOREIGN KEY ("tariffId") REFERENCES "Tariff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Trip" ADD CONSTRAINT "Trip_scooterId_fkey" FOREIGN KEY ("scooterId") REFERENCES "Scooter"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "TripCoordinates" ADD CONSTRAINT "TripCoordinates_tripId_fkey" FOREIGN KEY ("tripId") REFERENCES "Trip"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Scooter" ADD CONSTRAINT "Scooter_modelId_fkey" FOREIGN KEY ("modelId") REFERENCES "ScooterModel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -332,3 +389,15 @@ ALTER TABLE "GeofenceTypeParams" ADD CONSTRAINT "GeofenceTypeParams_geofenceType
 
 -- AddForeignKey
 ALTER TABLE "forgot-password" ADD CONSTRAINT "forgot-password_userId_fkey" FOREIGN KEY ("userId") REFERENCES "ErpUser"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserSubscriptionsOptions" ADD CONSTRAINT "UserSubscriptionsOptions_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserSubscriptionsOptions" ADD CONSTRAINT "UserSubscriptionsOptions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PromocodeToUser" ADD CONSTRAINT "_PromocodeToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Promocode"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PromocodeToUser" ADD CONSTRAINT "_PromocodeToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

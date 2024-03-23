@@ -25,6 +25,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AcquiringModule } from './acquiring/acquiring.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -56,6 +57,7 @@ console.log(NODE_ENV);
     SubscriptionModule,
     PaymentsModule,
     NotificationsModule,
+    AcquiringModule,
   ],
   controllers: [],
   providers: [

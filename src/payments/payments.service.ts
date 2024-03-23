@@ -9,6 +9,7 @@ import {
   ICreatePayment,
   ICapturePayment,
   IReceipt,
+  Payment,
 } from '@a2seven/yoo-checkout';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +25,10 @@ import { UserService } from 'src/user/user.service';
 import { PaymentMethod } from '@prisma/client';
 import { SubscriptionService } from 'src/subscription/subscription.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import {
+  AcquiringPaymentDescription,
+  AcquiringPaymentStatusDto,
+} from 'src/acquiring/dtos';
 
 @Injectable()
 export class PaymentsService {
@@ -31,7 +36,7 @@ export class PaymentsService {
     shopId: this.configService.get('CASSA_SHOP_ID'),
     secretKey: this.configService.get('CASSA_KEY'),
   });
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(PaymentsService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -39,6 +44,56 @@ export class PaymentsService {
     private readonly userService: UserService,
     private readonly subscriptionService: SubscriptionService,
   ) {}
+
+  async savePaymentMethod(payment: Payment, userId: number) {
+    const savedPayment = await this.dbService.paymentMethod
+      .create({
+        data: {
+          active: true,
+          type: payment.payment_method.type,
+          userId: userId,
+          paymentId: payment.id,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+    return savedPayment;
+  }
+
+  async agreementPaymentMethodPhase(dto: AcquiringPaymentStatusDto) {
+    if (
+      dto.object.description !== AcquiringPaymentDescription.ADD_PAYMENT_METHOD
+    ) {
+      return null;
+    }
+
+    const isPaymentMethodExist: PaymentMethod =
+      await this.dbService.paymentMethod
+        .findFirst({
+          where: { paymentId: dto.object.id },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
+
+    const updatedPaymentMethod = await this.dbService.paymentMethod
+      .update({
+        where: { id: isPaymentMethodExist.id },
+        data: {
+          cardFirstSix: dto.object.payment_method.card.first6,
+          cardLastFour: dto.object.payment_method.card.last4,
+          expYear: dto.object.payment_method.card.expiry_year,
+          expMonth: dto.object.payment_method.card.expiry_month,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+  }
 
   async addPaymentMethod(dto: AddPaymentMethodDto) {
     const idempotence = uuidv4();
