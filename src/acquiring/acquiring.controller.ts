@@ -8,13 +8,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AcquiringService } from './acquiring.service';
-import { SaveAcquiringMethodDto } from './dtos';
+import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
 import { CurrentUser, Platforms, Public } from '@common/decorators';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AcquiringSaveMethodFabric } from './gateways';
 import { PaymentsService } from 'src/payments/payments.service';
 import { AcquiringPaymentStatusDto } from './dtos/acquiring-payment.response.dto';
+import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 
 @ApiTags('Эквайринг')
 @Controller('acquiring')
@@ -23,6 +24,7 @@ export class AcquiringController {
     private readonly acquiringService: AcquiringService,
     private readonly saveAcquiringFabric: AcquiringSaveMethodFabric,
     private readonly paymentsService: PaymentsService,
+    private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
   @ApiBearerAuth()
@@ -34,8 +36,6 @@ export class AcquiringController {
     @Body() dto: SaveAcquiringMethodDto,
   ) {
     const gateway = this.saveAcquiringFabric.getGateway(dto);
-
-    console.log(user);
 
     if (!gateway) {
       throw new ForbiddenException(
@@ -54,7 +54,7 @@ export class AcquiringController {
       );
     }
 
-    const isPaymentSaveInDB = await this.paymentsService.savePaymentMethod(
+    const isPaymentSaveInDB = await this.paymentMethodService.savePaymentMethod(
       isAcquiringMethodSave,
       user.id,
     );
@@ -66,9 +66,26 @@ export class AcquiringController {
     return isAcquiringMethodSave;
   }
 
+  @ApiBearerAuth()
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Post('/create-aquiring-payment')
+  async createAquiringProcessPayment(
+    @Body() dto: AcquiringProcessPaymentDto,
+    @CurrentUser() user: any,
+  ) {
+    const payment = await this.acquiringService.processPayment(dto);
+
+    if (!payment) {
+      throw new BadRequestException('Не удалось обработать платеж');
+    }
+
+    return await this.paymentsService.savePayment(dto, user.id);
+  }
+
   @Public()
   @Post('/get-aquiring-status')
   async getAquiringPaymentStatus(@Body() dto: AcquiringPaymentStatusDto) {
-    await this.paymentsService.agreementPaymentMethodPhase(dto);
+    await this.paymentMethodService.agreementPaymentMethodPhase(dto);
   }
 }

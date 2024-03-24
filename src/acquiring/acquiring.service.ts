@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { SaveAcquiringMethodGateway } from './gateways';
-import { SaveAcquiringMethodDto } from './dtos';
+import {
+  AcquiringProcessPayment,
+  SaveAcquiringMethodGateway,
+} from './gateways';
+import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
 
 @Injectable()
 export class AcquiringService {
   private saveAcquiringGateways: Record<string, SaveAcquiringMethodGateway> =
     {};
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly aquiringProcessPayment: AcquiringProcessPayment,
+  ) {}
 
   public rigisterSaveAcquiringGateway(
     dto: SaveAcquiringMethodDto,
@@ -23,5 +27,9 @@ export class AcquiringService {
       throw new Error('Невозможно сохранить данный платежный метод');
     }
     return await gateway.saveAcquiringMethodProcess(dto);
+  }
+
+  async processPayment(dto: AcquiringProcessPaymentDto) {
+    return await this.aquiringProcessPayment.processPayment(dto);
   }
 }

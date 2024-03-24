@@ -26,6 +26,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AcquiringModule } from './acquiring/acquiring.module';
+import { PaymentMethodModule } from './payment-method/payment-method.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -58,6 +59,7 @@ console.log(NODE_ENV);
     PaymentsModule,
     NotificationsModule,
     AcquiringModule,
+    PaymentMethodModule,
   ],
   controllers: [],
   providers: [
