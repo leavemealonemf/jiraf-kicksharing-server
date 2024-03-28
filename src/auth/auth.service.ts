@@ -1,11 +1,12 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { LoginDto, RegisterDto } from './dto';
+import { ConfirmAuthMobile, LoginDto, RegisterDto } from './dto';
 import { ErpUserService } from 'src/erp-user/erp-user.service';
 import { Tokens } from './interfaces';
 import { compareSync } from 'bcrypt';
@@ -21,6 +22,11 @@ import { TwilioService } from 'nestjs-twilio';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UserService } from 'src/user/user.service';
 import { MobileAuthDto } from './dto/auth-mobile.dto';
+import smsc_api from 'vendors/smsc_api';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { IFingerprint } from 'nestjs-fingerprint';
+import { ClientFingerPrint } from './types';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +40,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     private readonly twilioService: TwilioService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -139,11 +146,67 @@ export class AuthService {
     };
   }
 
-  async authMobile(dto: MobileAuthDto) {
-    const user = await this.userService.create(dto);
-    if (!user) {
-      throw new UnauthorizedException('Ошибка при авторизации мобилы');
+  async authMobile(dto: MobileAuthDto, fp: IFingerprint) {
+    const code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+
+    const TTL_MILISECONDS = 50000;
+
+    const reqSession: ClientFingerPrint = await this.cacheManager.get(fp.id);
+
+    if (reqSession && reqSession.requestCount === 3) {
+      throw new ForbiddenException('Превышено максимальное число запросов');
     }
+
+    this.sendSmsCode(dto.phone, code);
+
+    if (!reqSession) {
+      await this.cacheManager.set(
+        fp.id,
+        {
+          phone: dto.phone,
+          verificationCode: code,
+          requestCount: 1,
+        },
+        TTL_MILISECONDS,
+      );
+    }
+
+    if (reqSession && reqSession.requestCount < 3) {
+      await this.cacheManager.set(
+        fp.id,
+        {
+          phone: dto.phone,
+          verificationCode: code,
+          requestCount: reqSession.requestCount + 1,
+        },
+        TTL_MILISECONDS,
+      );
+    }
+
+    return { message: `Код подтвердения отправлен на номер - ${dto.phone}` };
+  }
+
+  async confirmMobileAuth(dto: ConfirmAuthMobile, fp: IFingerprint) {
+    const reqSession: ClientFingerPrint = await this.cacheManager.get(fp.id);
+
+    if (!reqSession) {
+      throw new ForbiddenException(
+        'Не удалось. Сессия истекла. Повторите попытку',
+      );
+    }
+
+    if (reqSession.verificationCode !== dto.code) {
+      throw new ForbiddenException('Неверный код. Повторите попытку');
+    }
+
+    const user = await this.userService.create(reqSession.phone);
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'Ошибка при авторизации. Пользователя не существует',
+      );
+    }
+
     return this.generateMobileToken(user);
   }
 
@@ -226,5 +289,24 @@ export class AuthService {
         { expiresIn: this.configService.get('JWT_EXP_MOBILE') },
       );
     return accessToken;
+  }
+
+  private sendSmsCode(phone: string, code: number) {
+    smsc_api.configure({
+      login: 'strangemisterio',
+      password: 'wcCuT38!VfyF6LT',
+    });
+
+    const res = smsc_api.send_sms(
+      {
+        phones: [phone],
+        message: `Ваш код подтверждения - ${code}`,
+      },
+      function (data, raw, err, code) {
+        if (err) return console.log(err, 'code: ' + code);
+        // console.log(data); // object
+        // console.log(raw); // string in JSON format
+      },
+    );
   }
 }

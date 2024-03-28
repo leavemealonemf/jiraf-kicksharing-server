@@ -27,6 +27,7 @@
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
     "@nestjs-modules/mailer": "^1.10.3",
+    "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
@@ -46,6 +47,7 @@
     "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "cache-manager": "^5.4.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
@@ -55,6 +57,7 @@
     "fs-extra": "^11.2.0",
     "generate-password": "^1.7.1",
     "handlebars": "^4.7.8",
+    "nestjs-fingerprint": "^1.0.4",
     "nestjs-twilio": "^4.3.0",
     "nodemailer": "^6.9.8",
     "passport": "^0.7.0",

@@ -25,6 +25,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NestjsFingerprintModule } from 'nestjs-fingerprint';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -56,6 +57,13 @@ console.log(NODE_ENV);
     SubscriptionModule,
     PaymentsModule,
     NotificationsModule,
+    NestjsFingerprintModule.forRoot({
+      params: ['headers', 'userAgent', 'ipAddress'],
+      cookieOptions: {
+        name: 'your_cookie_name', // optional
+        httpOnly: true, // optional
+      },
+    }),
   ],
   controllers: [],
   providers: [

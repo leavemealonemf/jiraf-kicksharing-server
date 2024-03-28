@@ -13,6 +13,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { TwilioModule } from 'nestjs-twilio';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from 'src/user/user.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UserModule } from 'src/user/user.module';
     DbModule,
     FranchiseModule,
     MailModule,
+    CacheModule.register(),
   ],
   controllers: [AuthController],
   providers: [AuthService, ...STRATEGIES, ...GUARDS],

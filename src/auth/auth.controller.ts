@@ -8,10 +8,11 @@ import {
   Res,
   HttpStatus,
   Param,
+  Inject,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { LoginDto, RegisterDto } from './dto';
+import { ConfirmAuthMobile, LoginDto, RegisterDto } from './dto';
 import { Tokens } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
@@ -21,6 +22,9 @@ import { FranchiseService } from 'src/franchise/franchise.service';
 import { MailService } from 'src/mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MobileAuthDto } from './dto/auth-mobile.dto';
+import { Fingerprint, IFingerprint } from 'nestjs-fingerprint';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
@@ -32,6 +36,7 @@ export class AuthController {
     private readonly configService: ConfigService,
     private readonly franchiseService: FranchiseService,
     private readonly mailService: MailService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   @Public()
@@ -50,14 +55,26 @@ export class AuthController {
 
   @Public()
   @Post('mobile/auth')
-  async authMobile(@Body() dto: MobileAuthDto) {
-    const token = await this.authService.authMobile(dto);
-    if (!token) {
-      throw new BadRequestException(
-        `Не удалось войти с данными ${JSON.stringify(dto)}}`,
-      );
-    }
+  async authMobile(
+    @Body() dto: MobileAuthDto,
+    @Fingerprint() fp: IFingerprint,
+  ) {
+    const token = await this.authService.authMobile(dto, fp);
+    // if (!token) {
+    //   throw new BadRequestException(
+    //     `Не удалось войти с данными ${JSON.stringify(dto)}}`,
+    //   );
+    // }
     return token;
+  }
+
+  @Public()
+  @Post('mobile/confirm')
+  async confirmMobileAuth(
+    @Body() dto: ConfirmAuthMobile,
+    @Fingerprint() fp: IFingerprint,
+  ) {
+    return this.authService.confirmMobileAuth(dto, fp);
   }
 
   @Public()

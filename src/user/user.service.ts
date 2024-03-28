@@ -4,7 +4,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
@@ -15,9 +14,9 @@ export class UserService {
 
   constructor(private readonly dbService: DbService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(phone: string) {
     const user = await this.dbService.user.findFirst({
-      where: { phone: createUserDto.phone },
+      where: { phone: phone },
     });
 
     if (user) {
@@ -30,7 +29,7 @@ export class UserService {
       .create({
         data: {
           clientId: uuid,
-          phone: createUserDto.phone,
+          phone: phone,
         },
       })
       .catch((err) => {
