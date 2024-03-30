@@ -135,6 +135,12 @@ model Scooter {
   trips           Trip[]
 }
 
+model ScooterSettings {
+  id               Int      @id @default(autoincrement())
+  bookingScooterMeters      Int @default(1500)
+  rentScooterMeters         Int @default(1000)
+}
+
 model ScooterModel {
   id               Int      @id @default(autoincrement())
   modelName        String   @unique

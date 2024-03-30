@@ -90,6 +90,7 @@ export class ScooterService {
       },
       orderBy: { addedDate: 'desc' },
     });
+    // const scooterSettings = await this.dbService.scooterSettings.findMany();
     return {
       scooters: scooters,
       rightechScooters: res,
@@ -110,6 +111,8 @@ export class ScooterService {
       orderBy: { addedDate: 'desc' },
     });
 
+    const scooterSettings = await this.dbService.scooterSettings.findMany();
+
     if (scooters.length === 0) {
       return [];
     }
@@ -127,7 +130,12 @@ export class ScooterService {
       }
     }
 
-    return response;
+    const resWithSettings = [
+      ...response,
+      { settings: scooterSettings.length > 0 ? scooterSettings[0] : null },
+    ];
+
+    return resWithSettings;
   }
 
   async findOne(id: number) {
