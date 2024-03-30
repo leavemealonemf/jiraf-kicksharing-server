@@ -111,7 +111,7 @@ export class ScooterService {
       orderBy: { addedDate: 'desc' },
     });
 
-    const scooterSettings = await this.dbService.scooterSettings.findMany();
+    // const scooterSettings = await this.dbService.scooterSettings.findMany();
 
     if (scooters.length === 0) {
       return [];
@@ -135,9 +135,9 @@ export class ScooterService {
     //   settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
     // ];
 
-    response.push({
-      settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
-    });
+    // response.push({
+    //   settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
+    // });
 
     return response;
   }
