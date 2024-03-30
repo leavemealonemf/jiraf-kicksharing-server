@@ -130,12 +130,16 @@ export class ScooterService {
       }
     }
 
-    const resWithSettings = [
-      ...response,
-      { settings: scooterSettings.length > 0 ? scooterSettings[0] : null },
-    ];
+    // const resWithSettings = [
+    //   ...response,
+    //   settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
+    // ];
 
-    return resWithSettings;
+    response.push({
+      settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
+    });
+
+    return response;
   }
 
   async findOne(id: number) {
