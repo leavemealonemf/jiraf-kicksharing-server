@@ -111,10 +111,6 @@ export class PaymentsService {
       },
       capture: true,
       description: dto.description,
-      receipt: this.createReceipt(
-        dto.metadata.description,
-        dto.value.toFixed(),
-      ),
     };
 
     if (dto.paymentMethodStringId) {
