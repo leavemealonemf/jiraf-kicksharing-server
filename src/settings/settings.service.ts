@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
+import { UpdateSettingDto } from './dto/update-setting.dto';
 
 @Injectable()
 export class SettingsService {
@@ -9,6 +10,26 @@ export class SettingsService {
 
   async findAll() {
     return this.dbService.settings.findFirst();
+  }
+
+  async updateSettings(id: number, dto: UpdateSettingDto) {
+    const isExist = await this.dbService.settings.findFirst({
+      where: { id: id },
+    });
+
+    if (!isExist) {
+      throw new NotFoundException(`Настройки с id ${id} не найдены`);
+    }
+
+    return this.dbService.settings.update({
+      where: { id: id },
+      data: {
+        scooterSettings: {
+          metersToBooking: dto.metersToBooking,
+          metersToRent: dto.metersToRent,
+        },
+      },
+    });
   }
 
   async createScooterSettings() {
