@@ -165,11 +165,9 @@ export class ScooterService {
       }
     }
 
-    response.push([
-      {
-        settings: scooterSettings.scooterSettings,
-      },
-    ]);
+    response.push({
+      settings: scooterSettings.scooterSettings,
+    });
 
     return response;
   }
