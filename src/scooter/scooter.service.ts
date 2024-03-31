@@ -166,7 +166,7 @@ export class ScooterService {
     }
 
     const resWithSettings = [
-      { ...response, settings: scooterSettings.scooterSettings },
+      { response, settings: scooterSettings.scooterSettings },
     ];
 
     return resWithSettings;
