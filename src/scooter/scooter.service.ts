@@ -165,11 +165,13 @@ export class ScooterService {
       }
     }
 
-    const resWithSettings = [
-      { response, settings: scooterSettings.scooterSettings },
-    ];
+    response.push([
+      {
+        settings: scooterSettings.scooterSettings,
+      },
+    ]);
 
-    return resWithSettings;
+    return response;
   }
 
   async findOne(id: number) {
