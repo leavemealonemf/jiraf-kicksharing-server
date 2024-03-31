@@ -160,14 +160,11 @@ export class ScooterService {
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
+            settings: scooterSettings.scooterSettings,
           });
         }
       }
     }
-
-    response.push({
-      settings: scooterSettings.scooterSettings,
-    });
 
     return response;
   }
