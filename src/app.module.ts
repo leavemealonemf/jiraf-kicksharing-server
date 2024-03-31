@@ -26,6 +26,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NestjsFingerprintModule } from 'nestjs-fingerprint';
+import { SettingsModule } from './settings/settings.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -64,6 +65,7 @@ console.log(NODE_ENV);
         httpOnly: true, // optional
       },
     }),
+    SettingsModule,
   ],
   controllers: [],
   providers: [

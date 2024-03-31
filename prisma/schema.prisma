@@ -135,12 +135,6 @@ model Scooter {
   trips           Trip[]
 }
 
-model ScooterSettings {
-  id               Int      @id @default(autoincrement())
-  bookingScooterMeters      Int @default(1500)
-  rentScooterMeters         Int @default(1000)
-}
-
 model ScooterModel {
   id               Int      @id @default(autoincrement())
   modelName        String   @unique
@@ -265,6 +259,11 @@ model UserSubscriptionsOptions {
   subscription                Subscription   @relation(fields: [subscriptionId], references: [id])
   userId                      Int            @unique
   user                        User           @relation(fields: [userId], references: [id])
+}
+
+model Settings {
+  id   Int            @id @default(autoincrement())
+  scooterSettings     Json @default("{ \"metersToBooking\": 1500, \"metersToRent\": 1000 }")
 }
 
 enum PaymentService {

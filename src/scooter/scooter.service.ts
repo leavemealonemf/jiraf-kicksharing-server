@@ -12,6 +12,7 @@ import * as path from 'path';
 import axios from 'axios';
 import { Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
+import { SettingsService } from 'src/settings/settings.service';
 
 @Injectable()
 export class ScooterService {
@@ -20,6 +21,7 @@ export class ScooterService {
   constructor(
     private readonly dbService: DbService,
     private readonly rightechScooterService: RightechScooterService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   async create(createScooterDto: CreateScooterDto) {
@@ -90,7 +92,6 @@ export class ScooterService {
       },
       orderBy: { addedDate: 'desc' },
     });
-    // const scooterSettings = await this.dbService.scooterSettings.findMany();
     return {
       scooters: scooters,
       rightechScooters: res,
@@ -111,7 +112,41 @@ export class ScooterService {
       orderBy: { addedDate: 'desc' },
     });
 
-    // const scooterSettings = await this.dbService.scooterSettings.findMany();
+    if (scooters.length === 0) {
+      return [];
+    }
+
+    const response = [];
+
+    for (const scooter of scooters) {
+      for (const rightechScooter of res) {
+        if (scooter.deviceId === rightechScooter.id) {
+          response.push({
+            scooter: scooter,
+            rightechScooter: rightechScooter,
+          });
+        }
+      }
+    }
+
+    return response;
+  }
+
+  async findAllMobileTest() {
+    const res = await this.rightechScooterService.getAll();
+
+    if (!res) {
+      throw new ConflictException('Не удалось получить самокаты Rightech');
+    }
+
+    const scooters = await this.dbService.scooter.findMany({
+      include: {
+        model: true,
+      },
+      orderBy: { addedDate: 'desc' },
+    });
+
+    const scooterSettings = await this.settingsService.findAll();
 
     if (scooters.length === 0) {
       return [];
@@ -130,16 +165,11 @@ export class ScooterService {
       }
     }
 
-    // const resWithSettings = [
-    //   ...response,
-    //   settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
-    // ];
+    const resWithSettings = [
+      { ...response, settings: scooterSettings.scooterSettings },
+    ];
 
-    // response.push({
-    //   settings: scooterSettings.length > 0 ? scooterSettings[0] : null,
-    // });
-
-    return response;
+    return resWithSettings;
   }
 
   async findOne(id: number) {
