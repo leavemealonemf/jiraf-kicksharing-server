@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { IRightechScooter } from './interfaces';
 
 @Injectable()
 export class RightechScooterService {
+  private readonly logger = new Logger(RightechScooterService.name);
   baseUrl = null;
 
   constructor(private readonly configService: ConfigService) {
@@ -23,6 +24,22 @@ export class RightechScooterService {
     }
 
     return data;
+  }
+
+  async getOne(id: string): Promise<IRightechScooter> {
+    try {
+      const { data } = await axios.get(`${this.baseUrl}/objects/${id}`, {
+        headers: {
+          Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,
+        },
+      });
+      return data;
+    } catch (err) {
+      this.logger.error(err);
+      throw new NotFoundException(
+        `Не удалось получить скутер от Rightech c id: ${id}`,
+      );
+    }
   }
 
   async create(deviceId: string) {

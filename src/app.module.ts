@@ -27,6 +27,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NestjsFingerprintModule } from 'nestjs-fingerprint';
 import { SettingsModule } from './settings/settings.module';
+import { TripProcessModule } from './trip-process/trip-process.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -66,6 +67,7 @@ console.log(NODE_ENV);
       },
     }),
     SettingsModule,
+    TripProcessModule,
   ],
   controllers: [],
   providers: [

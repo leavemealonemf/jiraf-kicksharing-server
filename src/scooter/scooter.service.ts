@@ -98,6 +98,27 @@ export class ScooterService {
     };
   }
 
+  async findOneMobile(id: string) {
+    const res = await this.rightechScooterService.getOne(id);
+    const scooter: Scooter = await this.dbService.scooter
+      .findFirst({
+        where: { deviceId: id },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+
+    if (!scooter) {
+      throw new NotFoundException(`Не удалось найти скутер с id: ${id}`);
+    }
+
+    return {
+      scooter,
+      rightechScooter: res,
+    };
+  }
+
   async findAllMobile() {
     const res = await this.rightechScooterService.getAll();
 

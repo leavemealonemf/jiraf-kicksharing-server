@@ -100,12 +100,12 @@ model TokenErp {
 model Trip {
   id             Int      @id @default(autoincrement())
   tripId         String
-  startTime      DateTime
-  endTime        DateTime
-  travelTime     String
+  startTime      DateTime @default(now())
+  endTime        DateTime?
+  travelTime     String?
   photo          String?
   bonusesUsed    Int? 
-  price          Int
+  price          Int?
   distance       Int?
   userId         Int?
   rating         Int?
@@ -126,6 +126,7 @@ model Scooter {
   batteryLevel     Int     
   status           ScooterStatus @default(ACTIVE)
   power            Boolean @default(false) 
+  rented           Boolean @default(false)
 
   addedDate        DateTime   @default(now())
   photo            String?   
