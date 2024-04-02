@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -11,6 +12,11 @@ import { StartTripProcessDto } from './dto/start-trip-process.dto';
 import { EndTripProcessDto } from './dto/end-trip-process.dto';
 import { v4 as uuid } from 'uuid';
 import { TariffService } from 'src/tariff/tariff.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { IActiveTripRoot } from './interfaces';
+
+const CACHE_TTL = 1 * 3600000;
 
 @Injectable()
 export class TripProcessService {
@@ -20,6 +26,7 @@ export class TripProcessService {
     private readonly scooterService: ScooterService,
     private readonly tariffService: TariffService,
     private readonly dbService: DbService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async start(dto: StartTripProcessDto, userId: number) {
@@ -55,23 +62,29 @@ export class TripProcessService {
       );
     }
 
-    return {
+    const trip = {
       uuid: uuid(),
       tripInfo: {
         id: isTripCreated.id,
         startTime: isTripCreated.startTime,
         uuid: isTripCreated.tripId,
         tariffId: isTripCreated.tariffId,
+        paused: false,
         pricing: {
           minute: tariff.minuteCost,
           pause: tariff.pauseCost,
         },
+        pauseIntervals: [],
         scooter: {
           scooter: updateScooterStatus,
           rightechScooter: scooterRes.rightechScooter,
         },
       },
     };
+
+    await this.cacheManager.set(trip.uuid, trip, CACHE_TTL);
+
+    return trip;
   }
 
   async end(dto: EndTripProcessDto) {
@@ -98,7 +111,48 @@ export class TripProcessService {
       );
     }
 
+    await this.cacheManager.del(dto.tripUUID);
+
     return trip;
+  }
+
+  async pauseOn(activeTripUUID: string) {
+    const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+    const tripWithPauseIntervals = Object.assign({}, trip);
+    tripWithPauseIntervals.tripInfo.pauseIntervals.push({
+      start: new Date().toISOString(),
+      end: null,
+    });
+
+    await this.cacheManager.set(
+      activeTripUUID,
+      tripWithPauseIntervals,
+      CACHE_TTL,
+    );
+
+    return tripWithPauseIntervals;
+  }
+
+  async pauseOff(activeTripUUID: string) {
+    const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+    const tripWithPauseIntervals = Object.assign({}, trip);
+
+    if (tripWithPauseIntervals.tripInfo.pauseIntervals.length === 1) {
+      tripWithPauseIntervals.tripInfo.pauseIntervals[0].end =
+        new Date().toISOString();
+    } else {
+      tripWithPauseIntervals.tripInfo.pauseIntervals[
+        tripWithPauseIntervals.tripInfo.pauseIntervals.length - 1
+      ].end = new Date().toISOString();
+    }
+
+    await this.cacheManager.set(
+      activeTripUUID,
+      tripWithPauseIntervals,
+      CACHE_TTL,
+    );
+
+    return tripWithPauseIntervals;
   }
 
   async savePhoto() {

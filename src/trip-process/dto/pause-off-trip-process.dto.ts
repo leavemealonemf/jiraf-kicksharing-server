@@ -1,0 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class PauseOffTripProcessDto {
+  @ApiProperty({ default: '231245' })
+  @IsString()
+  @IsNotEmpty()
+  activeTripUUID: string;
+}
