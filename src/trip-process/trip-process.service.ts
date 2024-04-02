@@ -111,9 +111,13 @@ export class TripProcessService {
       );
     }
 
+    const cachedTrip = await this.cacheManager.get(dto.tripUUID);
+
+    const copy = Object.assign({}, cachedTrip);
+
     await this.cacheManager.del(dto.tripUUID);
 
-    return trip;
+    return copy;
   }
 
   async pauseOn(activeTripUUID: string) {
