@@ -3,9 +3,10 @@ import { TripProcessService } from './trip-process.service';
 import { TripProcessController } from './trip-process.controller';
 import { DbModule } from 'src/db/db.module';
 import { ScooterModule } from 'src/scooter/scooter.module';
+import { TariffModule } from 'src/tariff/tariff.module';
 
 @Module({
-  imports: [DbModule, ScooterModule],
+  imports: [DbModule, ScooterModule, TariffModule],
   controllers: [TripProcessController],
   providers: [TripProcessService],
 })

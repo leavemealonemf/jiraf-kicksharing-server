@@ -10,6 +10,7 @@ import { generateUUID } from '@common/utils';
 import { StartTripProcessDto } from './dto/start-trip-process.dto';
 import { EndTripProcessDto } from './dto/end-trip-process.dto';
 import { v4 as uuid } from 'uuid';
+import { TariffService } from 'src/tariff/tariff.service';
 
 @Injectable()
 export class TripProcessService {
@@ -17,11 +18,15 @@ export class TripProcessService {
 
   constructor(
     private readonly scooterService: ScooterService,
+    private readonly tariffService: TariffService,
     private readonly dbService: DbService,
   ) {}
 
   async start(dto: StartTripProcessDto, userId: number) {
     const scooterRes = await this.scooterService.findOneMobile(dto.scooterId);
+
+    const tariff = await this.tariffService.findOne(dto.tariffId);
+
     const isTripCreated = await this.dbService.trip.create({
       data: {
         tripId: generateUUID(),
@@ -57,6 +62,10 @@ export class TripProcessService {
         startTime: isTripCreated.startTime,
         uuid: isTripCreated.tripId,
         tariffId: isTripCreated.tariffId,
+        pricing: {
+          minute: tariff.minuteCost,
+          pause: tariff.pauseCost,
+        },
         scooter: {
           scooter: updateScooterStatus,
           rightechScooter: scooterRes.rightechScooter,

@@ -7,5 +7,6 @@ import { DbModule } from 'src/db/db.module';
   imports: [DbModule],
   controllers: [TariffController],
   providers: [TariffService],
+  exports: [TariffService],
 })
 export class TariffModule {}
