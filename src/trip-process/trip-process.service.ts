@@ -9,6 +9,7 @@ import { ScooterService } from 'src/scooter/scooter.service';
 import { generateUUID } from '@common/utils';
 import { StartTripProcessDto } from './dto/start-trip-process.dto';
 import { EndTripProcessDto } from './dto/end-trip-process.dto';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class TripProcessService {
@@ -50,6 +51,7 @@ export class TripProcessService {
     }
 
     return {
+      uuid: uuid(),
       tripInfo: {
         id: isTripCreated.id,
         startTime: isTripCreated.startTime,
