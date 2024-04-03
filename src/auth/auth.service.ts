@@ -6,7 +6,7 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfirmAuthMobile, LoginDto, RegisterDto } from './dto';
+import { ConfirmAuthMobile, LoginDto, RegisterDto, TestDto } from './dto';
 import { ErpUserService } from 'src/erp-user/erp-user.service';
 import { Tokens } from './interfaces';
 import { compareSync } from 'bcrypt';
@@ -200,6 +200,18 @@ export class AuthService {
     }
 
     const user = await this.userService.create(reqSession.phone);
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'Ошибка при авторизации. Пользователя не существует',
+      );
+    }
+
+    return this.generateMobileToken(user);
+  }
+
+  async authorizeMobileTestCase(dto: TestDto) {
+    const user = await this.userService.create(dto.phone);
 
     if (!user) {
       throw new UnauthorizedException(

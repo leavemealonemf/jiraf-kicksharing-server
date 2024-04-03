@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -126,6 +127,11 @@ export class UserService {
         `Не получается удалить. Пользователя с id ${id} не существует!`,
       );
     }
+
+    if (id !== user.id) {
+      throw new BadRequestException('Невозможно удалить аккаунт');
+    }
+
     return this.dbService.user.delete({ where: { id: id } }).catch((err) => {
       this.logger.error(err);
       return null;

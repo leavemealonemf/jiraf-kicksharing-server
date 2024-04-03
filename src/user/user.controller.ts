@@ -1,8 +1,17 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '@common/decorators';
+import { CurrentUser, Platforms } from '@common/decorators';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
 @ApiTags('User (Пользователь мобилки)')
 @ApiBearerAuth()
@@ -30,11 +39,15 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Delete('delete')
+  async remove(@CurrentUser() user: any) {
+    return this.userService.remove(user.id);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Get()
   async getMe(@CurrentUser() user: any) {
     return this.userService.findOneByUUID(user.clientId);

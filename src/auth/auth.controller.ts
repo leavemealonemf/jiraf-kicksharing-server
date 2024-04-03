@@ -78,6 +78,12 @@ export class AuthController {
   }
 
   @Public()
+  @Post('mobile/test')
+  async authorizeMobileTest(@Body() phone: string) {
+    return this.authService.authorizeMobileTestCase(phone);
+  }
+
+  @Public()
   @Post('login')
   async login(
     @Body() dto: LoginDto,
