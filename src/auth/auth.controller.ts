@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { ConfirmAuthMobile, LoginDto, RegisterDto } from './dto';
+import { ConfirmAuthMobile, LoginDto, RegisterDto, TestDto } from './dto';
 import { Tokens } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
@@ -79,8 +79,8 @@ export class AuthController {
 
   @Public()
   @Post('mobile/test')
-  async authorizeMobileTest(@Body() phone: string) {
-    return this.authService.authorizeMobileTestCase(phone);
+  async authorizeMobileTest(@Body() dto: TestDto) {
+    return this.authService.authorizeMobileTestCase(dto);
   }
 
   @Public()
