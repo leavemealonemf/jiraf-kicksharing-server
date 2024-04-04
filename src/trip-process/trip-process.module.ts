@@ -5,9 +5,16 @@ import { DbModule } from 'src/db/db.module';
 import { ScooterModule } from 'src/scooter/scooter.module';
 import { TariffModule } from 'src/tariff/tariff.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [DbModule, ScooterModule, TariffModule, CacheModule.register()],
+  imports: [
+    DbModule,
+    ScooterModule,
+    TariffModule,
+    UserModule,
+    CacheModule.register(),
+  ],
   controllers: [TripProcessController],
   providers: [TripProcessService],
 })

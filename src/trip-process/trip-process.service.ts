@@ -15,6 +15,7 @@ import { TariffService } from 'src/tariff/tariff.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { IActiveTripRoot } from './interfaces';
+import { UserService } from 'src/user/user.service';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -26,6 +27,7 @@ export class TripProcessService {
     private readonly scooterService: ScooterService,
     private readonly tariffService: TariffService,
     private readonly dbService: DbService,
+    private readonly userService: UserService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -34,36 +36,80 @@ export class TripProcessService {
 
     const tariff = await this.tariffService.findOne(dto.tariffId);
 
-    const isTripCreated = await this.dbService.trip.create({
-      data: {
-        tripId: generateUUID(),
-        userId: userId,
-        scooterId: scooterRes.scooter.id,
-        tariffId: dto.tariffId,
-      },
-    });
+    const tripUUID = uuid();
 
-    if (!isTripCreated) {
-      throw new ForbiddenException(
-        'Не удалось начать поездку. Ошибка при создании поездки',
-      );
-    }
+    // const isTripCreated = await this.dbService.trip.create({
+    //   data: {
+    //     tripId: generateUUID(),
+    //     userId: userId,
+    //     scooterId: scooterRes.scooter.id,
+    //     tariffId: dto.tariffId,
+    //   },
+    // });
 
-    const updateScooterStatus = await this.dbService.scooter.update({
-      where: { deviceId: dto.scooterId },
-      data: {
-        rented: true,
-      },
-    });
+    // const isActiveTripCreated = await this.dbService.activeTrip.create({
+    //   data: {
+    //     userId: userId,
+    //     tripUUID: 'dqwdqwd',
+    //   },
+    // });
 
-    if (!updateScooterStatus) {
-      throw new ForbiddenException(
-        `Не удалось поменять статус скутера с id: ${dto.scooterId}`,
-      );
-    }
+    const [isTripCreated, isActiveTripCreated, updateScooterStatus] =
+      await this.dbService
+        .$transaction([
+          this.dbService.trip.create({
+            data: {
+              tripId: generateUUID(),
+              userId: userId,
+              scooterId: scooterRes.scooter.id,
+              tariffId: dto.tariffId,
+            },
+          }),
+          this.dbService.activeTrip.create({
+            data: {
+              userId: userId,
+              tripUUID: tripUUID,
+            },
+          }),
+          this.dbService.scooter.update({
+            where: { deviceId: dto.scooterId },
+            data: {
+              rented: true,
+            },
+          }),
+        ])
+        .catch((err) => {
+          this.logger.error(err);
+          throw new ForbiddenException(
+            'Не удалось начать поездку. Ошибка при создании поездки',
+          );
+        });
+
+    console.log(isTripCreated);
+    console.log(isActiveTripCreated);
+    console.log(updateScooterStatus);
+
+    // if (!isTripCreated) {
+    //   throw new ForbiddenException(
+    //     'Не удалось начать поездку. Ошибка при создании поездки',
+    //   );
+    // }
+
+    // const updateScooterStatus = await this.dbService.scooter.update({
+    //   where: { deviceId: dto.scooterId },
+    //   data: {
+    //     rented: true,
+    //   },
+    // });
+
+    // if (!updateScooterStatus) {
+    //   throw new ForbiddenException(
+    //     `Не удалось поменять статус скутера с id: ${dto.scooterId}`,
+    //   );
+    // }
 
     const trip = {
-      uuid: uuid(),
+      uuid: tripUUID,
       tripInfo: {
         id: isTripCreated.id,
         startTime: isTripCreated.startTime,
@@ -85,6 +131,32 @@ export class TripProcessService {
     await this.cacheManager.set(trip.uuid, trip, CACHE_TTL);
 
     return trip;
+  }
+
+  async getActiveTrips(userId: number) {
+    const activeTrips: any[] = await this.dbService.activeTrip
+      .findMany({
+        where: { userId: userId },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return [];
+      });
+
+    if (!!activeTrips.length) return [];
+
+    const cachedTrips: IActiveTripRoot[] = [];
+
+    for (const trip of activeTrips) {
+      const cachedTrip = await this.cacheManager.get<IActiveTripRoot>(
+        trip.tripUUID,
+      );
+      if (cachedTrip) {
+        cachedTrips.push(cachedTrip);
+      }
+    }
+
+    return cachedTrips;
   }
 
   async end(dto: EndTripProcessDto) {

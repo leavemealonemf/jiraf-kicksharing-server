@@ -55,6 +55,7 @@ model User {
   activePaymentMethod    Int?   
   subscriptionsOptions   UserSubscriptionsOptions?
   usedPromocodes Promocode[]
+  activeTrips ActiveTrip[]
 }
 
 model Payment {
@@ -117,6 +118,14 @@ model Trip {
   coordinates    String?
 }
 
+model ActiveTrip {
+  id      Int      @id @default(autoincrement())
+  tripUUID String @unique
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("active_trip")
+}
 
 model Scooter {
   id               Int      @id @default(autoincrement())
