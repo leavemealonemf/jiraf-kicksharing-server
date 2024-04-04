@@ -143,7 +143,7 @@ export class TripProcessService {
         return [];
       });
 
-    if (!!activeTrips.length) return [];
+    if (activeTrips.length === 0) return [];
 
     const cachedTrips: IActiveTripRoot[] = [];
 
