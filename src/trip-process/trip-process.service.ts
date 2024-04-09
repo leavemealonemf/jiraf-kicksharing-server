@@ -16,6 +16,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { IActiveTripRoot } from './interfaces';
 import { UserService } from 'src/user/user.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -231,7 +233,66 @@ export class TripProcessService {
     return tripWithPauseIntervals;
   }
 
-  async savePhoto() {
-    return null;
+  async saveTripPhoto(tripId: number, photo: string) {
+    const trip = await this.dbService.trip.findFirst({ where: { id: tripId } });
+    if (!trip) {
+      throw new BadRequestException(
+        `Не удалось сохранить фото поездки ${tripId}. Поездки не существует`,
+      );
+    }
+
+    const path = `uploads/images/trips/${trip.tripId}/photo/image.png`;
+
+    const isFileSaved = await this.saveFile(photo, path);
+    if (!isFileSaved) {
+      throw new BadRequestException('Ожидалось photo формата base64');
+    }
+
+    const [isTripUpdated] = await this.dbService
+      .$transaction([
+        this.dbService.trip.update({
+          where: { id: trip.id },
+          data: {
+            photo: path,
+          },
+        }),
+      ])
+      .catch((err) => {
+        this.logger.error(err);
+        this.removeFile(trip.tripId);
+        throw new BadRequestException(
+          `Не удалось сохранить фото поездки ${tripId}. Ошибка при обновлении`,
+        );
+      });
+
+    return isTripUpdated;
+  }
+
+  private removeFile(tripId: string) {
+    fs.rmSync(`uploads/images/trips/${tripId}`, {
+      recursive: true,
+    });
+  }
+
+  private async saveFile(photo: string, entityPath: string) {
+    const base64String = photo;
+
+    const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+
+    if (!matches || matches.length !== 3) {
+      return false;
+    }
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const filePath = entityPath;
+
+    const directoryPath = path.dirname(filePath);
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, buffer);
+    return true;
   }
 }

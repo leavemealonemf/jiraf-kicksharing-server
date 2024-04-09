@@ -5,7 +5,11 @@ import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { CurrentUser, Platforms } from '@common/decorators';
 import { StartTripProcessDto } from './dto/start-trip-process.dto';
 import { EndTripProcessDto } from './dto/end-trip-process.dto';
-import { PauseOffTripProcessDto, PauseOnTripProcessDto } from './dto';
+import {
+  PauseOffTripProcessDto,
+  PauseOnTripProcessDto,
+  SaveTripPictureDto,
+} from './dto';
 
 @UseGuards(PlatformsGuard)
 @Platforms('MOBILE')
@@ -38,5 +42,10 @@ export class TripProcessController {
   @Post('/pause-off')
   async pauseOff(@Body() dto: PauseOffTripProcessDto) {
     return this.tripProcessService.pauseOff(dto.activeTripUUID);
+  }
+
+  @Post('/save-picture')
+  async savePicture(@Body() dto: SaveTripPictureDto) {
+    return this.tripProcessService.saveTripPhoto(dto.tripId, dto.photo);
   }
 }
