@@ -13,5 +13,6 @@ import { PaymentMethodModule } from 'src/payment-method/payment-method.module';
     AcquiringSaveMethodFabric,
     AcquiringProcessPayment,
   ],
+  exports: [AcquiringService],
 })
 export class AcquiringModule {}

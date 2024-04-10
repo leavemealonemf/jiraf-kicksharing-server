@@ -32,4 +32,12 @@ export class AcquiringService {
   async processPayment(dto: AcquiringProcessPaymentDto) {
     return await this.aquiringProcessPayment.processPayment(dto);
   }
+
+  async processPaymentTwoSteps(dto: AcquiringProcessPaymentDto) {
+    return await this.aquiringProcessPayment.processPaymentTwoSteps(dto);
+  }
+
+  async cancelPayment(paymentId: string) {
+    return await this.aquiringProcessPayment.cancelProcessPayment(paymentId);
+  }
 }

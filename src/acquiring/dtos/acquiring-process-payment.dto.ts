@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-enum paymentType {
+export enum paymentType {
   CARD = 'bank_card',
   SBP = 'sbp',
   SBERPAY = 'sberbank',

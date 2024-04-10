@@ -86,6 +86,7 @@ export class AcquiringController {
   @Public()
   @Post('/get-aquiring-status')
   async getAquiringPaymentStatus(@Body() dto: AcquiringPaymentStatusDto) {
+    console.log(dto);
     await this.paymentMethodService.agreementPaymentMethodPhase(dto);
   }
 }

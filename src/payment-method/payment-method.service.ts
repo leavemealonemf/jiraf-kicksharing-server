@@ -1,5 +1,5 @@
 import { Payment } from '@a2seven/yoo-checkout';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PaymentMethod } from '@prisma/client';
 import {
   AcquiringPaymentDescription,
@@ -16,6 +16,19 @@ export class PaymentMethodService {
     private readonly dbService: DbService,
     private readonly userService: UserService,
   ) {}
+
+  async getUserPaymentMethod(userId: number, methodId: number) {
+    return this.dbService.paymentMethod
+      .findUnique({
+        where: { id: methodId, userId: userId },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          `Платежного метода с id: ${methodId} не существует`,
+        );
+      });
+  }
 
   async savePaymentMethod(payment: Payment, userId: number) {
     const savedPayment = await this.dbService.paymentMethod

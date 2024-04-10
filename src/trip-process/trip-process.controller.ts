@@ -21,7 +21,7 @@ export class TripProcessController {
 
   @Post('/start')
   async start(@Body() dto: StartTripProcessDto, @CurrentUser() user: any) {
-    return this.tripProcessService.start(dto, user.id);
+    return this.tripProcessService.start(dto, user);
   }
 
   @Post('/end')
