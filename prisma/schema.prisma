@@ -140,6 +140,7 @@ model Scooter {
   addedDate        DateTime   @default(now())
   photo            String?   
 
+  controlledStatuses ControlledStatuses @default(ONLINE)
   modelId         Int     
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
   trips           Trip[]
@@ -344,4 +345,12 @@ enum PaymentMethodType {
 enum UserPlatform {
   WEB
   MOBILE
+}
+
+
+enum ControlledStatuses {
+  ONLINE
+  BLOCKED
+  CHARGE
+  REPAIR
 }

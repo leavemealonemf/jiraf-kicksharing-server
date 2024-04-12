@@ -205,6 +205,11 @@ export class TripProcessService {
 
   async pauseOn(activeTripUUID: string) {
     const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+
+    if (!trip) {
+      throw new BadRequestException('Поездки не существует');
+    }
+
     const tripWithPauseIntervals = Object.assign({}, trip);
     tripWithPauseIntervals.tripInfo.pauseIntervals.push({
       start: new Date().toISOString(),
@@ -222,6 +227,11 @@ export class TripProcessService {
 
   async pauseOff(activeTripUUID: string) {
     const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+
+    if (!trip) {
+      throw new BadRequestException('Поездки не существует');
+    }
+
     const tripWithPauseIntervals = Object.assign({}, trip);
 
     if (tripWithPauseIntervals.tripInfo.pauseIntervals.length === 1) {
