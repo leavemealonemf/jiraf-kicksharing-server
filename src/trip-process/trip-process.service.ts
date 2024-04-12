@@ -18,6 +18,10 @@ import { IActiveTripRoot } from './interfaces';
 import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AcquiringService } from 'src/acquiring/acquiring.service';
+import { User } from '@prisma/client';
+import { PaymentMethodService } from 'src/payment-method/payment-method.service';
+import { paymentType } from 'src/acquiring/dtos';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -30,31 +34,47 @@ export class TripProcessService {
     private readonly tariffService: TariffService,
     private readonly dbService: DbService,
     private readonly userService: UserService,
+    private readonly acquiringService: AcquiringService,
+    private readonly paymentMethodService: PaymentMethodService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async start(dto: StartTripProcessDto, userId: number) {
+  async start(dto: StartTripProcessDto, user: User) {
+    const userDb = await this.userService.findOneByUUID(user.clientId);
+
+    if (!userDb.activePaymentMethod) {
+      throw new BadRequestException('Отсутсвует активынй платежный метод');
+    }
+
+    const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
+      userDb.id,
+      userDb.activePaymentMethod,
+    );
+
     const scooterRes = await this.scooterService.findOneMobile(dto.scooterId);
 
     const tariff = await this.tariffService.findOne(dto.tariffId);
 
     const tripUUID = uuid();
 
-    // const isTripCreated = await this.dbService.trip.create({
-    //   data: {
-    //     tripId: generateUUID(),
-    //     userId: userId,
-    //     scooterId: scooterRes.scooter.id,
-    //     tariffId: dto.tariffId,
-    //   },
-    // });
+    const paymentStartDeposit =
+      await this.acquiringService.processPaymentTwoSteps({
+        description: 'Залог',
+        paymentMethodId: paymentMethod.id,
+        paymentMethodStringId: paymentMethod.paymentId,
+        metadata: {
+          type: 'TRIP',
+          description: 'Залог за поездку',
+        },
+        type: paymentType.CARD,
+        value: tariff.reservationCost,
+      });
 
-    // const isActiveTripCreated = await this.dbService.activeTrip.create({
-    //   data: {
-    //     userId: userId,
-    //     tripUUID: 'dqwdqwd',
-    //   },
-    // });
+    if (!paymentStartDeposit) {
+      throw new BadRequestException(
+        'Не удалось начать поездку. Не удалось списать залог',
+      );
+    }
 
     const [isTripCreated, isActiveTripCreated, updateScooterStatus] =
       await this.dbService
@@ -62,14 +82,14 @@ export class TripProcessService {
           this.dbService.trip.create({
             data: {
               tripId: generateUUID(),
-              userId: userId,
+              userId: userDb.id,
               scooterId: scooterRes.scooter.id,
               tariffId: dto.tariffId,
             },
           }),
           this.dbService.activeTrip.create({
             data: {
-              userId: userId,
+              userId: userDb.id,
               tripUUID: tripUUID,
             },
           }),
@@ -80,35 +100,13 @@ export class TripProcessService {
             },
           }),
         ])
-        .catch((err) => {
+        .catch(async (err) => {
           this.logger.error(err);
+          await this.acquiringService.cancelPayment(paymentStartDeposit.id);
           throw new ForbiddenException(
             'Не удалось начать поездку. Ошибка при создании поездки',
           );
         });
-
-    console.log(isTripCreated);
-    console.log(isActiveTripCreated);
-    console.log(updateScooterStatus);
-
-    // if (!isTripCreated) {
-    //   throw new ForbiddenException(
-    //     'Не удалось начать поездку. Ошибка при создании поездки',
-    //   );
-    // }
-
-    // const updateScooterStatus = await this.dbService.scooter.update({
-    //   where: { deviceId: dto.scooterId },
-    //   data: {
-    //     rented: true,
-    //   },
-    // });
-
-    // if (!updateScooterStatus) {
-    //   throw new ForbiddenException(
-    //     `Не удалось поменять статус скутера с id: ${dto.scooterId}`,
-    //   );
-    // }
 
     const trip = {
       uuid: tripUUID,
@@ -118,6 +116,7 @@ export class TripProcessService {
         uuid: isTripCreated.tripId,
         tariffId: isTripCreated.tariffId,
         paused: false,
+        processPaymentId: paymentStartDeposit.id,
         pricing: {
           minute: tariff.minuteCost,
           pause: tariff.pauseCost,
@@ -185,9 +184,19 @@ export class TripProcessService {
       );
     }
 
-    const cachedTrip = await this.cacheManager.get(dto.tripUUID);
+    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+      dto.tripUUID,
+    );
 
     const copy = Object.assign({}, cachedTrip);
+
+    const backUserDeposit = await this.acquiringService.cancelPayment(
+      copy.tripInfo.processPaymentId,
+    );
+
+    if (!backUserDeposit) {
+      throw new BadRequestException('Не удалось вернуть залог');
+    }
 
     await this.cacheManager.del(dto.tripUUID);
 
@@ -196,6 +205,11 @@ export class TripProcessService {
 
   async pauseOn(activeTripUUID: string) {
     const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+
+    if (!trip) {
+      throw new BadRequestException('Поездки не существует');
+    }
+
     const tripWithPauseIntervals = Object.assign({}, trip);
     tripWithPauseIntervals.tripInfo.pauseIntervals.push({
       start: new Date().toISOString(),
@@ -213,6 +227,11 @@ export class TripProcessService {
 
   async pauseOff(activeTripUUID: string) {
     const trip = await this.cacheManager.get<IActiveTripRoot>(activeTripUUID);
+
+    if (!trip) {
+      throw new BadRequestException('Поездки не существует');
+    }
+
     const tripWithPauseIntervals = Object.assign({}, trip);
 
     if (tripWithPauseIntervals.tripInfo.pauseIntervals.length === 1) {

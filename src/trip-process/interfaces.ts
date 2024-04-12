@@ -20,6 +20,7 @@ export interface IActiveTrip {
   tariffId: number;
   pricing: TripPricing;
   scooter: Scooter;
+  processPaymentId: string;
   paused: boolean;
   pauseIntervals?: PauseIntervals[];
 }

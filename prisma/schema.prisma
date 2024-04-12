@@ -75,11 +75,11 @@ model Payment {
 model PaymentMethod {
   id Int @id @default(autoincrement())
   paymentId String @unique
-  idempotenceKey String
+  idempotenceKey String?
   active Boolean  @default(false)
   userId Int
   user           User     @relation(fields: [userId], references: [id])
-  type PaymentMethodType
+  type String
   cardFirstSix String?
   cardLastFour String?
   expYear String?
@@ -140,6 +140,7 @@ model Scooter {
   addedDate        DateTime   @default(now())
   photo            String?   
 
+  controlledStatuses ControlledStatuses @default(ONLINE)
   modelId         Int     
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
   trips           Trip[]
@@ -344,4 +345,12 @@ enum PaymentMethodType {
 enum UserPlatform {
   WEB
   MOBILE
+}
+
+
+enum ControlledStatuses {
+  ONLINE
+  BLOCKED
+  CHARGE
+  REPAIR
 }

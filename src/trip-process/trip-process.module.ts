@@ -6,14 +6,19 @@ import { ScooterModule } from 'src/scooter/scooter.module';
 import { TariffModule } from 'src/tariff/tariff.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { UserModule } from 'src/user/user.module';
+import { AcquiringModule } from 'src/acquiring/acquiring.module';
+import { PaymentMethodModule } from 'src/payment-method/payment-method.module';
+import { RedisOptions } from 'libs/redis';
 
 @Module({
   imports: [
+    PaymentMethodModule,
+    AcquiringModule,
     DbModule,
     ScooterModule,
     TariffModule,
     UserModule,
-    CacheModule.register(),
+    CacheModule.registerAsync(RedisOptions),
   ],
   controllers: [TripProcessController],
   providers: [TripProcessService],
