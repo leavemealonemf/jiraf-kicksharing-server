@@ -28,6 +28,11 @@ export class ScooterController {
     return this.scooterService.findAll();
   }
 
+  @Get('/erp')
+  findAllErp() {
+    return this.scooterService.findAllErp();
+  }
+
   @Get('/mobile')
   findAllMobile() {
     return this.scooterService.findAllMobile();
