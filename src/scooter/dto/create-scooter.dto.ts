@@ -9,10 +9,14 @@ export class CreateScooterDto {
   })
   modelId: number;
   @ApiProperty({ default: '1231241324124212' })
+  // @IsNotEmpty({
+  //   message: 'Поле не должно быть пустым',
+  // })
+  // serialNumber: string;
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',
   })
-  serialNumber: string;
+  deviceIMEI: string;
   @ApiProperty({ default: 100 })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',

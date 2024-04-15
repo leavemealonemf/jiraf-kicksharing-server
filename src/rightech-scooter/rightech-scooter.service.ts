@@ -42,26 +42,26 @@ export class RightechScooterService {
     }
   }
 
-  async create(deviceId: string) {
-    const { data } = await axios.post(
-      `${this.baseUrl}/objects`,
-      {
-        model: '65a92ad40579b79ed8dbd377',
-        id: deviceId,
-        botEnabled: true,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,
+  async create(deviceIMEI: string) {
+    try {
+      const { data } = await axios.post(
+        `${this.baseUrl}/objects`,
+        {
+          model: '661b0ed4b5ee4df6483c0a12',
+          id: deviceIMEI,
+          botEnabled: true,
         },
-      },
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,
+          },
+        },
+      );
 
-    if (!data) {
+      return data;
+    } catch (error) {
       throw new Error('Ошибка при создании скутера в Rightech');
     }
-
-    return data;
   }
 
   async delete(id: string) {

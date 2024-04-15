@@ -27,12 +27,6 @@ export class ScooterService {
   async create(createScooterDto: CreateScooterDto) {
     const deviceId = this.generateDeviceId();
 
-    const res = await this.rightechScooterService.create(deviceId);
-
-    if (!res) {
-      throw new ConflictException('Не удалось создать самокат');
-    }
-
     const path = `uploads/images/scooters/${deviceId}/save/image.png`;
     if (createScooterDto.photo) {
       this.saveFile(createScooterDto.photo, path);
@@ -47,7 +41,8 @@ export class ScooterService {
           deviceId: deviceId,
           modelId: createScooterDto.modelId,
           qrCode: qrPath,
-          serialNumber: createScooterDto.serialNumber,
+          serialNumber: Math.random().toString(),
+          deviceIMEI: createScooterDto.deviceIMEI,
           power: createScooterDto.power,
           addedDate: createScooterDto.addedDate,
           status: createScooterDto.status,
@@ -59,6 +54,19 @@ export class ScooterService {
         this.logger.error(err);
         return null;
       });
+
+    const res = await this.rightechScooterService.create(
+      createScooterDto.deviceIMEI,
+    );
+
+    if (!res) {
+      await this.dbService.scooter
+        .delete({ where: { id: instance.id } })
+        .catch((err) => {
+          this.logger.error(err);
+        });
+      throw new ConflictException('Не удалось создать самокат');
+    }
 
     return {
       scooter: instance,
