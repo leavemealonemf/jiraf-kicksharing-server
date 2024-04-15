@@ -130,7 +130,7 @@ model ActiveTrip {
 model Scooter {
   id               Int      @id @default(autoincrement())
   deviceId         String   @unique
-  deviceIMEI       String   @unique
+  deviceIMEI       String?   @unique
   qrCode           String
   serialNumber     String
   batteryLevel     Int     
