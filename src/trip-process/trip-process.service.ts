@@ -44,6 +44,12 @@ export class TripProcessService {
   ) {}
 
   async start(dto: StartTripProcessDto, user: User) {
+    const scooterRes = await this.scooterService.findOneMobile(dto.scooterId);
+
+    if (scooterRes.scooter.rented) {
+      throw new BadRequestException('Не удалось начать поездку. Самокат занят');
+    }
+
     const userDb = await this.userService.findOneByUUID(user.clientId);
 
     if (!userDb.activePaymentMethod) {
@@ -55,7 +61,7 @@ export class TripProcessService {
       userDb.activePaymentMethod,
     );
 
-    const scooterRes = await this.scooterService.findOneMobile(dto.scooterId);
+    //
 
     const tariff = await this.tariffService.findOne(dto.tariffId);
 
