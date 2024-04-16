@@ -142,7 +142,7 @@ export class ScooterService {
 
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
-        if (scooter.deviceId === rightechScooter.id) {
+        if (scooter.deviceIMEI === rightechScooter.id) {
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
@@ -155,7 +155,6 @@ export class ScooterService {
   }
 
   async findOneMobile(id: string) {
-    const res = await this.rightechScooterService.getOne(id);
     const scooter: Scooter = await this.dbService.scooter
       .findFirst({
         where: { deviceId: id },
@@ -168,6 +167,8 @@ export class ScooterService {
     if (!scooter) {
       throw new NotFoundException(`Не удалось найти скутер с id: ${id}`);
     }
+
+    const res = await this.rightechScooterService.getOne(scooter.deviceIMEI);
 
     return {
       scooter,
@@ -197,7 +198,7 @@ export class ScooterService {
 
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
-        if (scooter.deviceId === rightechScooter.id) {
+        if (scooter.deviceIMEI === rightechScooter.id) {
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
@@ -233,7 +234,7 @@ export class ScooterService {
 
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
-        if (scooter.deviceId === rightechScooter.id) {
+        if (scooter.deviceIMEI === rightechScooter.id) {
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
@@ -276,7 +277,7 @@ export class ScooterService {
       throw new NotFoundException('Такой записи не существует');
     }
 
-    await this.rightechScooterService.delete(rightechScooterId);
+    await this.rightechScooterService.delete(scooter.deviceIMEI);
 
     const deletedItem: Scooter = await this.dbService.scooter.delete({
       where: { id: id },
