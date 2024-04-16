@@ -49,7 +49,6 @@ export class RightechScooterService {
         {
           model: '661b0ed4b5ee4df6483c0a12',
           id: deviceIMEI,
-          botEnabled: true,
         },
         {
           headers: {

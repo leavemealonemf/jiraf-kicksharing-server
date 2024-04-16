@@ -19,15 +19,19 @@ import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
-import { User } from '@prisma/client';
+import { Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { paymentType } from 'src/acquiring/dtos';
+import { ScooterCommandHandler } from 'libs/IoT/scooter/handlers';
+import { DEVICE_COMMANDS } from 'libs/IoT/scooter/commands';
 
 const CACHE_TTL = 1 * 3600000;
 
 @Injectable()
 export class TripProcessService {
   private readonly logger = new Logger(TripProcessService.name);
+
+  private readonly scooterCommandHandlerIOT = new ScooterCommandHandler();
 
   constructor(
     private readonly scooterService: ScooterService,
@@ -43,7 +47,7 @@ export class TripProcessService {
     const userDb = await this.userService.findOneByUUID(user.clientId);
 
     if (!userDb.activePaymentMethod) {
-      throw new BadRequestException('Отсутсвует активынй платежный метод');
+      throw new BadRequestException('Отсутсвует активный платежный метод');
     }
 
     const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
@@ -56,6 +60,15 @@ export class TripProcessService {
     const tariff = await this.tariffService.findOne(dto.tariffId);
 
     const tripUUID = uuid();
+
+    const scooterUnlockIOT = this.scooterCommandHandlerIOT.sendCommand(
+      scooterRes.scooter.deviceIMEI,
+      DEVICE_COMMANDS.UNLOCK,
+    );
+
+    if (!scooterUnlockIOT) {
+      throw new BadRequestException('Не удалось разблокировать устройство');
+    }
 
     const paymentStartDeposit =
       await this.acquiringService.processPaymentTwoSteps({
@@ -71,6 +84,12 @@ export class TripProcessService {
       });
 
     if (!paymentStartDeposit) {
+      this.scooterCommandHandlerIOT
+        .sendCommand(scooterRes.scooter.deviceIMEI, DEVICE_COMMANDS.LOCK)
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException('Не удалось отключить устройство');
+        });
       throw new BadRequestException(
         'Не удалось начать поездку. Не удалось списать залог',
       );
@@ -103,6 +122,11 @@ export class TripProcessService {
         .catch(async (err) => {
           this.logger.error(err);
           await this.acquiringService.cancelPayment(paymentStartDeposit.id);
+          this.scooterCommandHandlerIOT
+            .sendCommand(scooterRes.scooter.deviceIMEI, DEVICE_COMMANDS.LOCK)
+            .catch((err) => {
+              this.logger.error(err);
+            });
           throw new ForbiddenException(
             'Не удалось начать поездку. Ошибка при создании поездки',
           );
@@ -177,6 +201,13 @@ export class TripProcessService {
         distance: 1000,
       },
     });
+
+    const scooter: Scooter = await this.scooterService.findOne(trip.scooterId);
+
+    await this.scooterCommandHandlerIOT.sendCommand(
+      scooter.deviceIMEI,
+      DEVICE_COMMANDS.LOCK,
+    );
 
     if (!trip) {
       throw new BadRequestException(
