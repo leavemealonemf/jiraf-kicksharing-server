@@ -22,7 +22,10 @@ import { AcquiringService } from 'src/acquiring/acquiring.service';
 import { Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { paymentType } from 'src/acquiring/dtos';
-import { ScooterCommandHandler } from 'libs/IoT/scooter/handlers';
+import {
+  ScooterCommandHandler,
+  getScooterPackets,
+} from 'libs/IoT/scooter/handlers';
 import { DEVICE_COMMANDS } from 'libs/IoT/scooter/commands';
 
 const CACHE_TTL = 1 * 3600000;
@@ -236,6 +239,35 @@ export class TripProcessService {
     }
 
     await this.cacheManager.del(dto.tripUUID);
+
+    const getPackets: any[] = await getScooterPackets(
+      scooter.deviceIMEI,
+      trip.startTime.toISOString(),
+      trip.endTime.toISOString(),
+    );
+
+    if (!getPackets) {
+      throw new BadRequestException('Не удалось получить пакеты');
+    }
+
+    const coordinates = getPackets.map((p) => {
+      return {
+        lat: p.lat,
+        lon: p.lon,
+      };
+    });
+
+    this.dbService.trip
+      .update({
+        where: { id: dto.tripId },
+        data: {
+          coordinates: JSON.stringify(coordinates),
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return 'Не удалось сохранить координаты';
+      });
 
     return copy;
   }
