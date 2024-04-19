@@ -6,4 +6,6 @@ export const DEVICE_COMMANDS = {
   SET_SPEED_LIMIT_NORMAL_MODE_15: 'scsetspdlim-normal-15',
   SET_SPEED_LIMIT_NORMAL_MODE_20: 'scsetspdlim-normal-20',
   SET_SPEED_LIMIT_NORMAL_MODE_25: 'scsetspdlim-normal-25',
+  START_ENGINE: 'scenginectrl-on',
+  SHUT_DOWN_ENGINE: 'scenginectrl-off',
 };

@@ -279,6 +279,15 @@ export class TripProcessService {
       throw new BadRequestException('Поездки не существует');
     }
 
+    const shutDownEngine = await this.scooterCommandHandlerIOT.sendCommand(
+      trip.tripInfo.scooter.scooter.deviceId,
+      DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
+    );
+
+    if (!shutDownEngine) {
+      throw new BadRequestException('Не удалось заглушить самокат');
+    }
+
     const tripWithPauseIntervals = Object.assign({}, trip);
     tripWithPauseIntervals.tripInfo.pauseIntervals.push({
       start: new Date().toISOString(),
@@ -299,6 +308,15 @@ export class TripProcessService {
 
     if (!trip) {
       throw new BadRequestException('Поездки не существует');
+    }
+
+    const startEngine = await this.scooterCommandHandlerIOT.sendCommand(
+      trip.tripInfo.scooter.scooter.deviceId,
+      DEVICE_COMMANDS.START_ENGINE,
+    );
+
+    if (!startEngine) {
+      throw new BadRequestException('Не удалось завести самокат');
     }
 
     const tripWithPauseIntervals = Object.assign({}, trip);
