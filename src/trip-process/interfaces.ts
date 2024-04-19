@@ -26,6 +26,8 @@ export interface IActiveTrip {
 }
 
 export interface Scooter {
-  scooter: object;
+  scooter: {
+    deviceId: string;
+  };
   rightechScooter: object;
 }

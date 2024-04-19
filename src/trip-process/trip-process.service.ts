@@ -321,6 +321,32 @@ export class TripProcessService {
     return tripWithPauseIntervals;
   }
 
+  async getUpdatedTripInfo(tripUUID: string) {
+    const trip = await this.cacheManager.get<IActiveTripRoot>(tripUUID);
+    if (!trip) {
+      throw new BadRequestException(
+        'Не удалось получить информацию о скутере т.к поездки ' +
+          tripUUID +
+          ' не существует',
+      );
+    }
+
+    const scooter = await this.scooterService.findOneMobile(
+      trip.tripInfo.scooter.scooter.deviceId,
+    );
+
+    const updatedTrip = Object.assign({}, trip);
+    updatedTrip.tripInfo.scooter = scooter;
+
+    const updatedTripRes = await this.cacheManager.set(
+      tripUUID,
+      updatedTrip,
+      CACHE_TTL,
+    );
+
+    return updatedTripRes;
+  }
+
   async saveTripPhoto(tripId: number, photo: string) {
     const trip = await this.dbService.trip.findFirst({ where: { id: tripId } });
     if (!trip) {

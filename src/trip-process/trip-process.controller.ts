@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { TripProcessService } from './trip-process.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
@@ -32,6 +32,14 @@ export class TripProcessController {
   @Get('/active-trips')
   async getActiveTrips(@CurrentUser() user: any) {
     return this.tripProcessService.getActiveTrips(user.id);
+  }
+
+  @Get('/get-upd-trip-info/:tripUUID')
+  async getUpdatedTripInfo(
+    @Param('tripUUID') tripUUID: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.tripProcessService.getUpdatedTripInfo(tripUUID);
   }
 
   @Post('/pause-on')
