@@ -280,7 +280,7 @@ export class TripProcessService {
     }
 
     const shutDownEngine = await this.scooterCommandHandlerIOT.sendCommand(
-      trip.tripInfo.scooter.scooter.deviceId,
+      trip.tripInfo.scooter.scooter.deviceIMEI,
       DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
     );
 
@@ -311,7 +311,7 @@ export class TripProcessService {
     }
 
     const startEngine = await this.scooterCommandHandlerIOT.sendCommand(
-      trip.tripInfo.scooter.scooter.deviceId,
+      trip.tripInfo.scooter.scooter.deviceIMEI,
       DEVICE_COMMANDS.START_ENGINE,
     );
 
