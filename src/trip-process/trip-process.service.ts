@@ -338,13 +338,9 @@ export class TripProcessService {
     const updatedTrip = Object.assign({}, trip);
     updatedTrip.tripInfo.scooter = scooter;
 
-    const updatedTripRes = await this.cacheManager.set(
-      tripUUID,
-      updatedTrip,
-      CACHE_TTL,
-    );
+    await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
 
-    return updatedTripRes;
+    return updatedTrip;
   }
 
   async saveTripPhoto(tripId: number, photo: string) {
