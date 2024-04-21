@@ -10,6 +10,7 @@ import {
   PauseOnTripProcessDto,
   SaveTripPictureDto,
 } from './dto';
+import { TestGeofencingDto } from './dto/test-geofencing-dto';
 
 @UseGuards(PlatformsGuard)
 @Platforms('MOBILE')
@@ -35,11 +36,8 @@ export class TripProcessController {
   }
 
   @Post('/test/geofencing')
-  async testGeofencingDevice(@Body() coords: { lat: number; lon: number }) {
-    return this.tripProcessService.getGeofencingTripStatus(
-      coords.lat,
-      coords.lon,
-    );
+  async testGeofencingDevice(@Body() dto: TestGeofencingDto) {
+    return this.tripProcessService.getGeofencingTripStatus(dto.lat, dto.lon);
   }
 
   @Get('/get-upd-trip-info/:tripUUID')
