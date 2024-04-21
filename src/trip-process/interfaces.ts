@@ -6,6 +6,7 @@ export interface IActiveTripRoot {
 type TripPricing = {
   minute: number;
   pause: number;
+  board: number;
 };
 
 type PauseIntervals = {

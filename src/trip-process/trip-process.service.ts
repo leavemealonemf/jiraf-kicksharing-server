@@ -153,6 +153,7 @@ export class TripProcessService {
         pricing: {
           minute: tariff.minuteCost,
           pause: tariff.pauseCost,
+          board: tariff.boardingCost,
         },
         pauseIntervals: [],
         scooter: {
@@ -194,6 +195,12 @@ export class TripProcessService {
   }
 
   async end(dto: EndTripProcessDto) {
+    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+      dto.tripUUID,
+    );
+
+    const tripCoast = this.calcTripCost(cachedTrip);
+
     const trip = await this.dbService.trip.update({
       where: { id: dto.tripId },
       data: {
@@ -205,8 +212,8 @@ export class TripProcessService {
           },
         },
         rating: 5,
-        bonusesUsed: 50,
-        price: 500,
+        bonusesUsed: 0,
+        price: tripCoast,
         distance: 1000,
       },
     });
@@ -224,9 +231,9 @@ export class TripProcessService {
       );
     }
 
-    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
-      dto.tripUUID,
-    );
+    // const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+    //   dto.tripUUID,
+    // );
 
     const copy = Object.assign({}, cachedTrip);
 
@@ -394,6 +401,31 @@ export class TripProcessService {
       });
 
     return isTripUpdated;
+  }
+
+  private calcTripCost(trip: IActiveTripRoot) {
+    const startTime = new Date(trip.tripInfo.startTime);
+    const endTime = new Date();
+
+    const tripDurationMillis = endTime.getTime() - startTime.getTime();
+    const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
+
+    let tripCost = tripDurationMinutes * trip.tripInfo.pricing.minute;
+
+    for (const pause of trip.tripInfo.pauseIntervals) {
+      if (!pause.start || !pause.end) return;
+
+      const pauseStart = new Date(pause.start);
+      const pauseEnd = new Date(pause.end);
+      const pauseDurationMillis = pauseEnd.getTime() - pauseStart.getTime();
+      const pauseDurationMinutes = Math.ceil(pauseDurationMillis / (1000 * 60));
+      tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
+      tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+    }
+
+    tripCost += trip.tripInfo.pricing.board;
+
+    return tripCost;
   }
 
   private removeFile(tripId: string) {
