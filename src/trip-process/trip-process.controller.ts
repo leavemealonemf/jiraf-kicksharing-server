@@ -37,7 +37,10 @@ export class TripProcessController {
 
   @Post('/test/geofencing')
   async testGeofencingDevice(@Body() dto: TestGeofencingDto) {
-    return this.tripProcessService.getGeofencingTripStatus(dto.lat, dto.lon);
+    return await this.tripProcessService.getGeofencingTripStatus(
+      dto.lat,
+      dto.lon,
+    );
   }
 
   @Get('/get-upd-trip-info/:tripUUID')
