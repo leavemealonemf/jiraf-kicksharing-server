@@ -35,13 +35,13 @@ export class TripProcessController {
     return this.tripProcessService.getActiveTrips(user.id);
   }
 
-  @Post('/test/geofencing')
-  async testGeofencingDevice(@Body() dto: TestGeofencingDto) {
-    return await this.tripProcessService.getGeofencingTripStatus(
-      dto.lat,
-      dto.lon,
-    );
-  }
+  // @Post('/test/geofencing')
+  // async testGeofencingDevice(@Body() dto: TestGeofencingDto) {
+  //   return await this.tripProcessService.getGeofencingTripStatus(
+  //     dto.lat,
+  //     dto.lon,
+  //   );
+  // }
 
   @Get('/get-upd-trip-info/:tripUUID')
   async getUpdatedTripInfo(

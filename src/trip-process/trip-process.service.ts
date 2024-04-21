@@ -536,7 +536,7 @@ export class TripProcessService {
     return totalDistance;
   }
 
-  async getGeofencingTripStatus(
+  private async getGeofencingTripStatus(
     lat: number,
     lon: number,
   ): Promise<GofencingStatus> {
@@ -550,9 +550,7 @@ export class TripProcessService {
       const zoneCoords = JSON.parse(zone.coordinates);
       const coords: any[] = this.convertToTurfFormat(zoneCoords);
       coords.push(coords[0]);
-      this.logger.log(coords);
       const polygon = turf.polygon([coords]);
-      this.logger.log(polygon);
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {
@@ -560,11 +558,9 @@ export class TripProcessService {
           return 'TRAVEL_BAN';
         }
       } else {
-        this.logger.log('GOOD');
         return 'GOOD';
       }
     }
-    this.logger.log('GOOD');
     return 'GOOD';
   }
 
