@@ -361,7 +361,10 @@ export class TripProcessService {
       trip.tripInfo.scooter.scooter.deviceId,
     );
 
-    const packets = await this.getPer30SecPackets(scooter.scooter.deviceIMEI);
+    const packets = await this.getPer30SecPackets(
+      scooter.scooter.deviceIMEI,
+      trip.tripInfo.startTime,
+    );
 
     const updatedTrip = Object.assign({}, trip);
     updatedTrip.tripInfo.scooter = scooter;
@@ -440,9 +443,9 @@ export class TripProcessService {
     }
   }
 
-  private async getPer30SecPackets(objectId: string) {
-    const from = new Date();
-    const to = new Date(from.getTime() - 30 * 1000);
+  private async getPer30SecPackets(objectId: string, startTime: string) {
+    const from = new Date(startTime);
+    const to = new Date();
     const res: any[] = await getScooterPackets(
       objectId,
       from.toISOString(),
