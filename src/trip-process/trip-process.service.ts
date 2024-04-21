@@ -560,9 +560,7 @@ export class TripProcessService {
   }
 
   private convertToTurfFormat(coords) {
-    return coords
-      .map((coord) => [coord.lon, coord.lng])
-      .concat([[coords[0].lon, coords[0].lng]]);
+    return coords.map((coord) => [coord.lat, coord.lng]);
   }
 
   private removeFile(tripId: string) {
