@@ -536,7 +536,7 @@ export class TripProcessService {
     return totalDistance;
   }
 
-  private async getGeofencingTripStatus(
+  async getGeofencingTripStatus(
     lat: number,
     lon: number,
   ): Promise<GofencingStatus> {

@@ -34,6 +34,14 @@ export class TripProcessController {
     return this.tripProcessService.getActiveTrips(user.id);
   }
 
+  @Post('/test/geofencing')
+  async testGeofencingDevice(@Body() coords: { lat: number; lon: number }) {
+    return this.tripProcessService.getGeofencingTripStatus(
+      coords.lat,
+      coords.lon,
+    );
+  }
+
   @Get('/get-upd-trip-info/:tripUUID')
   async getUpdatedTripInfo(
     @Param('tripUUID') tripUUID: string,
