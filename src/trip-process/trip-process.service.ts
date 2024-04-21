@@ -14,7 +14,7 @@ import { v4 as uuid } from 'uuid';
 import { TariffService } from 'src/tariff/tariff.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { IActiveTripRoot } from './interfaces';
+import { GofencingStatus, IActiveTripRoot } from './interfaces';
 import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,6 +27,8 @@ import {
   getScooterPackets,
 } from 'libs/IoT/scooter/handlers';
 import { DEVICE_COMMANDS } from 'libs/IoT/scooter/commands';
+import { GeofenceService } from 'src/geofence/geofence.service';
+import * as turf from '@turf/turf';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -43,6 +45,7 @@ export class TripProcessService {
     private readonly userService: UserService,
     private readonly acquiringService: AcquiringService,
     private readonly paymentMethodService: PaymentMethodService,
+    private readonly geofenceService: GeofenceService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -160,7 +163,11 @@ export class TripProcessService {
           scooter: updateScooterStatus,
           rightechScooter: scooterRes.rightechScooter,
         },
+        geofencingStatus: 'GOOD',
         distanceTraveled: 0,
+        deviceProps: {
+          engineStatus: 'POWERON',
+        },
       },
     };
 
@@ -372,6 +379,30 @@ export class TripProcessService {
     if (packets) {
       const distance = this.calcTripTotalDistance(packets);
       updatedTrip.tripInfo.distanceTraveled = distance;
+
+      const geofencingStatus = await this.getGeofencingTripStatus(
+        packets[packets.length - 1].lat,
+        packets[packets.length - 1].lon,
+      );
+
+      if (
+        geofencingStatus === 'TRAVEL_BAN' &&
+        updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
+      ) {
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
+        );
+        updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
+      } else {
+        updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS.START_ENGINE,
+        );
+      }
+
+      updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
     }
 
     await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
@@ -503,6 +534,33 @@ export class TripProcessService {
       totalDistance += this.calcTripDistance(lat1, lon1, lat2, lon2);
     }
     return totalDistance;
+  }
+
+  private async getGeofencingTripStatus(
+    lat: number,
+    lon: number,
+  ): Promise<GofencingStatus> {
+    const zones = await this.geofenceService.getGeofences();
+
+    for (const zone of zones) {
+      if (!zone.coordinates) return;
+      if (zone.type.drawType === 'CIRCLE') return;
+
+      const zoneCoords = JSON.stringify(zone.coordinates);
+      const coords = this.convertToTurfFormat(zoneCoords);
+      const polygon = turf.polygon(coords);
+
+      if (turf.booleanPointInPolygon([lat, lon], polygon)) {
+        if (zone.type.slug === 'notScooters') {
+          return 'TRAVEL_BAN';
+        }
+      }
+    }
+    return 'GOOD';
+  }
+
+  private convertToTurfFormat(coords) {
+    return coords.map((coord) => [coord.lon, coord.lng]);
   }
 
   private removeFile(tripId: string) {
