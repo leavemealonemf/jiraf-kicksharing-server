@@ -381,8 +381,8 @@ export class TripProcessService {
       updatedTrip.tripInfo.distanceTraveled = distance;
 
       const geofencingStatus = await this.getGeofencingTripStatus(
-        packets[packets.length - 1].lat,
-        packets[packets.length - 1].lon,
+        packets[0].lat, // first packet lat by index
+        packets[0].lon, // first packet lon by index
       );
 
       if (
