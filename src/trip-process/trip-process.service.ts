@@ -544,6 +544,7 @@ export class TripProcessService {
 
     for (const zone of zones) {
       if (!zone.coordinates) return;
+      if (zone.type.slug !== 'notScooters') return;
       if (zone.type.drawType === 'CIRCLE') return;
 
       const zoneCoords = JSON.parse(zone.coordinates);
