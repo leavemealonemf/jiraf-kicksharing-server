@@ -215,7 +215,7 @@ export class TripProcessService {
         rating: 5,
         bonusesUsed: 0,
         price: tripCoast,
-        distance: 1000,
+        distance: cachedTrip.tripInfo.distanceTraveled,
       },
     });
 
