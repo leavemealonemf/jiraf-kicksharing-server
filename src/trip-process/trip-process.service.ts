@@ -561,7 +561,7 @@ export class TripProcessService {
   }
 
   private convertToTurfFormat(coords) {
-    return coords.map((coord) => [coord.lat, coord.lng]);
+    return coords.map((coord) => [coord.lng, coord.lat]);
   }
 
   private removeFile(tripId: string) {
