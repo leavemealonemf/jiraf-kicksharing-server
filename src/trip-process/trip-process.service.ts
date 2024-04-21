@@ -371,8 +371,7 @@ export class TripProcessService {
 
     if (packets) {
       const distance = this.calcTripTotalDistance(packets);
-      updatedTrip.tripInfo.distanceTraveled =
-        updatedTrip.tripInfo.distanceTraveled = distance;
+      updatedTrip.tripInfo.distanceTraveled = distance;
     }
 
     await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
