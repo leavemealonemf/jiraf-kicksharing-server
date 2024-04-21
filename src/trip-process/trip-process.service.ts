@@ -546,7 +546,7 @@ export class TripProcessService {
       if (!zone.coordinates) return;
       if (zone.type.drawType === 'CIRCLE') return;
 
-      const zoneCoords = JSON.stringify(zone.coordinates);
+      const zoneCoords = JSON.parse(zone.coordinates);
       const coords = this.convertToTurfFormat(zoneCoords);
       const polygon = turf.polygon(coords);
 
