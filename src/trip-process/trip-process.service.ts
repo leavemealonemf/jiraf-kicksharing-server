@@ -549,7 +549,7 @@ export class TripProcessService {
 
       const zoneCoords = JSON.parse(zone.coordinates);
       const coords: any[] = this.convertToTurfFormat(zoneCoords);
-      coords.push(coords[0]);
+      // coords.push(coords[0]);
       this.logger.log(coords);
       const polygon = turf.polygon([coords]);
       this.logger.log(polygon);
@@ -559,6 +559,9 @@ export class TripProcessService {
           this.logger.log('TRAVEL_BAN');
           return 'TRAVEL_BAN';
         }
+      } else {
+        this.logger.log('GOOD');
+        return 'GOOD';
       }
     }
     this.logger.log('GOOD');
