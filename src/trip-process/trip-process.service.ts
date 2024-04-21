@@ -550,7 +550,7 @@ export class TripProcessService {
       const zoneCoords = JSON.parse(zone.coordinates);
       const coords: any[] = this.convertToTurfFormat(zoneCoords);
       coords.push(coords[0]);
-      const polygon = turf.polygon(coords);
+      const polygon = turf.polygon([coords]);
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {
