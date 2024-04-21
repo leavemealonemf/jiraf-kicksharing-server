@@ -554,10 +554,12 @@ export class TripProcessService {
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {
+          this.logger.log('TRAVEL_BAN');
           return 'TRAVEL_BAN';
         }
       }
     }
+    this.logger.log('GOOD');
     return 'GOOD';
   }
 
