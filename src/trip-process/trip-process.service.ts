@@ -160,6 +160,7 @@ export class TripProcessService {
           scooter: updateScooterStatus,
           rightechScooter: scooterRes.rightechScooter,
         },
+        distanceTraveled: 0,
       },
     };
 
@@ -360,8 +361,15 @@ export class TripProcessService {
       trip.tripInfo.scooter.scooter.deviceId,
     );
 
+    const packets = await this.getPer30SecPackets(scooter.scooter.deviceIMEI);
+
     const updatedTrip = Object.assign({}, trip);
     updatedTrip.tripInfo.scooter = scooter;
+
+    if (packets) {
+      const distance = this.calcTripTotalDistance(packets);
+      updatedTrip.tripInfo.distanceTraveled += distance;
+    }
 
     await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
 
@@ -430,6 +438,68 @@ export class TripProcessService {
     } else {
       return tripCost;
     }
+  }
+
+  private async getPer30SecPackets(objectId: string) {
+    const from = new Date();
+    const to = new Date(from.getTime() - 30 * 1000);
+    const res: any[] = await getScooterPackets(
+      objectId,
+      from.toISOString(),
+      to.toISOString(),
+    );
+
+    const packets = res
+      .filter((p) => p.lat !== undefined && p.lon !== undefined)
+      .map((p) => {
+        return {
+          lat: p.lat,
+          lon: p.lon,
+        };
+      });
+
+    if (packets.length === 0) {
+      return null;
+    }
+
+    return packets;
+  }
+
+  private calcTripDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ) {
+    const latitude1Rad = (lat1 * Math.PI) / 180; // Latitude 1 in radians
+    const latitude2Rad = (lat2 * Math.PI) / 180; // Latitude 2 in radians
+    const deltaLatitudeRad = ((lat2 - lat1) * Math.PI) / 180; // Difference in latitude in radians
+    const deltaLongitudeRad = ((lon2 - lon1) * Math.PI) / 180; // Difference in lon
+
+    const earthRadiusMeters = 6371e3;
+
+    const a =
+      Math.sin(deltaLatitudeRad / 2) * Math.sin(deltaLatitudeRad / 2) +
+      Math.cos(latitude1Rad) *
+        Math.cos(latitude2Rad) *
+        Math.sin(deltaLongitudeRad / 2) *
+        Math.sin(deltaLongitudeRad / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = earthRadiusMeters * c;
+    return distance;
+  }
+
+  private calcTripTotalDistance(coords: { lat: number; lon: number }[]) {
+    let totalDistance = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const lat1 = coords[i].lat;
+      const lon1 = coords[i].lon;
+      const lat2 = coords[i + 1].lat;
+      const lon2 = coords[i + 1].lon;
+      totalDistance += this.calcTripDistance(lat1, lon1, lat2, lon2);
+    }
+    return totalDistance;
   }
 
   private removeFile(tripId: string) {

@@ -24,6 +24,7 @@ export interface IActiveTrip {
   processPaymentId: string;
   paused: boolean;
   pauseIntervals?: PauseIntervals[];
+  distanceTraveled: number;
 }
 
 export interface Scooter {
