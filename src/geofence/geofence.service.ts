@@ -40,12 +40,15 @@ export class GeofenceService {
       return;
     }
 
-    const scooters = await this.sortScootersInArray();
+    // const scooters = await this.sortScootersInArray();
+    const scooters = await this.scooterService.findAllMobile();
 
     const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
       geofences,
       scooters,
     );
+
+    // comma
 
     const geofencesWithLimit = this.getCurrentSpeedLimit(
       geofencesWithOrWithoutScooters,
@@ -387,8 +390,8 @@ export class GeofenceService {
 
       for (let j = 0; j < scooters.length; j++) {
         const scooterCoordinates = {
-          lat: scooters[j].lat,
-          lng: scooters[j].lng,
+          lat: scooters[j].rightechScooter.state.lat,
+          lng: scooters[j].rightechScooter.state.lng,
         };
 
         const coordinates = JSON.parse(geofences[i].coordinates);
