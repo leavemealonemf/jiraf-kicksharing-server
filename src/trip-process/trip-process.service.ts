@@ -14,19 +14,28 @@ import { v4 as uuid } from 'uuid';
 import { TariffService } from 'src/tariff/tariff.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { GofencingStatus, IActiveTripRoot } from './interfaces';
+import {
+  AllTimeSpeedLimit,
+  GofencingStatus,
+  IActiveTripRoot,
+  ScheduleSpeedLimit,
+  ScheduleTimeInterval,
+} from './interfaces';
 import { UserService } from 'src/user/user.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
-import { Scooter, User } from '@prisma/client';
+import { Geofence, Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { paymentType } from 'src/acquiring/dtos';
 import {
   ScooterCommandHandler,
   getScooterPackets,
 } from 'libs/IoT/scooter/handlers';
-import { DEVICE_COMMANDS } from 'libs/IoT/scooter/commands';
+import {
+  DEVICE_COMMANDS,
+  DEVICE_COMMANDS_DYNAMIC,
+} from 'libs/IoT/scooter/commands';
 import { GeofenceService } from 'src/geofence/geofence.service';
 import * as turf from '@turf/turf';
 
@@ -402,6 +411,32 @@ export class TripProcessService {
         );
       }
 
+      if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
+        const speedValue = geofencingStatus.split('.')[1];
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS_DYNAMIC[speedValue],
+        );
+      } else {
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+        );
+      }
+
+      if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
+        const speedValue = geofencingStatus.split('.')[1];
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS_DYNAMIC[speedValue],
+        );
+      } else {
+        await this.scooterCommandHandlerIOT.sendCommand(
+          scooter.scooter.deviceIMEI,
+          DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+        );
+      }
+
       updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
     }
 
@@ -544,7 +579,7 @@ export class TripProcessService {
 
     for (const zone of zones) {
       if (!zone.coordinates) return;
-      if (zone.type.slug !== 'notScooters') return;
+      // if (zone.type.slug !== 'notScooters') return;
       if (zone.type.drawType === 'CIRCLE') return;
 
       const zoneCoords = JSON.parse(zone.coordinates);
@@ -556,6 +591,19 @@ export class TripProcessService {
         if (zone.type.slug === 'notScooters') {
           this.logger.log('TRAVEL_BAN');
           return 'TRAVEL_BAN';
+        }
+        if (zone.type.slug === 'speedLimitAllDay') {
+          return this.zoneSpeedLimitAllTimeStatus(zone.allTimeSpeedLimit);
+        }
+        if (zone.type.slug === 'speedLimitSchedule') {
+          const timeInterval = this.getCurrentScheduleTimeInterval(zone);
+          if (timeInterval === 'firstInterval') {
+            return this.zoneSpeedLimitScheduleStatus(zone.firstSpeedLimit);
+          } else if (timeInterval === 'secondInterval') {
+            return this.zoneSpeedLimitScheduleStatus(zone.secondSpeedLimit);
+          } else {
+            return 'SCHEDULE_SPEED_LIMIT.25';
+          }
         }
       } else {
         return 'GOOD';
@@ -594,5 +642,78 @@ export class TripProcessService {
 
     fs.writeFileSync(filePath, buffer);
     return true;
+  }
+
+  private zoneSpeedLimitAllTimeStatus(value: number): AllTimeSpeedLimit {
+    switch (value) {
+      case 5:
+        return 'ALL_TIME_SPEED_LIMIT.5';
+      case 10:
+        return 'ALL_TIME_SPEED_LIMIT.10';
+      case 15:
+        return 'ALL_TIME_SPEED_LIMIT.15';
+      case 20:
+        return 'ALL_TIME_SPEED_LIMIT.20';
+      default:
+        return 'ALL_TIME_SPEED_LIMIT.25';
+    }
+  }
+
+  private zoneSpeedLimitScheduleStatus(value: number): ScheduleSpeedLimit {
+    switch (value) {
+      case 5:
+        return 'SCHEDULE_SPEED_LIMIT.5';
+      case 10:
+        return 'SCHEDULE_SPEED_LIMIT.10';
+      case 15:
+        return 'SCHEDULE_SPEED_LIMIT.15';
+      case 20:
+        return 'SCHEDULE_SPEED_LIMIT.20';
+      case 25:
+        return 'SCHEDULE_SPEED_LIMIT.25';
+      default:
+        return 'SCHEDULE_SPEED_LIMIT.25';
+    }
+  }
+
+  private getCurrentScheduleTimeInterval(zone: Geofence): ScheduleTimeInterval {
+    const currentDate = new Date();
+    const currentTime = currentDate.getHours() * 60 + currentDate.getMinutes();
+
+    const parseInterval = (start: any, end: any) => {
+      const startTime =
+        Number(start.split(':')[0]) * 60 + Number(start.split(':')[1]);
+      const endTime =
+        Number(end.split(':')[0]) * 60 + Number(end.split(':')[1]);
+      return { startTime, endTime };
+    };
+
+    const firstInterval = parseInterval(
+      zone.firtsTimePeriodStart,
+      zone.firstTimePeriodEnd,
+    );
+
+    const secondInterval = parseInterval(
+      zone.secondTimePeriodStart,
+      zone.secondTimePeriodEnd,
+    );
+
+    if (secondInterval.endTime < secondInterval.startTime) {
+      secondInterval.endTime += 24 * 60;
+    }
+
+    if (
+      currentTime >= firstInterval.startTime &&
+      currentTime <= firstInterval.endTime
+    ) {
+      return 'firstInterval';
+    } else if (
+      currentTime >= secondInterval.startTime &&
+      currentTime <= secondInterval.endTime
+    ) {
+      return 'secondInterval';
+    } else {
+      return 'noInterval';
+    }
   }
 }
