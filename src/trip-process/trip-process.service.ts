@@ -38,6 +38,7 @@ import {
 } from 'libs/IoT/scooter/commands';
 import { GeofenceService } from 'src/geofence/geofence.service';
 import * as turf from '@turf/turf';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -293,6 +294,12 @@ export class TripProcessService {
         return 'Не удалось сохранить координаты';
       });
 
+    this.dbService.activeTrip
+      .delete({ where: { tripUUID: copy.uuid } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
     return copy;
   }
 
@@ -362,6 +369,10 @@ export class TripProcessService {
 
     return tripWithPauseIntervals;
   }
+
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
 
   async getUpdatedTripInfo(tripUUID: string) {
     const trip = await this.cacheManager.get<IActiveTripRoot>(tripUUID);
@@ -443,6 +454,85 @@ export class TripProcessService {
     await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
 
     return updatedTrip;
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  async updateTripInfoBackground() {
+    const activeTrips = await this.dbService.activeTrip.findMany();
+    for (const activeTrip of activeTrips) {
+      const cachedTrip = await this.cacheManager.get<IActiveTripRoot>(
+        activeTrip.tripUUID,
+      );
+      if (!cachedTrip) return;
+      const scooter = await this.scooterService.findOneMobile(
+        cachedTrip.tripInfo.scooter.scooter.deviceId,
+      );
+
+      const packets = await this.getPer30SecPackets(
+        scooter.scooter.deviceIMEI,
+        cachedTrip.tripInfo.startTime,
+      );
+
+      const updatedTrip = Object.assign({}, cachedTrip);
+      updatedTrip.tripInfo.scooter = scooter;
+
+      if (packets) {
+        const distance = this.calcTripTotalDistance(packets);
+        updatedTrip.tripInfo.distanceTraveled = distance;
+
+        const geofencingStatus = await this.getGeofencingTripStatus(
+          packets[0].lat, // first packet lat by index
+          packets[0].lon, // first packet lon by index
+        );
+
+        if (
+          geofencingStatus === 'TRAVEL_BAN' &&
+          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
+        ) {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
+          );
+          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
+        } else {
+          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.START_ENGINE,
+          );
+        }
+
+        if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
+          const speedValue = geofencingStatus.split('.')[1];
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS_DYNAMIC[speedValue],
+          );
+        } else {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+          );
+        }
+
+        if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
+          const speedValue = geofencingStatus.split('.')[1];
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS_DYNAMIC[speedValue],
+          );
+        } else {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+          );
+        }
+
+        updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
+      }
+
+      await this.cacheManager.set(cachedTrip.uuid, updatedTrip, CACHE_TTL);
+    }
   }
 
   async saveTripPhoto(tripId: number, photo: string) {
@@ -579,7 +669,6 @@ export class TripProcessService {
 
     for (const zone of zones) {
       if (!zone.coordinates) return;
-      // if (zone.type.slug !== 'notScooters') return;
       if (zone.type.drawType === 'CIRCLE') return;
 
       const zoneCoords = JSON.parse(zone.coordinates);
