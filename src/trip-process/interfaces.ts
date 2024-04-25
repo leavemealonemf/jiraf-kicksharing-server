@@ -59,6 +59,11 @@ export interface IActiveTrip {
 
 type ScooterEngineStatus = 'POWERON' | 'POWEROFF';
 
+export type EndTripResponse = {
+  trip: IActiveTripRoot;
+  updatedTrip: object;
+};
+
 export interface Scooter {
   scooter: {
     deviceId: string;

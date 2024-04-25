@@ -16,6 +16,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import {
   AllTimeSpeedLimit,
+  EndTripResponse,
   GofencingStatus,
   IActiveTripRoot,
   ScheduleSpeedLimit,
@@ -69,7 +70,7 @@ export class TripProcessService {
     const userDb = await this.userService.findOneByUUID(user.clientId);
 
     if (!userDb.activePaymentMethod) {
-      throw new BadRequestException('Отсутсвует активный платежный метод');
+      throw new BadRequestException('Отсутствует активный платежный метод');
     }
 
     const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
@@ -301,6 +302,100 @@ export class TripProcessService {
       });
 
     return copy;
+  }
+
+  async endTripTest(dto: EndTripProcessDto): Promise<EndTripResponse> {
+    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+      dto.tripUUID,
+    );
+
+    const tripCoast = this.calcTripCost(cachedTrip);
+
+    const trip = await this.dbService.trip.update({
+      where: { id: dto.tripId },
+      data: {
+        endTime: new Date().toISOString(),
+        coordinates: dto.coordinates ? dto.coordinates : null,
+        scooter: {
+          update: {
+            rented: false,
+          },
+        },
+        rating: 5,
+        bonusesUsed: 0,
+        price: tripCoast,
+        distance: cachedTrip.tripInfo.distanceTraveled,
+      },
+    });
+
+    const scooter: Scooter = await this.scooterService.findOne(trip.scooterId);
+
+    await this.scooterCommandHandlerIOT.sendCommand(
+      scooter.deviceIMEI,
+      DEVICE_COMMANDS.LOCK,
+    );
+
+    if (!trip) {
+      throw new BadRequestException(
+        `Не удалось завершить поездку с id: ${dto.tripId}`,
+      );
+    }
+
+    // const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+    //   dto.tripUUID,
+    // );
+
+    const copy = Object.assign({}, cachedTrip);
+
+    const backUserDeposit = await this.acquiringService.cancelPayment(
+      copy.tripInfo.processPaymentId,
+    );
+
+    if (!backUserDeposit) {
+      throw new BadRequestException('Не удалось вернуть залог');
+    }
+
+    await this.cacheManager.del(dto.tripUUID);
+
+    const getPackets: any[] = await getScooterPackets(
+      scooter.deviceIMEI,
+      trip.startTime.toISOString(),
+      trip.endTime.toISOString(),
+    );
+
+    if (!getPackets) {
+      throw new BadRequestException('Не удалось получить пакеты');
+    }
+
+    const coordinates = getPackets.map((p) => {
+      return {
+        lat: p.lat,
+        lon: p.lon,
+      };
+    });
+
+    const updatedTrip = this.dbService.trip
+      .update({
+        where: { id: dto.tripId },
+        data: {
+          coordinates: JSON.stringify(coordinates),
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return 'Не удалось сохранить координаты';
+      });
+
+    this.dbService.activeTrip
+      .delete({ where: { tripUUID: copy.uuid } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    return {
+      trip: copy,
+      updatedTrip,
+    };
   }
 
   async pauseOn(activeTripUUID: string) {

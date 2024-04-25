@@ -10,7 +10,6 @@ import {
   PauseOnTripProcessDto,
   SaveTripPictureDto,
 } from './dto';
-import { TestGeofencingDto } from './dto/test-geofencing-dto';
 
 @UseGuards(PlatformsGuard)
 @Platforms('MOBILE')
@@ -28,6 +27,11 @@ export class TripProcessController {
   @Post('/end')
   async end(@Body() dto: EndTripProcessDto) {
     return this.tripProcessService.end(dto);
+  }
+
+  @Post('/end-test')
+  async endTest(@Body() dto: EndTripProcessDto) {
+    return this.tripProcessService.endTripTest(dto);
   }
 
   @Get('/active-trips')
