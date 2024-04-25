@@ -304,7 +304,7 @@ export class TripProcessService {
     return copy;
   }
 
-  async endTripTest(dto: EndTripProcessDto): Promise<EndTripResponse> {
+  async endTripTest(dto: EndTripProcessDto) {
     const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
       dto.tripUUID,
     );
@@ -394,7 +394,7 @@ export class TripProcessService {
 
     return {
       trip: copy,
-      updatedTrip,
+      updatedTrip: updatedTrip,
     };
   }
 
