@@ -374,7 +374,7 @@ export class TripProcessService {
       };
     });
 
-    const updatedTrip = this.dbService.trip
+    const updatedTrip = await this.dbService.trip
       .update({
         where: { id: dto.tripId },
         data: {
