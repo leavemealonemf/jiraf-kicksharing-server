@@ -137,6 +137,9 @@ export class TripProcessService {
           }),
           this.dbService.scooter.update({
             where: { deviceId: dto.scooterId },
+            include: {
+              model: true,
+            },
             data: {
               rented: true,
             },
