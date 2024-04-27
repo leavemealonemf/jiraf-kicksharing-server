@@ -12,6 +12,12 @@ export class SettingsService {
     return this.dbService.settings.findFirst();
   }
 
+  async getScooterSettings() {
+    return this.dbService.settings.findFirst({
+      select: { scooterSettings: true },
+    });
+  }
+
   async updateSettings(id: number, dto: UpdateSettingDto) {
     const isExist = await this.dbService.settings.findFirst({
       where: { id: id },

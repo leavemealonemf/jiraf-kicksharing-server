@@ -17,6 +17,12 @@ export class SettingsController {
   }
 
   @Public()
+  @Get('scooter-settings')
+  async getScooterSettings() {
+    return this.settingsService.getScooterSettings();
+  }
+
+  @Public()
   @Post()
   async createScooterSettings() {
     return this.settingsService.createScooterSettings();
