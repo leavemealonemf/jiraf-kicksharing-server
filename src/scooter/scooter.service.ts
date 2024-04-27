@@ -158,6 +158,7 @@ export class ScooterService {
     const scooter: Scooter = await this.dbService.scooter
       .findFirst({
         where: { deviceId: id },
+        include: { model: true },
       })
       .catch((err) => {
         this.logger.error(err);
