@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateScooterModelDto {
   @ApiProperty({ default: 'Ninebot Max Plus' })
@@ -7,4 +7,7 @@ export class CreateScooterModelDto {
     message: 'Поле не должно быть пустым',
   })
   modelName: string;
+  @ApiProperty({ default: 50 })
+  @IsNumber()
+  chargeReserve?: number;
 }

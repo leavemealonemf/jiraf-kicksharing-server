@@ -151,7 +151,7 @@ model ScooterModel {
   id               Int      @id @default(autoincrement())
   modelName        String   @unique
   scooters         Scooter[]   @relation("ScooterModels")
-
+  chargeReserve    Int?
 }
 
 model Parking {
