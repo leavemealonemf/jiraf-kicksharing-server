@@ -231,18 +231,27 @@ export class ScooterService {
       return [];
     }
 
-    const response = [];
+    const filtered = [];
 
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
         if (scooter.deviceIMEI === rightechScooter.id) {
-          response.push({
+          filtered.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
             settings: scooterSettings.scooterSettings,
           });
         }
       }
+    }
+
+    const response = [];
+
+    for (const scooter of filtered) {
+      if (scooter.scooter.rented) return;
+      if (!scooter.rightechScooter.state.onlie) return;
+
+      response.push(scooter);
     }
 
     return response;
