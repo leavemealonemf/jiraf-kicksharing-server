@@ -19,42 +19,45 @@ export class ScooterController {
   constructor(private readonly scooterService: ScooterService) {}
 
   @Post()
-  create(@Body() createScooterDto: CreateScooterDto) {
+  async create(@Body() createScooterDto: CreateScooterDto) {
     return this.scooterService.create(createScooterDto);
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.scooterService.findAll();
   }
 
   @Get('/erp')
-  findAllErp() {
-    return this.scooterService.findAllErp();
+  async findAllErp() {
+    return await this.scooterService.findAllErp();
   }
 
   @Get('/mobile')
-  findAllMobile() {
+  async findAllMobile() {
     return this.scooterService.findAllMobile();
   }
 
   @Get('/mobile/test')
-  findAllMobileTest() {
+  async findAllMobileTest() {
     return this.scooterService.findAllMobileTest();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.scooterService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateScooterDto: UpdateScooterDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateScooterDto: UpdateScooterDto,
+  ) {
     return this.scooterService.update(+id, updateScooterDto);
   }
 
   @Delete(':scooterId/:rightechScooterId')
-  remove(
+  async remove(
     @Param('scooterId') id: string,
     @Param('rightechScooterId') rightechScooterId: string,
   ) {
