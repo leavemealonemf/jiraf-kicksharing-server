@@ -4,5 +4,6 @@ export interface IRightechScooter {
     lon?: number;
     lat?: number;
     charge?: number;
+    online: boolean;
   };
 }
