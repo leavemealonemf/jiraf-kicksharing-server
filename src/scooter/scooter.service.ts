@@ -235,10 +235,9 @@ export class ScooterService {
 
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
+        if (!rightechScooter.state.online) return;
+        if (scooter.rented) return;
         if (scooter.deviceIMEI === rightechScooter.id) {
-          if (!rightechScooter.state.online) return;
-          if (scooter.rented) return;
-
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
