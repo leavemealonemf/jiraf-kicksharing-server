@@ -232,12 +232,19 @@ export class ScooterService {
     }
 
     const response = [];
-
     for (const scooter of scooters) {
       for (const rightechScooter of res) {
-        if (scooter.rented) continue; // 1
-        if (!rightechScooter.state.online) continue; //2
+        console.log('Scooter:', scooter);
+        console.log('Rightech Scooter:', rightechScooter);
         if (scooter.deviceIMEI === rightechScooter.id) {
+          if (scooter.rented) {
+            console.log('Scooter rented, skipping...');
+            continue; // Пропускаем объект, если он уже арендован (условие 1)
+          }
+          if (!rightechScooter.state.online) {
+            console.log('Rightech scooter not online, skipping...');
+            continue; // Пропускаем объект, если он не онлайн (условие 2)
+          }
           response.push({
             scooter: scooter,
             rightechScooter: rightechScooter,
@@ -246,6 +253,9 @@ export class ScooterService {
         }
       }
     }
+
+    console.log('Response:', response);
+    return response;
   }
 
   async findOne(id: number) {
