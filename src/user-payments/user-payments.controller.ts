@@ -4,9 +4,8 @@ import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { CurrentUser, Platforms } from '@common/decorators';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('User (Пользователь мобилки)')
+@ApiTags('Платежи пользователя')
 @ApiBearerAuth()
-@Controller('Платежи пользователя')
 @Controller('user-payments')
 export class UserPaymentsController {
   constructor(private readonly userPaymentsService: UserPaymentsService) {}
