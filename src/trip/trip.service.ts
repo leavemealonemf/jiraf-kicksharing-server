@@ -52,6 +52,9 @@ export class TripService {
       .findMany({
         skip: offset,
         take: DEFAULT_PAGE_SIZE,
+        orderBy: {
+          startTime: 'desc',
+        },
         where: { userId: userId },
         include: {
           scooter: {
