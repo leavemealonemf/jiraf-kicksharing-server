@@ -35,8 +35,8 @@ export class TripController {
   }
 
   @Get('user-trips')
-  getUserTrips(@CurrentUser() user: any) {
-    return this.tripService.getUserTrips(user.id);
+  getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
+    return this.tripService.getUserTrips(user.id, page);
   }
 
   @Get('user-trips/:id')

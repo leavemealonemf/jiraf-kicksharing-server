@@ -6,6 +6,8 @@ import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const DEFAULT_PAGE_SIZE = 10;
+
 @Injectable()
 export class TripService {
   private readonly logger = new Logger(TripService.name);
@@ -44,9 +46,12 @@ export class TripService {
       });
   }
 
-  async getUserTrips(userId: number) {
+  async getUserTrips(userId: number, page: number) {
+    const offset = (page - 1) * DEFAULT_PAGE_SIZE;
     const trips = await this.dbService.trip
       .findMany({
+        skip: offset,
+        take: DEFAULT_PAGE_SIZE,
         where: { userId: userId },
         include: {
           scooter: {
