@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -51,5 +52,12 @@ export class UserController {
   @Get()
   async getMe(@CurrentUser() user: any) {
     return this.userService.findOneByUUID(user.clientId);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Get('user-payments')
+  getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
+    return this.userService.getUserPayments(user.id, page);
   }
 }
