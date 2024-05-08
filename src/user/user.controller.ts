@@ -49,15 +49,15 @@ export class UserController {
 
   @UseGuards(PlatformsGuard)
   @Platforms('MOBILE')
-  @Get()
-  async getMe(@CurrentUser() user: any) {
-    return this.userService.findOneByUUID(user.clientId);
+  @Get('user-payments')
+  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
+    return this.userService.getUserPayments(user.id, page);
   }
 
   @UseGuards(PlatformsGuard)
   @Platforms('MOBILE')
-  @Get('user-payments')
-  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
-    return this.userService.getUserPayments(user.id, page);
+  @Get()
+  async getMe(@CurrentUser() user: any) {
+    return this.userService.findOneByUUID(user.clientId);
   }
 }
