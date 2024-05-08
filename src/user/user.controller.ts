@@ -57,7 +57,7 @@ export class UserController {
   @UseGuards(PlatformsGuard)
   @Platforms('MOBILE')
   @Get('user-payments')
-  getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
+  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
     return this.userService.getUserPayments(user.id, page);
   }
 }
