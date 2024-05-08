@@ -6,7 +6,6 @@ import {
   Param,
   UseGuards,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -24,14 +23,6 @@ export class UserController {
   // create(@Body() createUserDto: CreateUserDto) {
   //   return this.userService.create(createUserDto);
   // }
-
-  @UseGuards(PlatformsGuard)
-  @Platforms('MOBILE')
-  @Get('payments')
-  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
-    console.log(user);
-    return this.userService.getUserPayments(user.id, page);
-  }
 
   @Get('all')
   findAll() {

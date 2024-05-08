@@ -9,8 +9,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
 
-const DEFAULT_PAGE_SIZE = 10;
-
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
@@ -138,27 +136,5 @@ export class UserService {
       this.logger.error(err);
       return null;
     });
-  }
-
-  async getUserPayments(userId: number, page: number) {
-    const offset = (page - 1) * DEFAULT_PAGE_SIZE;
-    const payments = await this.dbService.payment
-      .findMany({
-        skip: offset,
-        take: DEFAULT_PAGE_SIZE,
-        orderBy: {
-          datetimeCreated: 'desc',
-        },
-        where: { userId: userId },
-      })
-      .catch((err) => {
-        this.logger.error(err);
-      });
-
-    if (!payments) {
-      throw new BadRequestException('Ошибка. Не удалось получить платежи');
-    }
-
-    return payments;
   }
 }
