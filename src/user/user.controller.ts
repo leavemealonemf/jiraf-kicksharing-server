@@ -25,6 +25,14 @@ export class UserController {
   //   return this.userService.create(createUserDto);
   // }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Get('payments')
+  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
+    console.log(user);
+    return this.userService.getUserPayments(user.id, page);
+  }
+
   @Get('all')
   findAll() {
     return this.userService.findAll();
@@ -45,14 +53,6 @@ export class UserController {
   @Delete('delete')
   async remove(@CurrentUser() user: any) {
     return this.userService.remove(user.id);
-  }
-
-  @UseGuards(PlatformsGuard)
-  @Platforms('MOBILE')
-  @Get('user-payments')
-  async getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
-    console.log(user);
-    return this.userService.getUserPayments(user.id, page);
   }
 
   @UseGuards(PlatformsGuard)
