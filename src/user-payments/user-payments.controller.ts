@@ -14,7 +14,6 @@ export class UserPaymentsController {
   @Platforms('MOBILE')
   @Get()
   async getUserPayments(@CurrentUser() user: any, @Query('page') page: number) {
-    console.log(user);
     return this.userPaymentsService.getUserPayments(user.id, page);
   }
 }
