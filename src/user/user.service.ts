@@ -74,9 +74,9 @@ export class UserService {
       where: { clientId: uuid },
       include: {
         paymentMethods: true,
-        payments: {
-          include: { paymentMethod: true },
-        },
+        // payments: {
+        //   include: { paymentMethod: true },
+        // },
         subscriptionsOptions: true,
       },
     });
