@@ -19,6 +19,9 @@ export class UserPaymentsService {
           datetimeCreated: 'desc',
         },
         where: { userId: userId },
+        include: {
+          paymentMethod: true,
+        },
       })
       .catch((err) => {
         this.logger.error(err);
