@@ -48,6 +48,9 @@ export class SaveBalancePayment implements SavePaymentGateway {
         paymentMethodId: dto.paymentMethodId,
         amount: dto.value,
       },
+      include: {
+        paymentMethod: true,
+      },
     });
 
     await this.dbService.user
@@ -114,6 +117,9 @@ export class SaveSubscriptionPayment implements SavePaymentGateway {
         userId: userId,
         paymentMethodId: dto.paymentMethodId,
         amount: dto.value,
+      },
+      include: {
+        paymentMethod: true,
       },
     });
 
