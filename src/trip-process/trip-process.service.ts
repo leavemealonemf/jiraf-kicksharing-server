@@ -16,7 +16,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import {
   AllTimeSpeedLimit,
-  EndTripResponse,
   GofencingStatus,
   IActiveTripRoot,
   ScheduleSpeedLimit,
@@ -58,7 +57,7 @@ export class TripProcessService {
     private readonly acquiringService: AcquiringService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly geofenceService: GeofenceService,
-    private readonly paymentsService: PaymentsService
+    private readonly paymentsService: PaymentsService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -379,7 +378,7 @@ export class TripProcessService {
         type: 'TRIP',
         description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
       },
-    }
+    };
 
     const payment = await this.acquiringService.processPayment(paymentData);
 
@@ -390,7 +389,10 @@ export class TripProcessService {
       this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
     }
 
-    const savePayment = await this.paymentsService.savePayment(paymentData, user.id)
+    const savePayment = await this.paymentsService.savePayment(
+      paymentData,
+      user.id,
+    );
 
     if (!savePayment) {
       this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
@@ -400,7 +402,6 @@ export class TripProcessService {
     }
 
     // \Списание и сохранение платежа/
-
 
     await this.cacheManager.del(dto.tripUUID);
 
