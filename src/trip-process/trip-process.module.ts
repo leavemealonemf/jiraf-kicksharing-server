@@ -10,6 +10,7 @@ import { AcquiringModule } from 'src/acquiring/acquiring.module';
 import { PaymentMethodModule } from 'src/payment-method/payment-method.module';
 import { RedisOptions } from 'libs/redis';
 import { GeofenceModule } from 'src/geofence/geofence.module';
+import { PaymentsModule } from 'src/payments/payments.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GeofenceModule } from 'src/geofence/geofence.module';
     TariffModule,
     UserModule,
     GeofenceModule,
+    PaymentsModule,
     CacheModule.registerAsync(RedisOptions),
   ],
   controllers: [TripProcessController],

@@ -28,7 +28,7 @@ import * as path from 'path';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
 import { Geofence, Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
-import { paymentType } from 'src/acquiring/dtos';
+import { AcquiringProcessPaymentDto, paymentType } from 'src/acquiring/dtos';
 import {
   ScooterCommandHandler,
   getScooterPackets,
@@ -40,6 +40,7 @@ import {
 import { GeofenceService } from 'src/geofence/geofence.service';
 import * as turf from '@turf/turf';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { PaymentsService } from 'src/payments/payments.service';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -57,6 +58,7 @@ export class TripProcessService {
     private readonly acquiringService: AcquiringService,
     private readonly paymentMethodService: PaymentMethodService,
     private readonly geofenceService: GeofenceService,
+    private readonly paymentsService: PaymentsService
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -367,7 +369,7 @@ export class TripProcessService {
       user.activePaymentMethod,
     );
 
-    const payment = await this.acquiringService.processPayment({
+    const paymentData: AcquiringProcessPaymentDto = {
       description: 'Списание за поездку',
       paymentMethodId: paymentMethod.id,
       paymentMethodStringId: paymentMethod.paymentId,
@@ -375,9 +377,11 @@ export class TripProcessService {
       value: trip.price,
       metadata: {
         type: 'TRIP',
-        description: 'Списание за поездку 1',
+        description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
       },
-    });
+    }
+
+    const payment = await this.acquiringService.processPayment(paymentData);
 
     if (!payment) {
       this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
@@ -386,7 +390,18 @@ export class TripProcessService {
       this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
     }
 
+    const savePayment = await this.paymentsService.savePayment(paymentData, user.id)
+
+    if (!savePayment) {
+      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
+      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
+      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
+      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
+    }
+
     // \Списание и сохранение платежа/
+
+
     await this.cacheManager.del(dto.tripUUID);
 
     const getPackets: any[] = await getScooterPackets(
