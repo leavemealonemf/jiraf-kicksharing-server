@@ -389,12 +389,12 @@ export class TripProcessService {
       this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
     }
 
-    const savePayment = await this.paymentsService.savePayment(
+    const savedPayment = await this.paymentsService.savePayment(
       paymentData,
       user.id,
     );
 
-    if (!savePayment) {
+    if (!savedPayment) {
       this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
       this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
       this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
@@ -443,6 +443,7 @@ export class TripProcessService {
     return {
       trip: copy,
       updatedTrip: updatedTrip,
+      payment: savedPayment,
     };
   }
 
