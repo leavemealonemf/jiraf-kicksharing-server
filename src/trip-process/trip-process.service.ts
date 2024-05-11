@@ -369,14 +369,14 @@ export class TripProcessService {
     );
 
     const paymentData: AcquiringProcessPaymentDto = {
-      description: 'Списание за поездку',
+      description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
       paymentMethodId: paymentMethod.id,
       paymentMethodStringId: paymentMethod.paymentId,
       type: paymentType.CARD,
       value: trip.price,
       metadata: {
         type: 'TRIP',
-        description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
+        description: 'Списание за поездку',
       },
     };
 
