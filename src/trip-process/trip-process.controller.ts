@@ -30,8 +30,8 @@ export class TripProcessController {
   }
 
   @Post('/end-test')
-  async endTest(@Body() dto: EndTripProcessDto) {
-    return this.tripProcessService.endTripTest(dto);
+  async endTest(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
+    return this.tripProcessService.endTripTest(dto, user.clientId);
   }
 
   @Get('/active-trips')

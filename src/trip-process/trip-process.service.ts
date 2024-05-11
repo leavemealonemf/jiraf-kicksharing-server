@@ -307,7 +307,9 @@ export class TripProcessService {
     return copy;
   }
 
-  async endTripTest(dto: EndTripProcessDto) {
+  async endTripTest(dto: EndTripProcessDto, userUUID: any) {
+    const user = await this.userService.findOneByUUID(userUUID);
+
     const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
       dto.tripUUID,
     );
@@ -358,6 +360,33 @@ export class TripProcessService {
       throw new BadRequestException('Не удалось вернуть залог');
     }
 
+    // Списание и сохранение платежа
+
+    const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
+      user.id,
+      user.activePaymentMethod,
+    );
+
+    const payment = await this.acquiringService.processPayment({
+      description: 'Списание за поездку',
+      paymentMethodId: paymentMethod.id,
+      paymentMethodStringId: paymentMethod.paymentId,
+      type: paymentType.CARD,
+      value: trip.price,
+      metadata: {
+        type: 'TRIP',
+        description: 'Списание за поездку 1',
+      },
+    });
+
+    if (!payment) {
+      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+    }
+
+    // \Списание и сохранение платежа/
     await this.cacheManager.del(dto.tripUUID);
 
     const getPackets: any[] = await getScooterPackets(
