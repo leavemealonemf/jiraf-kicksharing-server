@@ -329,7 +329,7 @@ export class TripProcessService {
         },
         rating: 5,
         bonusesUsed: 0,
-        price: tripCoast,
+        price: tripCoast + cachedTrip.tripInfo.pricing.board,
         distance: cachedTrip.tripInfo.distanceTraveled,
       },
     });
