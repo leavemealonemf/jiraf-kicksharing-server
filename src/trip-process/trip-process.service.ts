@@ -329,7 +329,7 @@ export class TripProcessService {
         },
         rating: 5,
         bonusesUsed: 0,
-        price: tripCoast + cachedTrip.tripInfo.pricing.board,
+        price: tripCoast,
         distance: cachedTrip.tripInfo.distanceTraveled,
       },
     });
@@ -427,6 +427,9 @@ export class TripProcessService {
         where: { id: dto.tripId },
         data: {
           coordinates: JSON.stringify(coordinates),
+        },
+        include: {
+          tariff: true,
         },
       })
       .catch((err) => {
