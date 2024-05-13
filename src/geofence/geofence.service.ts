@@ -391,7 +391,7 @@ export class GeofenceService {
       for (let j = 0; j < scooters.length; j++) {
         const scooterCoordinates = {
           lat: scooters[j].rightechScooter.state.lat,
-          lng: scooters[j].rightechScooter.state.lng,
+          lng: scooters[j].rightechScooter.state.lon,
         };
 
         const coordinates = JSON.parse(geofences[i].coordinates);
