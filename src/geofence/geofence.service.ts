@@ -418,8 +418,10 @@ export class GeofenceService {
     return geofencesWithScooters;
   }
 
-  private isScooterInZone(scooterCoordinates, zoneCenter, zoneRadius) {
+  private isScooterInZone(scooterCoordinates, coordinates, zoneRadius) {
     const earthRadius = 6371000;
+
+    const zoneCenter = this.getZoneCenter(coordinates);
 
     const scooterLatRad = this.toRadians(scooterCoordinates.lat);
     const scooterLngRad = this.toRadians(scooterCoordinates.lng);
@@ -435,6 +437,28 @@ export class GeofenceService {
       ) * earthRadius;
 
     return distance <= zoneRadius;
+  }
+
+  private getZoneCenter(coordinates: any) {
+    if (Array.isArray(coordinates)) {
+      const lat =
+        coordinates.reduce((sum, point) => sum + point.lat, 0) /
+        coordinates.length;
+
+      const lng =
+        coordinates.reduce((sum, point) => sum + point.lng, 0) /
+        coordinates.length;
+
+      return {
+        lat,
+        lng,
+      };
+    } else {
+      return {
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+      };
+    }
   }
 
   private toRadians(degrees) {
