@@ -9,6 +9,7 @@ import {
   PauseOffTripProcessDto,
   PauseOnTripProcessDto,
   SaveTripPictureDto,
+  CanParkingDto,
 } from './dto';
 
 @UseGuards(PlatformsGuard)
@@ -32,6 +33,14 @@ export class TripProcessController {
   @Post('/end-test')
   async endTest(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
     return this.tripProcessService.endTripTest(dto, user.clientId);
+  }
+
+  @Post('/can-parking')
+  async canParking(@Body() dto: CanParkingDto) {
+    return await this.tripProcessService.canParking(
+      dto.latitude,
+      dto.longitude,
+    );
   }
 
   @Get('/active-trips')

@@ -40,6 +40,7 @@ import { GeofenceService } from 'src/geofence/geofence.service';
 import * as turf from '@turf/turf';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PaymentsService } from 'src/payments/payments.service';
+import { isArray } from 'class-validator';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -601,6 +602,31 @@ export class TripProcessService {
     await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
 
     return updatedTrip;
+  }
+
+  async canParking(latitude: number, longitude: number): Promise<boolean> {
+    const geofences: any[] = await this.geofenceService.getGeofences();
+    for (const geofence of geofences) {
+      this.logger.log(geofence.type.drawType);
+
+      if (geofence.type.drawType !== 'CIRCLE') continue;
+
+      const coordinates = JSON.parse(geofence.coordinates);
+
+      if (!isArray(coordinates)) continue;
+
+      const turfCoordinates: any[] = this.convertToTurfFormat(coordinates);
+      turfCoordinates.push(turfCoordinates[0]);
+      const polygon = turf.polygon([turfCoordinates]);
+
+      if (turf.booleanPointInPolygon([latitude, longitude], polygon)) {
+        this.logger.log('CAN PARKING');
+        return true;
+      } else {
+        this.logger.log('NO PARKING');
+        return false;
+      }
+    }
   }
 
   @Cron(CronExpression.EVERY_30_SECONDS)
