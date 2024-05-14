@@ -38,8 +38,10 @@ export class TripProcessController {
   @Post('/can-parking')
   async canParking(@Body() dto: CanParkingDto) {
     return await this.tripProcessService.canParking(
-      dto.latitude,
-      dto.longitude,
+      dto.userLatitude,
+      dto.userLongitude,
+      dto.scooterLatitude,
+      dto.scooterLongitude,
     );
   }
 

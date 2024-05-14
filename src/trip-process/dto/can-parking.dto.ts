@@ -5,9 +5,17 @@ export class CanParkingDto {
   @ApiProperty({ default: 55.231412 })
   @IsNumber()
   @IsNotEmpty()
-  latitude: number;
+  userLatitude: number;
   @ApiProperty({ default: 55.112312 })
   @IsNumber()
   @IsNotEmpty()
-  longitude: number;
+  userLongitude: number;
+  @ApiProperty({ default: 55.112312 })
+  @IsNumber()
+  @IsNotEmpty()
+  scooterLatitude: number;
+  @ApiProperty({ default: 55.112312 })
+  @IsNumber()
+  @IsNotEmpty()
+  scooterLongitude: number;
 }

@@ -604,8 +604,18 @@ export class TripProcessService {
     return updatedTrip;
   }
 
-  async canParking(latitude: number, longitude: number): Promise<boolean> {
+  // PARKING LOGIC
+  // PARKING LOGIC
+  // PARKING LOGIC
+
+  async canParking(
+    userLatitude: number,
+    userLongitude: number,
+    scooterLatitude: number,
+    scooterLongitude: number,
+  ): Promise<any> {
     const geofences: any[] = await this.geofenceService.getGeofences();
+
     for (const geofence of geofences) {
       this.logger.log(geofence.type.drawType);
 
@@ -619,15 +629,58 @@ export class TripProcessService {
       turfCoordinates.push(turfCoordinates[0]);
       const polygon = turf.polygon([turfCoordinates]);
 
-      if (turf.booleanPointInPolygon([latitude, longitude], polygon)) {
-        this.logger.log('CAN PARKING');
-        return true;
-      } else {
-        this.logger.log('NO PARKING');
-        return false;
-      }
+      const isUserInParking = this.checkIsUserInParking(
+        userLatitude,
+        userLongitude,
+        polygon,
+      );
+
+      const isScooterInParking = this.checkIsScooterInParking(
+        scooterLatitude,
+        scooterLongitude,
+        polygon,
+      );
+
+      return {
+        isUserInParking: isUserInParking,
+        isScooterInParking: isScooterInParking,
+      };
     }
   }
+
+  private checkIsUserInParking(
+    userLatitude: number,
+    userLongitude: number,
+    polygon: any,
+  ) {
+    if (turf.booleanPointInPolygon([userLatitude, userLongitude], polygon)) {
+      this.logger.log('CAN PARKING by user value');
+      return true;
+    } else {
+      this.logger.log('NO PARKING by user value');
+      return false;
+    }
+  }
+
+  private checkIsScooterInParking(
+    scooterLatitude: number,
+    scooterLongitude: number,
+    polygon: any,
+  ) {
+    if (
+      turf.booleanPointInPolygon([scooterLatitude, scooterLongitude], polygon)
+    ) {
+      this.logger.log('CAN PARKING by scooter value');
+      return true;
+    } else {
+      this.logger.log('NO PARKING by scooter value');
+      return false;
+    }
+  }
+
+  // OTHER TRIP ROUTINE
+  // OTHER TRIP ROUTINE
+  // OTHER TRIP ROUTINE
 
   @Cron(CronExpression.EVERY_30_SECONDS)
   async updateTripInfoBackground() {
