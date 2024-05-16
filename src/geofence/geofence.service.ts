@@ -386,6 +386,10 @@ export class GeofenceService {
         });
       }
 
+      // INCLUDE SCOOTERS ONLY IN PARKING GEOFENCE
+
+      if (geofences[i].type.drawType !== 'CIRCLE') continue;
+
       const zoneScooters = [];
 
       for (let j = 0; j < scooters.length; j++) {
