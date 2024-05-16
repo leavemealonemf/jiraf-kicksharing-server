@@ -407,16 +407,17 @@ export class GeofenceService {
         );
 
         if (scooterInZone) {
-          if (geofences[i].type.drawType !== 'CIRCLE') continue;
-
           zoneScooters.push(scooters[j]);
         }
       }
 
       geofencesWithScooters.push({
         ...geofences[i],
-        scooters: zoneScooters,
-        noScooters: zoneScooters.length === 0,
+        scooters: geofences[i].type.drawType === 'CIRCLE' ? zoneScooters : [],
+        noScooters:
+          geofences[i].type.drawType === 'CIRCLE'
+            ? zoneScooters.length === 0
+            : true,
       });
     }
     return geofencesWithScooters;
