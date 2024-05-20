@@ -22,7 +22,7 @@ export class AcquiringProcessPayment extends BaseAcquiring {
 
     const createPayload: ICreatePayment = {
       amount: {
-        value: dto.value.toFixed(),
+        value: dto.value.toString(),
         currency: 'RUB',
       },
       confirmation: {
