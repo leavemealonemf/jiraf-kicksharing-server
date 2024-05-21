@@ -335,15 +335,15 @@ export class TripProcessService {
     let cardSpent = 0;
 
     if (user.balance > 0) {
-      if (user.balance >= tripCoast) {
-        balanceSpent = tripCoast;
+      if (user.balance >= tripCoastPayment) {
+        balanceSpent = tripCoastPayment;
         cardSpent = 0;
       } else {
         balanceSpent = user.balance;
-        cardSpent = tripCoast - user.balance;
+        cardSpent = tripCoastPayment - user.balance;
       }
     } else {
-      cardSpent = tripCoast;
+      cardSpent = tripCoastPayment;
     }
 
     const trip = await this.dbService.trip.update({
