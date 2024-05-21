@@ -105,7 +105,7 @@ export class TripProcessService {
           description: 'Залог за поездку',
         },
         type: paymentType.CARD,
-        value: tariff.reservationCost,
+        value: 300,
       });
 
     if (!paymentStartDeposit) {
@@ -218,12 +218,24 @@ export class TripProcessService {
     return cachedTrips;
   }
 
-  async end(dto: EndTripProcessDto) {
+  async end(dto: EndTripProcessDto, userId: string) {
+    const user = await this.userService.findOneByUUID(userId);
+
     const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
       dto.tripUUID,
     );
 
     const tripCoast = this.calcTripCost(cachedTrip);
+
+    let balanceSpent = 0;
+    let cardSpent = 0;
+
+    if (user.balance > 0) {
+      balanceSpent = user.balance;
+      cardSpent = tripCoast - user.bonuses;
+    } else {
+      cardSpent = tripCoast;
+    }
 
     const trip = await this.dbService.trip.update({
       where: { id: dto.tripId },
@@ -236,7 +248,7 @@ export class TripProcessService {
           },
         },
         rating: 5,
-        bonusesUsed: 0,
+        bonusesUsed: balanceSpent,
         price: tripCoast,
         distance: cachedTrip.tripInfo.distanceTraveled,
       },
@@ -318,6 +330,16 @@ export class TripProcessService {
 
     const tripCoast = this.calcTripCost(cachedTrip);
 
+    let balanceSpent = 0;
+    let cardSpent = 0;
+
+    if (user.balance > 0) {
+      balanceSpent = user.balance;
+      cardSpent = tripCoast - user.bonuses;
+    } else {
+      cardSpent = tripCoast;
+    }
+
     const trip = await this.dbService.trip.update({
       where: { id: dto.tripId },
       data: {
@@ -329,7 +351,7 @@ export class TripProcessService {
           },
         },
         rating: 5,
-        bonusesUsed: 0,
+        bonusesUsed: balanceSpent,
         price: tripCoast,
         distance: cachedTrip.tripInfo.distanceTraveled,
       },
@@ -374,20 +396,23 @@ export class TripProcessService {
       paymentMethodId: paymentMethod.id,
       paymentMethodStringId: paymentMethod.paymentId,
       type: paymentType.CARD,
-      value: trip.price,
+      value: trip.price - trip.bonusesUsed,
       metadata: {
         type: 'TRIP',
         description: 'Списание за поездку',
+        tripBonusesUsed: balanceSpent,
       },
     };
 
-    const payment = await this.acquiringService.processPayment(paymentData);
+    if (cardSpent > 0) {
+      const payment = await this.acquiringService.processPayment(paymentData);
 
-    if (!payment) {
-      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-      this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+      if (!payment) {
+        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+        this.logger.log('НЕ УДАЛОСЬ СП ИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+      }
     }
 
     const savedPayment = await this.paymentsService.savePayment(

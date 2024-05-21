@@ -26,8 +26,8 @@ export class TripProcessController {
   }
 
   @Post('/end')
-  async end(@Body() dto: EndTripProcessDto) {
-    return this.tripProcessService.end(dto);
+  async end(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
+    return this.tripProcessService.end(dto, user.clientId);
   }
 
   @Post('/end-test')

@@ -176,6 +176,7 @@ export class SaveTripPayment implements SavePaymentGateway {
         userId: userId,
         paymentMethodId: dto.paymentMethodId,
         amount: dto.value,
+        bonusesUsed: dto.metadata.tripBonusesUsed,
       },
       include: {
         paymentMethod: true,

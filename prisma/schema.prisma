@@ -65,6 +65,7 @@ model Payment {
   status PaymentStatus
   amount Float?
   description String?
+  bonusesUsed Float? @default(0.0)
   paymentMethodId      Int?      
   paymentMethod        PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
   userId      Int?

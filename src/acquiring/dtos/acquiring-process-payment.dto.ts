@@ -41,6 +41,7 @@ export class AcquiringProcessPaymentDto {
   metadata: {
     type: AcquiringProcessPaymentMetadataServiceType;
     description: string;
+    tripBonusesUsed?: number;
   };
   @ApiProperty({ default: 1 })
   @IsNumber(undefined, { message: 'paymentMethodId - Ошибка. Ожидалось число' })
