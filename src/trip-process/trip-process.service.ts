@@ -331,13 +331,18 @@ export class TripProcessService {
     const tripCoast = this.calcTripCost(cachedTrip);
 
     let balanceSpent = 0;
+    let balanceSpentRemainder = 0;
     let cardSpent = 0;
+    let cardSpentRemainder = 0;
 
     if (user.balance > 0) {
-      balanceSpent = user.balance - tripCoast;
-      cardSpent = tripCoast - balanceSpent;
+      balanceSpentRemainder = user.balance - tripCoast;
+      balanceSpent = balanceSpentRemainder - tripCoast;
+
+      cardSpentRemainder = tripCoast - balanceSpent;
+      cardSpent = cardSpentRemainder - tripCoast;
     } else {
-      cardSpent = tripCoast;
+      cardSpent = cardSpent + tripCoast;
     }
 
     const trip = await this.dbService.trip.update({
