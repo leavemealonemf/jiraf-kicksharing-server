@@ -835,6 +835,8 @@ export class TripProcessService {
 
     let tripCost = tripDurationMinutes * trip.tripInfo.pricing.minute;
 
+    tripCost += trip.tripInfo.pricing.board;
+
     if (trip.tripInfo.pauseIntervals.length) {
       for (const pause of trip.tripInfo.pauseIntervals) {
         if (!pause.start || !pause.end) return;
@@ -847,7 +849,6 @@ export class TripProcessService {
         );
         tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
         tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
-        tripCost += trip.tripInfo.pricing.board;
       }
 
       return tripCost;
