@@ -401,7 +401,7 @@ export class TripProcessService {
       paymentMethodId: paymentMethod.id,
       paymentMethodStringId: paymentMethod.paymentId,
       type: paymentType.CARD,
-      value: trip.price - trip.bonusesUsed,
+      value: trip.price,
       metadata: {
         type: 'TRIP',
         description: 'Списание за поездку',
