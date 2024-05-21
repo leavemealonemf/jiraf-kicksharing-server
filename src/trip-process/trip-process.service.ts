@@ -334,8 +334,8 @@ export class TripProcessService {
     let cardSpent = 0;
 
     if (user.balance > 0) {
-      balanceSpent = user.balance;
-      cardSpent = tripCoast - user.bonuses;
+      balanceSpent = user.balance - tripCoast;
+      cardSpent = tripCoast - balanceSpent;
     } else {
       cardSpent = tripCoast;
     }
