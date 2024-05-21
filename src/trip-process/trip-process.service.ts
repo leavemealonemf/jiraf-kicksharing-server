@@ -337,13 +337,13 @@ export class TripProcessService {
     let cardSpentRemainder = 0;
 
     if (user.balance > 0) {
-      balanceSpentRemainder = user.balance - tripCoast;
-      balanceSpent = balanceSpentRemainder - tripCoast;
+      balanceSpentRemainder += user.balance - tripCoast;
+      balanceSpent += balanceSpentRemainder - tripCoast;
 
-      cardSpentRemainder = tripCoast - balanceSpent;
-      cardSpent = cardSpentRemainder - tripCoast;
+      cardSpentRemainder += tripCoast - balanceSpent;
+      cardSpent += cardSpentRemainder - tripCoast;
     } else {
-      cardSpent = cardSpent + tripCoast;
+      cardSpent += cardSpent + tripCoast;
     }
 
     const trip = await this.dbService.trip.update({
