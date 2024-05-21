@@ -332,18 +332,18 @@ export class TripProcessService {
     const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
 
     let balanceSpent = 0;
-    let balanceSpentRemainder = 0;
     let cardSpent = 0;
-    let cardSpentRemainder = 0;
 
     if (user.balance > 0) {
-      balanceSpentRemainder += user.balance - tripCoast;
-      balanceSpent += balanceSpentRemainder - tripCoast;
-
-      cardSpentRemainder += tripCoast - balanceSpent;
-      cardSpent += cardSpentRemainder - tripCoast;
+      if (user.balance >= tripCoast) {
+        balanceSpent = tripCoast;
+        cardSpent = 0;
+      } else {
+        balanceSpent = user.balance;
+        cardSpent = tripCoast - user.balance;
+      }
     } else {
-      cardSpent += cardSpent + tripCoast;
+      cardSpent = tripCoast;
     }
 
     const trip = await this.dbService.trip.update({
@@ -360,6 +360,13 @@ export class TripProcessService {
         bonusesUsed: balanceSpent,
         price: tripCoast,
         distance: cachedTrip.tripInfo.distanceTraveled,
+        user: {
+          update: {
+            balance: {
+              decrement: balanceSpent,
+            },
+          },
+        },
       },
     });
 
