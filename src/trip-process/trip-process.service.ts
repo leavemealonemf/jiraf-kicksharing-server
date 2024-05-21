@@ -328,8 +328,8 @@ export class TripProcessService {
       dto.tripUUID,
     );
 
-    const tripCoast =
-      this.calcTripCost(cachedTrip) + cachedTrip.tripInfo.pricing.board;
+    const tripCoast = this.calcTripCost(cachedTrip);
+    const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
 
     let balanceSpent = 0;
     let balanceSpentRemainder = 0;
@@ -402,7 +402,7 @@ export class TripProcessService {
       paymentMethodId: paymentMethod.id,
       paymentMethodStringId: paymentMethod.paymentId,
       type: paymentType.CARD,
-      value: trip.price,
+      value: tripCoastPayment,
       metadata: {
         type: 'TRIP',
         description: 'Списание за поездку',
