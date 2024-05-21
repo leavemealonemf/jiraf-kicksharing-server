@@ -328,7 +328,8 @@ export class TripProcessService {
       dto.tripUUID,
     );
 
-    const tripCoast = this.calcTripCost(cachedTrip);
+    const tripCoast =
+      this.calcTripCost(cachedTrip) + cachedTrip.tripInfo.pricing.board;
 
     let balanceSpent = 0;
     let balanceSpentRemainder = 0;
@@ -834,8 +835,6 @@ export class TripProcessService {
     const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
 
     let tripCost = tripDurationMinutes * trip.tripInfo.pricing.minute;
-
-    tripCost += trip.tripInfo.pricing.board;
 
     if (trip.tripInfo.pauseIntervals.length) {
       for (const pause of trip.tripInfo.pauseIntervals) {
