@@ -847,6 +847,7 @@ export class TripProcessService {
         );
         tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
         tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+        tripCost += trip.tripInfo.pricing.board;
       }
 
       return tripCost;
