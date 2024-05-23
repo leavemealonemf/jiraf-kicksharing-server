@@ -107,7 +107,7 @@ model Trip {
   travelTime     String?
   photo          String?
   bonusesUsed    Int? 
-  price          Float?
+  price          Int?
   distance       Int?
   userId         Int?
   rating         Int?
