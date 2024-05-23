@@ -852,18 +852,18 @@ export class TripProcessService {
     let tripCost = tripDurationMinutes * trip.tripInfo.pricing.minute;
 
     if (trip.tripInfo.pauseIntervals.length) {
-      for (const pause of trip.tripInfo.pauseIntervals) {
-        if (!pause.start || !pause.end) return;
+      // for (const pause of trip.tripInfo.pauseIntervals) {
+      //   if (!pause.start || !pause.end) return;
 
-        const pauseStart = new Date(pause.start);
-        const pauseEnd = new Date(pause.end);
-        const pauseDurationMillis = pauseEnd.getTime() - pauseStart.getTime();
-        const pauseDurationMinutes = Math.ceil(
-          pauseDurationMillis / (1000 * 60),
-        );
-        tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
-        tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
-      }
+      //   const pauseStart = new Date(pause.start);
+      //   const pauseEnd = new Date(pause.end);
+      //   const pauseDurationMillis = pauseEnd.getTime() - pauseStart.getTime();
+      //   const pauseDurationMinutes = Math.ceil(
+      //     pauseDurationMillis / (1000 * 60),
+      //   );
+      //   tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
+      //   tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+      // }
 
       return tripCost;
     } else {
