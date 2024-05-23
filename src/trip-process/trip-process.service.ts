@@ -737,7 +737,7 @@ export class TripProcessService {
         cachedTrip.tripInfo.startTime,
       );
 
-      console.log(packets);
+      // console.log(packets);
 
       // for (const packet of packets) {
       //   console.log(packet);
@@ -754,6 +754,8 @@ export class TripProcessService {
           packets[0].lat, // first packet lat by index
           packets[0].lon, // first packet lon by index
         );
+
+        console.log(geofencingStatus);
 
         if (
           geofencingStatus === 'TRAVEL_BAN' &&
