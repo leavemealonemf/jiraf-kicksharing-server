@@ -720,7 +720,7 @@ export class TripProcessService {
   // OTHER TRIP ROUTINE
   // OTHER TRIP ROUTINE
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async updateTripInfoBackground() {
     const activeTrips = await this.dbService.activeTrip.findMany();
     for (const activeTrip of activeTrips) {
@@ -736,6 +736,10 @@ export class TripProcessService {
         scooter.scooter.deviceIMEI,
         cachedTrip.tripInfo.startTime,
       );
+
+      for (const packet of packets) {
+        console.log(packet);
+      }
 
       const updatedTrip = Object.assign({}, cachedTrip);
       updatedTrip.tripInfo.scooter = scooter;
