@@ -737,9 +737,11 @@ export class TripProcessService {
         cachedTrip.tripInfo.startTime,
       );
 
-      for (const packet of packets) {
-        console.log(packet);
-      }
+      console.log(packets);
+
+      // for (const packet of packets) {
+      //   console.log(packet);
+      // }
 
       const updatedTrip = Object.assign({}, cachedTrip);
       updatedTrip.tripInfo.scooter = scooter;
