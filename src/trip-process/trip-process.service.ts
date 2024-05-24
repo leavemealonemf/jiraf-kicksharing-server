@@ -666,7 +666,7 @@ export class TripProcessService {
       turfCoordinates.push(turfCoordinates[0]);
       const polygon = turf.polygon([turfCoordinates]);
 
-      console.log(polygon);
+      console.log(polygon.geometry.coordinates);
       console.log(userLatitude);
       console.log(userLongitude);
 
