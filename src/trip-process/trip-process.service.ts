@@ -691,7 +691,11 @@ export class TripProcessService {
     userLongitude: number,
     polygon: any,
   ) {
-    if (turf.booleanPointInPolygon([userLongitude, userLatitude], polygon)) {
+    if (
+      turf.booleanPointInPolygon([userLatitude, userLongitude], polygon, {
+        ignoreBoundary: true,
+      })
+    ) {
       this.logger.log('CAN PARKING by user value');
       return true;
     } else {
@@ -706,7 +710,7 @@ export class TripProcessService {
     polygon: any,
   ) {
     if (
-      turf.booleanPointInPolygon([scooterLongitude, scooterLatitude], polygon)
+      turf.booleanPointInPolygon([scooterLatitude, scooterLongitude], polygon)
     ) {
       this.logger.log('CAN PARKING by scooter value');
       return true;
@@ -974,7 +978,7 @@ export class TripProcessService {
   }
 
   private convertToTurfFormat(coords) {
-    return coords.map((coord) => [coord.lng, coord.lat]);
+    return coords.map((coord) => [coord.lat, coord.lng]);
   }
 
   private removeFile(tripId: string) {
