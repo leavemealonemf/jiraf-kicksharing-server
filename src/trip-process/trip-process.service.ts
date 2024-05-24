@@ -654,6 +654,8 @@ export class TripProcessService {
   ): Promise<any> {
     const geofences: any[] = await this.geofenceService.getGeofences();
 
+    let result = null;
+
     for (const geofence of geofences) {
       if (geofence.type.drawType !== 'CIRCLE') continue;
 
@@ -682,15 +684,15 @@ export class TripProcessService {
         polygon,
       );
 
-      return {
-        isUserInParking: isUserInParking,
-        isScooterInParking: isScooterInParking,
-      };
+      if (isUserInParking || isScooterInParking) {
+        result = {
+          isUserInParking: isUserInParking,
+          isScooterInParking: isScooterInParking,
+        };
+        break;
+      }
     }
-    return {
-      isUserInParking: false,
-      isScooterInParking: false,
-    };
+    return result;
   }
 
   private checkIsUserInParking(
