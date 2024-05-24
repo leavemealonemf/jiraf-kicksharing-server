@@ -664,7 +664,7 @@ export class TripProcessService {
       if (!isArray(coordinates)) continue;
 
       const turfCoordinates: any[] = this.convertToTurfFormat(coordinates);
-      turfCoordinates.push(turfCoordinates[0]);
+      // turfCoordinates.push(turfCoordinates[0]);
       const polygon = turf.polygon([turfCoordinates]);
 
       const isUserInParking = this.checkIsUserInParking(
@@ -693,7 +693,7 @@ export class TripProcessService {
   ) {
     if (
       turf.booleanPointInPolygon([userLatitude, userLongitude], polygon, {
-        ignoreBoundary: false,
+        ignoreBoundary: true,
       })
     ) {
       this.logger.log('CAN PARKING by user value');
@@ -711,7 +711,7 @@ export class TripProcessService {
   ) {
     if (
       turf.booleanPointInPolygon([scooterLatitude, scooterLongitude], polygon, {
-        ignoreBoundary: false,
+        ignoreBoundary: true,
       })
     ) {
       this.logger.log('CAN PARKING by scooter value');
