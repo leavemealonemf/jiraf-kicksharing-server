@@ -710,7 +710,7 @@ export class TripProcessService {
     scooterLongitude: number,
     polygon: any,
   ) {
-    const scooterPoint: [number, number] = [scooterLatitude, scooterLongitude];
+    const scooterPoint: [number, number] = [scooterLongitude, scooterLatitude];
 
     if (turf.booleanPointInPolygon(turf.point(scooterPoint), polygon)) {
       this.logger.log('CAN PARKING by scooter value');
@@ -979,7 +979,7 @@ export class TripProcessService {
   }
 
   private convertToTurfFormat(coords) {
-    return coords.map((coord) => [coord.lat, coord.lng]);
+    return coords.map((coord) => [coord.lng, coord.lat]);
   }
 
   private removeFile(tripId: string) {
