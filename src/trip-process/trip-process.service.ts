@@ -700,7 +700,8 @@ export class TripProcessService {
     userLongitude: number,
     polygon: any,
   ) {
-    if (turf.booleanPointInPolygon([userLatitude, userLongitude], polygon)) {
+    const userPoint: [number, number] = [userLatitude, userLongitude];
+    if (turf.booleanPointInPolygon(turf.point(userPoint), polygon)) {
       this.logger.log('CAN PARKING by user value');
       return true;
     } else {
