@@ -655,8 +655,6 @@ export class TripProcessService {
     const geofences: any[] = await this.geofenceService.getGeofences();
 
     for (const geofence of geofences) {
-      this.logger.log(geofence.type.drawType);
-
       if (geofence.type.drawType !== 'CIRCLE') continue;
 
       const coordinates = JSON.parse(geofence.coordinates);
@@ -667,6 +665,10 @@ export class TripProcessService {
         this.convertToTurfFormat(coordinates);
       turfCoordinates.push(turfCoordinates[0]);
       const polygon = turf.polygon([turfCoordinates]);
+
+      console.log(polygon);
+      console.log(userLatitude);
+      console.log(userLongitude);
 
       const isUserInParking = this.checkIsUserInParking(
         userLatitude,
@@ -710,7 +712,7 @@ export class TripProcessService {
     scooterLongitude: number,
     polygon: any,
   ) {
-    const scooterPoint: [number, number] = [scooterLongitude, scooterLatitude];
+    const scooterPoint: [number, number] = [scooterLatitude, scooterLongitude];
 
     if (turf.booleanPointInPolygon(turf.point(scooterPoint), polygon)) {
       this.logger.log('CAN PARKING by scooter value');
@@ -979,7 +981,7 @@ export class TripProcessService {
   }
 
   private convertToTurfFormat(coords) {
-    return coords.map((coord) => [coord.lng, coord.lat]);
+    return coords.map((coord) => [coord.lat, coord.lng]);
   }
 
   private removeFile(tripId: string) {
