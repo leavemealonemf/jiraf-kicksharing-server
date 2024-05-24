@@ -664,7 +664,7 @@ export class TripProcessService {
       if (!isArray(coordinates)) continue;
 
       const turfCoordinates: any[] = this.convertToTurfFormat(coordinates);
-      turfCoordinates.push(turfCoordinates[0]);
+      turfCoordinates.push(turfCoordinates[turfCoordinates.length - 1]);
       const polygon = turf.polygon([turfCoordinates]);
 
       const isUserInParking = this.checkIsUserInParking(
