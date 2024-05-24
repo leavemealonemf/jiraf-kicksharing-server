@@ -667,8 +667,8 @@ export class TripProcessService {
       const polygon = turf.polygon([turfCoordinates]);
 
       console.log(polygon.geometry.coordinates);
-      console.log(userLatitude);
-      console.log(userLongitude);
+      console.log(scooterLatitude);
+      console.log(scooterLongitude);
 
       const isUserInParking = this.checkIsUserInParking(
         userLatitude,
