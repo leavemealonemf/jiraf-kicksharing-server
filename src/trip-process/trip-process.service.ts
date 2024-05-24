@@ -691,7 +691,7 @@ export class TripProcessService {
     userLongitude: number,
     polygon: any,
   ) {
-    if (turf.booleanPointInPolygon([userLatitude, userLongitude], polygon)) {
+    if (turf.booleanPointInPolygon([userLongitude, userLatitude], polygon)) {
       this.logger.log('CAN PARKING by user value');
       return true;
     } else {
@@ -706,7 +706,7 @@ export class TripProcessService {
     polygon: any,
   ) {
     if (
-      turf.booleanPointInPolygon([scooterLatitude, scooterLongitude], polygon)
+      turf.booleanPointInPolygon([scooterLongitude, scooterLatitude], polygon)
     ) {
       this.logger.log('CAN PARKING by scooter value');
       return true;
