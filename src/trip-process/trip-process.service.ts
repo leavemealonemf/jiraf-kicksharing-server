@@ -331,8 +331,8 @@ export class TripProcessService {
     const tripCoast = this.calcTripCost(cachedTrip);
     const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
 
-    let balanceSpent = 0;
-    let cardSpent = 0;
+    let balanceSpent = 0.0;
+    let cardSpent = 0.0;
 
     if (user.balance > 0) {
       if (user.balance >= tripCoastPayment) {
