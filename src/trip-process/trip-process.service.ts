@@ -856,42 +856,10 @@ export class TripProcessService {
     const startTime = new Date(trip.tripInfo.startTime);
     const endTime = new Date();
 
-    // Подсчитаем общее количество минут поездки
     const tripDurationMillis = endTime.getTime() - startTime.getTime();
     const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
 
-    // Массив для хранения минут пауз
-    const pauseMinutes = new Set<number>();
-
-    // Подсчет минут пауз
-    if (trip.tripInfo.pauseIntervals.length) {
-      for (const pause of trip.tripInfo.pauseIntervals) {
-        if (!pause.start || !pause.end) continue;
-
-        const pauseStart = new Date(pause.start);
-        const pauseEnd = new Date(pause.end);
-
-        // Добавляем все минуты паузы в Set (чтобы избежать дублирования минут)
-        for (
-          let minute = Math.ceil(pauseStart.getTime() / (1000 * 60));
-          minute < Math.ceil(pauseEnd.getTime() / (1000 * 60));
-          minute++
-        ) {
-          pauseMinutes.add(minute);
-        }
-      }
-    }
-
-    // Подсчет стоимости минут паузы
-    const totalPauseMinutes = pauseMinutes.size;
-    const pauseCost = totalPauseMinutes * trip.tripInfo.pricing.pause;
-
-    // Подсчет активных минут поездки
-    const activeTripMinutes = tripDurationMinutes - totalPauseMinutes;
-    const tripCost = activeTripMinutes * trip.tripInfo.pricing.minute;
-
-    // Итоговая стоимость поездки
-    return tripCost + pauseCost;
+    return tripDurationMinutes * trip.tripInfo.pricing.minute; // ОБЩАЯ СУММА
   }
 
   private async getPer30SecPackets(objectId: string, startTime: string) {
