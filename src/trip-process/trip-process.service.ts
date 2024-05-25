@@ -856,38 +856,42 @@ export class TripProcessService {
     const startTime = new Date(trip.tripInfo.startTime);
     const endTime = new Date();
 
+    // Подсчитаем общее количество минут поездки
     const tripDurationMillis = endTime.getTime() - startTime.getTime();
     const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
 
-    let tripCost = 0;
-    let totalPauseMinutes = 0;
+    // Массив для хранения минут пауз
+    const pauseMinutes = new Set<number>();
 
+    // Подсчет минут пауз
     if (trip.tripInfo.pauseIntervals.length) {
       for (const pause of trip.tripInfo.pauseIntervals) {
         if (!pause.start || !pause.end) continue;
 
         const pauseStart = new Date(pause.start);
         const pauseEnd = new Date(pause.end);
-        const pauseDurationMillis = pauseEnd.getTime() - pauseStart.getTime();
-        const pauseDurationMinutes = Math.ceil(
-          pauseDurationMillis / (1000 * 60),
-        );
 
-        // Учет пауз только если они в пределах общего времени поездки
-        if (pauseStart >= startTime && pauseEnd <= endTime) {
-          totalPauseMinutes += pauseDurationMinutes;
-          tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+        // Добавляем все минуты паузы в Set (чтобы избежать дублирования минут)
+        for (
+          let minute = Math.ceil(pauseStart.getTime() / (1000 * 60));
+          minute < Math.ceil(pauseEnd.getTime() / (1000 * 60));
+          minute++
+        ) {
+          pauseMinutes.add(minute);
         }
       }
     }
 
-    const activeTripMinutes = Math.max(
-      0,
-      tripDurationMinutes - totalPauseMinutes,
-    );
-    tripCost += activeTripMinutes * trip.tripInfo.pricing.minute;
+    // Подсчет стоимости минут паузы
+    const totalPauseMinutes = pauseMinutes.size;
+    const pauseCost = totalPauseMinutes * trip.tripInfo.pricing.pause;
 
-    return tripCost;
+    // Подсчет активных минут поездки
+    const activeTripMinutes = tripDurationMinutes - totalPauseMinutes;
+    const tripCost = activeTripMinutes * trip.tripInfo.pricing.minute;
+
+    // Итоговая стоимость поездки
+    return tripCost + pauseCost;
   }
 
   private async getPer30SecPackets(objectId: string, startTime: string) {
