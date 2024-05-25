@@ -871,7 +871,7 @@ export class TripProcessService {
         const pauseDurationMinutes = Math.ceil(
           pauseDurationMillis / (1000 * 60),
         );
-        // tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
+        tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
         tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
       }
 
