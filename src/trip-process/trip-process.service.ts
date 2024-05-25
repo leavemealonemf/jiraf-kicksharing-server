@@ -859,11 +859,12 @@ export class TripProcessService {
     const tripDurationMillis = endTime.getTime() - startTime.getTime();
     const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
 
-    let tripCost = tripDurationMinutes * trip.tripInfo.pricing.minute;
+    let tripCost = 0;
+    let totalPauseMinutes = 0;
 
     if (trip.tripInfo.pauseIntervals.length) {
       for (const pause of trip.tripInfo.pauseIntervals) {
-        if (!pause.start || !pause.end) return;
+        if (!pause.start || !pause.end) continue;
 
         const pauseStart = new Date(pause.start);
         const pauseEnd = new Date(pause.end);
@@ -871,14 +872,15 @@ export class TripProcessService {
         const pauseDurationMinutes = Math.ceil(
           pauseDurationMillis / (1000 * 60),
         );
-        tripCost -= pauseDurationMinutes * trip.tripInfo.pricing.minute;
+        totalPauseMinutes += pauseDurationMinutes;
         tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
       }
-
-      return tripCost;
-    } else {
-      return tripCost;
     }
+
+    const activeTripMinutes = tripDurationMinutes - totalPauseMinutes;
+    tripCost += activeTripMinutes * trip.tripInfo.pricing.minute;
+
+    return tripCost;
   }
 
   private async getPer30SecPackets(objectId: string, startTime: string) {
