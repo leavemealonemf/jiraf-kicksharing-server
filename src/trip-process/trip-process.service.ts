@@ -872,12 +872,19 @@ export class TripProcessService {
         const pauseDurationMinutes = Math.ceil(
           pauseDurationMillis / (1000 * 60),
         );
-        totalPauseMinutes += pauseDurationMinutes;
-        tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+
+        // Учет пауз только если они в пределах общего времени поездки
+        if (pauseStart >= startTime && pauseEnd <= endTime) {
+          totalPauseMinutes += pauseDurationMinutes;
+          tripCost += pauseDurationMinutes * trip.tripInfo.pricing.pause;
+        }
       }
     }
 
-    const activeTripMinutes = tripDurationMinutes - totalPauseMinutes;
+    const activeTripMinutes = Math.max(
+      0,
+      tripDurationMinutes - totalPauseMinutes,
+    );
     tripCost += activeTripMinutes * trip.tripInfo.pricing.minute;
 
     return tripCost;
