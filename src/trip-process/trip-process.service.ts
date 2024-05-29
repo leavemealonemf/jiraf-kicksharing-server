@@ -931,7 +931,7 @@ export class TripProcessService {
     const zones = await this.geofenceService.getGeofences();
 
     for (const zone of zones) {
-      if (!zone.coordinates) continue;
+      if (!zone.coordinates) return;
       // if (zone.type.drawType === 'CIRCLE') return;
 
       const zoneCoords = JSON.parse(zone.coordinates);
@@ -948,6 +948,10 @@ export class TripProcessService {
       //     return 'TRAVEL_BAN';
       //   }
       // }
+
+      if (zone.type.slug === 'mainZone') {
+        continue;
+      }
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {
