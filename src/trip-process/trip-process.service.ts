@@ -41,6 +41,7 @@ import * as turf from '@turf/turf';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PaymentsService } from 'src/payments/payments.service';
 import { isArray } from 'class-validator';
+import { AllTimeSpeedLimit, ScheduleSpeedLimit } from './interfaces';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -767,35 +768,43 @@ export class TripProcessService {
 
         console.log(geofencingStatus);
 
-        // if (
-        //   geofencingStatus === 'TRAVEL_BAN' &&
-        //   updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
-        // ) {
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
-        //   );
-        //   updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
-        // } else {
-        //   updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS.START_ENGINE,
-        //   );
-        // }
+        if (
+          geofencingStatus.includes('TRAVEL_BAN') &&
+          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
+        ) {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
+          );
+          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
+        } else {
+          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.START_ENGINE,
+          );
+        }
 
-        // if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
-        //   const speedValue = geofencingStatus.split('.')[1];
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS_DYNAMIC[speedValue],
-        //   );
-        // } else {
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-        //   );
-        // }
+        if (
+          !!geofencingStatus.find(
+            (x) => x.split('.')[0] === 'ALL_TIME_SPEED_LIMIT',
+          )
+        ) {
+          this.logger.log('ALL TIME SPEED LIMIT DETCTED');
+          const speedValue = geofencingStatus
+            .find((x) => x.split('.')[0] === 'ALL_TIME_SPEED_LIMIT')
+            .split('.')[1];
+          this.logger.log('SPEED VALUE', speedValue);
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS_DYNAMIC[speedValue],
+          );
+        } else {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+          );
+        }
 
         // if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
         //   const speedValue = geofencingStatus.split('.')[1];
