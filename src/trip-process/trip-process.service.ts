@@ -655,7 +655,7 @@ export class TripProcessService {
       const cachedTrip = await this.cacheManager.get<IActiveTripRoot>(
         activeTrip.tripUUID,
       );
-      if (!cachedTrip) return;
+      if (!cachedTrip) continue;
       const scooter = await this.scooterService.findOneMobile(
         cachedTrip.tripInfo.scooter.scooter.deviceId,
       );
@@ -861,10 +861,6 @@ export class TripProcessService {
         if (!isScooterInMainZone) {
           includedZones.push('TRAVEL_BAN');
         }
-      }
-
-      if (zone.type.slug === 'mainZone') {
-        continue;
       }
 
       if (turf.booleanPointInPolygon(turf.point([lat, lon]), polygon)) {
