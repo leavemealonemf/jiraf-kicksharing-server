@@ -939,15 +939,15 @@ export class TripProcessService {
       coords.push(coords[0]);
       const polygon = turf.polygon([coords]);
 
-      if (zone.type.slug === 'mainZone') {
-        const isScooterInMainZone = turf.booleanPointInPolygon(
-          turf.point([lat, lon]),
-          polygon,
-        );
-        if (!isScooterInMainZone) {
-          return 'TRAVEL_BAN';
-        }
-      }
+      // if (zone.type.slug === 'mainZone') {
+      //   const isScooterInMainZone = turf.booleanPointInPolygon(
+      //     turf.point([lat, lon]),
+      //     polygon,
+      //   );
+      //   if (!isScooterInMainZone) {
+      //     return 'TRAVEL_BAN';
+      //   }
+      // }
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {
