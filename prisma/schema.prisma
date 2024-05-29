@@ -20,7 +20,6 @@ model ErpUser {
   TokenErp     TokenErp[]
   franchise  Franchise?
   role      ErpUserRoles @default(MANAGER)
-  franchiseId Int?
   forgotPassToken ForgotPasswordModel?
   inviter         ErpUser?            @relation("Inviter", fields: [inviterId], references: [id])
   inviterId       Int?

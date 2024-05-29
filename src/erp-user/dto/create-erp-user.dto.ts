@@ -21,6 +21,5 @@ export class CreateErpUserDto {
     message: 'Поле не должно быть пустым',
   })
   role: $Enums.ErpUserRoles;
-  franchiseId?: number;
   inviterId?: number;
 }
