@@ -14,20 +14,20 @@ export class FranchiseController {
   constructor(private readonly franchiseService: FranchiseService) {}
 
   @Get()
-  findAll() {
-    return this.franchiseService.findAll();
+  async findAll() {
+    return await this.franchiseService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.franchiseService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.franchiseService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateFranchiseDto: UpdateFranchiseDto,
   ) {
-    return this.franchiseService.update(+id, updateFranchiseDto);
+    return await this.franchiseService.update(+id, updateFranchiseDto);
   }
 }
