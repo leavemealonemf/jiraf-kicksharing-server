@@ -941,15 +941,15 @@ export class TripProcessService {
       coords.push(coords[0]);
       const polygon = turf.polygon([coords]);
 
-      // if (zone.type.slug === 'mainZone') {
-      //   const isScooterInMainZone = turf.booleanPointInPolygon(
-      //     turf.point([lat, lon]),
-      //     polygon,
-      //   );
-      //   if (!isScooterInMainZone) {
-      //     return 'TRAVEL_BAN';
-      //   }
-      // }
+      if (zone.type.slug === 'mainZone') {
+        const isScooterInMainZone = turf.booleanPointInPolygon(
+          turf.point([lat, lon]),
+          polygon,
+        );
+        if (!isScooterInMainZone) {
+          includedZones.push('TRAVEL_BAN');
+        }
+      }
 
       if (zone.type.slug === 'mainZone') {
         continue;
@@ -983,8 +983,6 @@ export class TripProcessService {
             includedZones.push('SCHEDULE_SPEED_LIMIT.25');
           }
         }
-      } else {
-        includedZones.push('GOOD');
       }
     }
     return includedZones;
