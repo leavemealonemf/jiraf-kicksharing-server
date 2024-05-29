@@ -854,10 +854,12 @@ export class TripProcessService {
       const polygon = turf.polygon([coords]);
 
       if (zone.type.slug === 'mainZone') {
+        this.logger.log('CHECK MAIN ZONE STAGE');
         const isScooterInMainZone = turf.booleanPointInPolygon(
           turf.point([lat, lon]),
           polygon,
         );
+        this.logger.log('SCOOTER IN MAIN ZONE? ' + isScooterInMainZone);
         if (!isScooterInMainZone) {
           includedZones.push('TRAVEL_BAN');
         }
