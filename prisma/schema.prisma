@@ -30,10 +30,25 @@ model ErpUser {
 
 model Franchise {
   id       Int      @id @default(autoincrement())
-  erpUserId   Int      @unique
-  eprUser     ErpUser     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
-  city     String?
-  income   Int?
+  erpUserId   Int?      @unique
+  eprUser     ErpUser?     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
+  franchiseName String
+  priceForScooterMonth Float? 
+  workStatus FranchiseWorkStatus @default(WORK)
+  scooters Scooter[]
+  geofences Geofence[]
+  cityId Int? @unique
+  city City? @relation(fields: [cityId], references: [id])
+}
+
+model City {
+  id       Int      @id @default(autoincrement())
+  name String
+  subject String
+  lat Float
+  lng Float
+  geofences Geofence[]
+  franchise    Franchise?
 }
 
 model User {
@@ -146,6 +161,9 @@ model Scooter {
   modelId         Int     
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
   trips           Trip[]
+
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id])
 }
 
 model ScooterModel {
@@ -208,6 +226,12 @@ model Geofence {
   img                     String?
   typeId                  Int?      
   type                    GeofenceType?  @relation(fields: [typeId], references: [id])
+
+  cityId Int
+  city City @relation(fields: [cityId], references: [id])
+
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id])
 }
 
 
@@ -321,6 +345,12 @@ enum TariffStatus {
 enum PromocodeStatus {
   ACTIVE
   ARCHIVE
+}
+
+enum FranchiseWorkStatus {
+  WORK
+  PAUSE
+  WINTERING
 }
 
 enum PromocodeType {
