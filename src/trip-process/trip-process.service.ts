@@ -86,7 +86,7 @@ export class TripProcessService {
 
     const tripUUID = uuid();
 
-    const scooterUnlockIOT = this.scooterCommandHandlerIOT.sendCommand(
+    const scooterUnlockIOT = await this.scooterCommandHandlerIOT.sendCommand(
       scooterRes.scooter.deviceIMEI,
       DEVICE_COMMANDS.UNLOCK,
     );
@@ -931,13 +931,23 @@ export class TripProcessService {
     const zones = await this.geofenceService.getGeofences();
 
     for (const zone of zones) {
-      if (!zone.coordinates) return;
+      if (!zone.coordinates) continue;
       // if (zone.type.drawType === 'CIRCLE') return;
 
       const zoneCoords = JSON.parse(zone.coordinates);
       const coords: any[] = this.convertToTurfFormat(zoneCoords);
       coords.push(coords[0]);
       const polygon = turf.polygon([coords]);
+
+      if (zone.type.slug === 'mainZone') {
+        const isScooterInMainZone = turf.booleanPointInPolygon(
+          turf.point([lat, lon]),
+          polygon,
+        );
+        if (!isScooterInMainZone) {
+          return 'TRAVEL_BAN';
+        }
+      }
 
       if (turf.booleanPointInPolygon([lat, lon], polygon)) {
         if (zone.type.slug === 'notScooters') {

@@ -42,8 +42,8 @@ model User {
   name     String?
   phone    String
   email    String?
-  balance  Float  @default(0.0)
-  bonuses Float @default(0)
+  balance   Float    @default(0.0)
+  bonuses Float     @default(0)
   spending Float? 
   lastActivity DateTime @default(now())
   dateTimeCreated DateTime @default(now())
