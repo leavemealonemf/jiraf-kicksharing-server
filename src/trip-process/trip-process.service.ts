@@ -769,7 +769,7 @@ export class TripProcessService {
         console.log(geofencingStatus);
 
         if (
-          geofencingStatus.includes('TRAVEL_BAN') &&
+          geofencingStatus[0] === 'TRAVEL_BAN' &&
           updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
         ) {
           await this.scooterCommandHandlerIOT.sendCommand(
@@ -785,16 +785,8 @@ export class TripProcessService {
           );
         }
 
-        if (
-          !!geofencingStatus.find(
-            (x) => x.split('.')[0] === 'ALL_TIME_SPEED_LIMIT',
-          )
-        ) {
-          this.logger.log('ALL TIME SPEED LIMIT DETCTED');
-          const speedValue = geofencingStatus
-            .find((x) => x.split('.')[0] === 'ALL_TIME_SPEED_LIMIT')
-            .split('.')[1];
-          this.logger.log('SPEED VALUE', speedValue);
+        if (geofencingStatus[0].split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
+          const speedValue = geofencingStatus[0].split('.')[1];
           await this.scooterCommandHandlerIOT.sendCommand(
             scooter.scooter.deviceIMEI,
             DEVICE_COMMANDS_DYNAMIC[speedValue],
@@ -806,20 +798,20 @@ export class TripProcessService {
           );
         }
 
-        // if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
-        //   const speedValue = geofencingStatus.split('.')[1];
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS_DYNAMIC[speedValue],
-        //   );
-        // } else {
-        //   await this.scooterCommandHandlerIOT.sendCommand(
-        //     scooter.scooter.deviceIMEI,
-        //     DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-        //   );
-        // }
+        if (geofencingStatus[0].split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
+          const speedValue = geofencingStatus[0].split('.')[1];
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS_DYNAMIC[speedValue],
+          );
+        } else {
+          await this.scooterCommandHandlerIOT.sendCommand(
+            scooter.scooter.deviceIMEI,
+            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+          );
+        }
 
-        // updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
+        updatedTrip.tripInfo.geofencingStatus = geofencingStatus[0];
       }
 
       await this.cacheManager.set(cachedTrip.uuid, updatedTrip, CACHE_TTL);
