@@ -41,7 +41,6 @@ import * as turf from '@turf/turf';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PaymentsService } from 'src/payments/payments.service';
 import { isArray } from 'class-validator';
-import { AllTimeSpeedLimit, ScheduleSpeedLimit } from './interfaces';
 
 const CACHE_TTL = 1 * 3600000;
 
@@ -557,92 +556,6 @@ export class TripProcessService {
     return tripWithPauseIntervals;
   }
 
-  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
-  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
-  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
-
-  async getUpdatedTripInfo(tripUUID: string) {
-    const trip = await this.cacheManager.get<IActiveTripRoot>(tripUUID);
-    if (!trip) {
-      throw new BadRequestException(
-        'Не удалось получить информацию о скутере т.к поездки ' +
-          tripUUID +
-          ' не существует',
-      );
-    }
-
-    const scooter = await this.scooterService.findOneMobile(
-      trip.tripInfo.scooter.scooter.deviceId,
-    );
-
-    const packets = await this.getPer30SecPackets(
-      scooter.scooter.deviceIMEI,
-      trip.tripInfo.startTime,
-    );
-
-    const updatedTrip = Object.assign({}, trip);
-    updatedTrip.tripInfo.scooter = scooter;
-
-    if (packets) {
-      const distance = this.calcTripTotalDistance(packets);
-      updatedTrip.tripInfo.distanceTraveled = distance;
-
-      const geofencingStatus = await this.getGeofencingTripStatus(
-        packets[0].lat, // first packet lat by index
-        packets[0].lon, // first packet lon by index
-      );
-
-      if (
-        geofencingStatus === 'TRAVEL_BAN' &&
-        updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
-      ) {
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
-        );
-        updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
-      } else {
-        updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS.START_ENGINE,
-        );
-      }
-
-      if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
-        const speedValue = geofencingStatus.split('.')[1];
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS_DYNAMIC[speedValue],
-        );
-      } else {
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-        );
-      }
-
-      if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
-        const speedValue = geofencingStatus.split('.')[1];
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS_DYNAMIC[speedValue],
-        );
-      } else {
-        await this.scooterCommandHandlerIOT.sendCommand(
-          scooter.scooter.deviceIMEI,
-          DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-        );
-      }
-
-      updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
-    }
-
-    await this.cacheManager.set(tripUUID, updatedTrip, CACHE_TTL);
-
-    return updatedTrip;
-  }
-
   // PARKING LOGIC
   // PARKING LOGIC
   // PARKING LOGIC
@@ -731,6 +644,10 @@ export class TripProcessService {
   // OTHER TRIP ROUTINE
   // OTHER TRIP ROUTINE
 
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
+  // GET TRIP INFO INCLUDES GEOFENCING FEATURES
+
   @Cron(CronExpression.EVERY_10_SECONDS)
   async updateTripInfoBackground() {
     const activeTrips = await this.dbService.activeTrip.findMany();
@@ -747,12 +664,6 @@ export class TripProcessService {
         scooter.scooter.deviceIMEI,
         cachedTrip.tripInfo.startTime,
       );
-
-      // console.log(packets);
-
-      // for (const packet of packets) {
-      //   console.log(packet);
-      // }
 
       const updatedTrip = Object.assign({}, cachedTrip);
       updatedTrip.tripInfo.scooter = scooter;
@@ -986,6 +897,11 @@ export class TripProcessService {
         }
       }
     }
+
+    if (includedZones.length === 0) {
+      includedZones.push('GOOD');
+    }
+
     return includedZones;
   }
 
