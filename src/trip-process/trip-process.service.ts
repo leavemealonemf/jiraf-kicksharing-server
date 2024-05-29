@@ -953,7 +953,7 @@ export class TripProcessService {
         continue;
       }
 
-      if (turf.booleanPointInPolygon([lat, lon], polygon)) {
+      if (turf.booleanPointInPolygon(turf.point([lat, lon]), polygon)) {
         if (zone.type.slug === 'notScooters') {
           this.logger.log('TRAVEL_BAN');
           return 'TRAVEL_BAN';
