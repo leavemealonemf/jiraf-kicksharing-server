@@ -767,50 +767,50 @@ export class TripProcessService {
 
         console.log(geofencingStatus);
 
-        if (
-          geofencingStatus === 'TRAVEL_BAN' &&
-          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
-        ) {
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
-          );
-          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
-        } else {
-          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.START_ENGINE,
-          );
-        }
+        // if (
+        //   geofencingStatus === 'TRAVEL_BAN' &&
+        //   updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
+        // ) {
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
+        //   );
+        //   updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
+        // } else {
+        //   updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS.START_ENGINE,
+        //   );
+        // }
 
-        if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
-          const speedValue = geofencingStatus.split('.')[1];
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS_DYNAMIC[speedValue],
-          );
-        } else {
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-          );
-        }
+        // if (geofencingStatus.split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
+        //   const speedValue = geofencingStatus.split('.')[1];
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS_DYNAMIC[speedValue],
+        //   );
+        // } else {
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+        //   );
+        // }
 
-        if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
-          const speedValue = geofencingStatus.split('.')[1];
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS_DYNAMIC[speedValue],
-          );
-        } else {
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-          );
-        }
+        // if (geofencingStatus.split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
+        //   const speedValue = geofencingStatus.split('.')[1];
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS_DYNAMIC[speedValue],
+        //   );
+        // } else {
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+        //   );
+        // }
 
-        updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
+        // updatedTrip.tripInfo.geofencingStatus = geofencingStatus;
       }
 
       await this.cacheManager.set(cachedTrip.uuid, updatedTrip, CACHE_TTL);
@@ -927,12 +927,14 @@ export class TripProcessService {
   private async getGeofencingTripStatus(
     lat: number,
     lon: number,
-  ): Promise<GofencingStatus> {
+  ): Promise<GofencingStatus[]> {
     const zones = await this.geofenceService.getGeofences();
 
+    const includedZones = [];
+
     for (const zone of zones) {
-      if (!zone.coordinates) return;
-      // if (zone.type.drawType === 'CIRCLE') return;
+      if (!zone.coordinates) continue;
+      if (zone.type.drawType === 'CIRCLE') continue;
 
       const zoneCoords = JSON.parse(zone.coordinates);
       const coords: any[] = this.convertToTurfFormat(zoneCoords);
@@ -956,26 +958,36 @@ export class TripProcessService {
       if (turf.booleanPointInPolygon(turf.point([lat, lon]), polygon)) {
         if (zone.type.slug === 'notScooters') {
           this.logger.log('TRAVEL_BAN');
-          return 'TRAVEL_BAN';
+          includedZones.push('TRAVEL_BAN');
+          // return 'TRAVEL_BAN';
         }
         if (zone.type.slug === 'speedLimitAllDay') {
-          return this.zoneSpeedLimitAllTimeStatus(zone.allTimeSpeedLimit);
+          const speedLimitAllDay = this.zoneSpeedLimitAllTimeStatus(
+            zone.allTimeSpeedLimit,
+          );
+          includedZones.push(speedLimitAllDay);
         }
         if (zone.type.slug === 'speedLimitSchedule') {
           const timeInterval = this.getCurrentScheduleTimeInterval(zone);
           if (timeInterval === 'firstInterval') {
-            return this.zoneSpeedLimitScheduleStatus(zone.firstSpeedLimit);
+            const firstIntervalLimit = this.zoneSpeedLimitScheduleStatus(
+              zone.firstSpeedLimit,
+            );
+            includedZones.push(firstIntervalLimit);
           } else if (timeInterval === 'secondInterval') {
-            return this.zoneSpeedLimitScheduleStatus(zone.secondSpeedLimit);
+            const secondIntervalLimit = this.zoneSpeedLimitScheduleStatus(
+              zone.secondSpeedLimit,
+            );
+            includedZones.push(secondIntervalLimit);
           } else {
-            return 'SCHEDULE_SPEED_LIMIT.25';
+            includedZones.push('SCHEDULE_SPEED_LIMIT.25');
           }
         }
       } else {
-        return 'GOOD';
+        includedZones.push('GOOD');
       }
     }
-    return 'GOOD';
+    return includedZones;
   }
 
   private convertToTurfFormat(coords) {
