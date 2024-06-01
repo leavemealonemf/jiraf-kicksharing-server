@@ -1,29 +1,33 @@
-import { Controller, Get, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { FranchiseService } from './franchise.service';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
+import { Platforms } from '@common/decorators';
 
-@ApiTags('Franchise (Франшиза)')
+@UseGuards(PlatformsGuard)
+@Platforms('WEB')
+@ApiTags('Франшиза')
 @ApiBearerAuth()
 @Controller('franchise')
 export class FranchiseController {
   constructor(private readonly franchiseService: FranchiseService) {}
 
   @Get()
-  findAll() {
-    return this.franchiseService.findAll();
+  async findAll() {
+    return await this.franchiseService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.franchiseService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.franchiseService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateFranchiseDto: UpdateFranchiseDto,
   ) {
-    return this.franchiseService.update(+id, updateFranchiseDto);
+    return await this.franchiseService.update(+id, updateFranchiseDto);
   }
 }

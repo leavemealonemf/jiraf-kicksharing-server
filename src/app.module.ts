@@ -31,6 +31,7 @@ import { TripProcessModule } from './trip-process/trip-process.module';
 import { AcquiringModule } from './acquiring/acquiring.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { UserPaymentsModule } from './user-payments/user-payments.module';
+import { CityModule } from './city/city.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -74,6 +75,7 @@ console.log(NODE_ENV);
     AcquiringModule,
     PaymentMethodModule,
     UserPaymentsModule,
+    CityModule,
   ],
   controllers: [],
   providers: [

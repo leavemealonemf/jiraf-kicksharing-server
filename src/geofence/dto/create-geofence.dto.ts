@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateGeofenceDto {
   @ApiProperty({ default: 'Главная' })
@@ -36,4 +36,18 @@ export class CreateGeofenceDto {
     message: 'Поле typeId не должно быть пустым',
   })
   typeId: number;
+
+  @ApiProperty({ default: 1 })
+  @IsNotEmpty({
+    message: 'Поле cityId не должно быть пустым',
+  })
+  @IsNumber(undefined, { message: 'На вход ожидалось число' })
+  cityId: number;
+
+  @ApiProperty({ default: 1 })
+  @IsNotEmpty({
+    message: 'Поле franchiseId не должно быть пустым',
+  })
+  @IsNumber(undefined, { message: 'На вход ожидалось число' })
+  franchiseId: number;
 }
