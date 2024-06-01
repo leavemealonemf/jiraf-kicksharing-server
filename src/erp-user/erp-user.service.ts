@@ -65,7 +65,6 @@ export class ErpUserService {
         phone: createErpUserDto.phone,
         password: hashedPassword,
         role: createErpUserDto.role,
-        franchiseId: createErpUserDto.franchiseId,
         inviterId: createErpUserDto.inviterId,
       },
       include: { inviter: true },
@@ -116,7 +115,6 @@ export class ErpUserService {
       data: {
         avatar: updateErpUserDto.avatar ? path : user.avatar,
         email: updateErpUserDto.email,
-        franchiseId: updateErpUserDto.franchiseId,
         name: updateErpUserDto.name,
         password: updateErpUserDto.password,
         phone: updateErpUserDto.phone,

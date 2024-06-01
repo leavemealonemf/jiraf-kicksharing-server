@@ -39,4 +39,6 @@ export class CreateScooterDto {
   addedDate: Date;
   @ApiProperty({ default: null })
   photo?: string;
+
+  franchiseId: number;
 }

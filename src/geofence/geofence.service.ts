@@ -82,6 +82,8 @@ export class GeofenceService {
           secondTimePeriodEnd: dto.secondTimePeriodEnd,
           secondTimePeriodStart: dto.secondTimePeriodStart,
           typeId: dto.typeId,
+          cityId: dto.cityId,
+          franchiseId: dto.franchiseId,
         },
         include: { type: true },
       })

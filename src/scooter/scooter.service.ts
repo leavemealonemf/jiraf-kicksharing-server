@@ -47,6 +47,7 @@ export class ScooterService {
           addedDate: createScooterDto.addedDate,
           status: createScooterDto.status,
           photo: createScooterDto.photo ? path : null,
+          franchiseId: createScooterDto.franchiseId,
         },
         include: { model: true },
       })
