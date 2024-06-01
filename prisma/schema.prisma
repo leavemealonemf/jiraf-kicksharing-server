@@ -31,7 +31,10 @@ model Franchise {
   id       Int      @id @default(autoincrement())
   erpUserId   Int?      @unique
   eprUser     ErpUser?     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
-  franchiseName String
+  organization String
+  taxpayerIdNumber Int?
+  legalAddress String
+  youKassaAccount String
   priceForScooterMonth Float? 
   workStatus FranchiseWorkStatus @default(WORK)
   scooters Scooter[]
@@ -161,8 +164,8 @@ model Scooter {
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
   trips           Trip[]
 
-  franchiseId Int
-  franchise Franchise @relation(fields: [franchiseId], references: [id])
+  franchiseId Int?
+  franchise Franchise? @relation(fields: [franchiseId], references: [id])
 }
 
 model ScooterModel {

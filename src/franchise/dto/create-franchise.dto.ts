@@ -4,9 +4,27 @@ import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateFranchiseDto {
   @ApiProperty({ default: 'ИП Яловик Иван Леонидович' })
-  @IsNotEmpty({ message: 'Поле franchiseName не должно быть пустым' })
+  @IsNotEmpty({ message: 'Поле organization не должно быть пустым' })
   @IsString({ message: 'На вход ожидалась строка' })
-  franchiseName: string;
+  organization: string;
+
+  @ApiProperty({ default: 554433321232 })
+  @IsNumber(undefined, { message: 'На вход ожидалось число' })
+  taxpayerIdNumber?: number;
+
+  @ApiProperty({
+    default: '302019, Орловская область, г. Орёл, ул. Ленина, д3, кв152',
+  })
+  @IsNotEmpty({ message: 'Поле legalAddress не должно быть пустым' })
+  @IsString({ message: 'На вход ожидалась строка' })
+  legalAddress: string;
+
+  @ApiProperty({
+    default: '3214123123143123',
+  })
+  @IsNotEmpty({ message: 'Поле youKassaAccount не должно быть пустым' })
+  @IsString({ message: 'На вход ожидалась строка' })
+  youKassaAccount: string;
 
   @ApiProperty({ default: 392.23 })
   @IsNotEmpty({ message: 'Поле priceForScooterMonth не должно быть пустым' })
