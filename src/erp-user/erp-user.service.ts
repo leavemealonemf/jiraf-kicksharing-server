@@ -116,7 +116,7 @@ export class ErpUserService {
         avatar: updateErpUserDto.avatar ? path : user.avatar,
         email: updateErpUserDto.email,
         name: updateErpUserDto.name,
-        password: updateErpUserDto.password,
+        password: this.hashPassword(updateErpUserDto.password),
         phone: updateErpUserDto.phone,
         role: updateErpUserDto.role,
         status: updateErpUserDto.status,

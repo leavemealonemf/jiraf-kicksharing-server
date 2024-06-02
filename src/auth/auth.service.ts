@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
@@ -54,7 +55,11 @@ export class AuthService {
 
     const user: ErpUser = await this.erpUserService.create(dto).catch((err) => {
       this.logger.error(err);
-      return null;
+      throw new BadRequestException(
+        `Не удалось зарегистрировать пользователя с данными: ${JSON.stringify(
+          dto,
+        )}`,
+      );
     });
 
     // if (user && user.role === 'FRANCHISE') {
