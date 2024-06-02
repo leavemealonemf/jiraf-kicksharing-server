@@ -1,9 +1,18 @@
-import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Post,
+} from '@nestjs/common';
 import { FranchiseService } from './franchise.service';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { Platforms } from '@common/decorators';
+import { CreateFranchiseDto } from './dto/create-franchise.dto';
 
 @UseGuards(PlatformsGuard)
 @Platforms('WEB')
@@ -12,6 +21,11 @@ import { Platforms } from '@common/decorators';
 @Controller('franchise')
 export class FranchiseController {
   constructor(private readonly franchiseService: FranchiseService) {}
+
+  @Post()
+  async create(@Body() dto: CreateFranchiseDto) {
+    return await this.franchiseService.create(dto);
+  }
 
   @Get()
   async findAll() {
