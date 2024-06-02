@@ -9,8 +9,8 @@ export class CreateFranchiseDto {
   organization: string;
 
   @ApiProperty({ default: 554433321232 })
-  @IsNumber(undefined, { message: 'На вход ожидалось число' })
-  taxpayerIdNumber?: number;
+  @IsString({ message: 'На вход ожидалась строка' })
+  taxpayerIdNumber?: string;
 
   @ApiProperty({
     default: '302019, Орловская область, г. Орёл, ул. Ленина, д3, кв152',

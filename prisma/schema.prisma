@@ -32,7 +32,7 @@ model Franchise {
   erpUserId   Int?      @unique
   eprUser     ErpUser?     @relation(fields: [erpUserId], references: [id], onDelete: Cascade)
   organization String
-  taxpayerIdNumber Int?
+  taxpayerIdNumber String?
   legalAddress String
   youKassaAccount String
   priceForScooterMonth Float? 
