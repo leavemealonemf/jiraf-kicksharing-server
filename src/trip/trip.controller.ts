@@ -7,13 +7,17 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '@common/decorators';
+import { CurrentUser, Platforms } from '@common/decorators';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
+@UseGuards(PlatformsGuard)
+@Platforms('MOBILE')
 @ApiTags('Trips (Поездки)')
 @ApiBearerAuth()
 @Controller('trip')
