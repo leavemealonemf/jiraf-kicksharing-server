@@ -8,7 +8,7 @@ export class CreateFranchiseDto {
   @IsString({ message: 'На вход ожидалась строка' })
   organization: string;
 
-  @ApiProperty({ default: 554433321232 })
+  @ApiProperty({ default: '554433321232' })
   @IsString({ message: 'На вход ожидалась строка' })
   taxpayerIdNumber?: string;
 

@@ -26,13 +26,25 @@ export class FranchiseService {
   }
 
   async findAll() {
-    return await this.dbService.franchise.findMany();
+    return await this.dbService.franchise.findMany({
+      include: {
+        city: true,
+        _count: {
+          select: {
+            scooters: true,
+          },
+        },
+      },
+    });
   }
 
   async findOne(id: number) {
     const franchise = await this.dbService.franchise
       .findFirst({
         where: { id: id },
+        include: {
+          city: true,
+        },
       })
       .catch((err) => {
         this.logger.error(`Не удалось найти франшизу с id: ${id}`);
