@@ -39,8 +39,8 @@ model Franchise {
   workStatus FranchiseWorkStatus @default(WORK)
   scooters Scooter[]
   geofences Geofence[]
-  cityId Int? @unique
-  city City? @relation(fields: [cityId], references: [id])
+  cityId Int @unique
+  city City @relation(fields: [cityId], references: [id])
 }
 
 model City {
@@ -164,8 +164,8 @@ model Scooter {
   model           ScooterModel   @relation(fields: [modelId], references: [id], name: "ScooterModels")
   trips           Trip[]
 
-  franchiseId Int?
-  franchise Franchise? @relation(fields: [franchiseId], references: [id])
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id])
 }
 
 model ScooterModel {
@@ -229,11 +229,11 @@ model Geofence {
   typeId                  Int?      
   type                    GeofenceType?  @relation(fields: [typeId], references: [id])
 
-  cityId Int?
-  city City? @relation(fields: [cityId], references: [id])
+  cityId Int
+  city City @relation(fields: [cityId], references: [id])
 
-  franchiseId Int?
-  franchise Franchise? @relation(fields: [franchiseId], references: [id])
+  franchiseId Int
+  franchise Franchise @relation(fields: [franchiseId], references: [id])
 }
 
 
