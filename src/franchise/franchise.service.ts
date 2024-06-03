@@ -67,6 +67,14 @@ export class FranchiseService {
           priceForScooterMonth: dto.priceForScooterMonth,
           workStatus: dto.workStatus,
         },
+        include: {
+          city: true,
+          _count: {
+            select: {
+              scooters: true,
+            },
+          },
+        },
       })
       .catch((err) => {
         this.logger.error(`Не удалось обновить франшизу с id: ${id}`);
