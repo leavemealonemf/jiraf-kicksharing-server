@@ -11,7 +11,17 @@ export class FranchiseService {
 
   async create(dto: CreateFranchiseDto) {
     const franchise = await this.dbService.franchise
-      .create({ data: dto })
+      .create({
+        data: dto,
+        include: {
+          city: true,
+          _count: {
+            select: {
+              scooters: true,
+            },
+          },
+        },
+      })
       .catch((err) => {
         this.logger.error('Не удалось создать франшизу');
         this.logger.error(err);
