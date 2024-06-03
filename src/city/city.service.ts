@@ -28,6 +28,24 @@ export class CityService {
     return await this.dbService.city.findMany();
   }
 
+  async findAllWhereFranchiseEmpty() {
+    const franchises = await this.dbService.city
+      .findMany({
+        where: {
+          franchise: null,
+        },
+      })
+      .catch((err) => {
+        this.logger.error('Не удалось получить города без франшизы');
+        this.logger.error(err);
+        throw new BadRequestException(
+          'Не удалось получить города без франшизы',
+        );
+      });
+
+    return franchises;
+  }
+
   async findOne(id: number) {
     const city = await this.dbService.city.findFirst({ where: { id: id } });
     if (!city) {
