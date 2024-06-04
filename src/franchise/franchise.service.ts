@@ -2,12 +2,18 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { DbService } from 'src/db/db.service';
+import { AuthService } from 'src/auth/auth.service';
+import { ConnectOwnerToFranchiseDto } from './dto';
+import { Franchise } from '@prisma/client';
 
 @Injectable()
 export class FranchiseService {
   private readonly logger = new Logger(FranchiseService.name);
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly authService: AuthService,
+  ) {}
 
   async create(dto: CreateFranchiseDto) {
     const franchise = await this.dbService.franchise
@@ -19,6 +25,9 @@ export class FranchiseService {
             select: {
               id: true,
               name: true,
+              email: true,
+              phone: true,
+              role: true,
             },
           },
           _count: {
@@ -49,6 +58,9 @@ export class FranchiseService {
           select: {
             id: true,
             name: true,
+            email: true,
+            phone: true,
+            role: true,
           },
         },
         _count: {
@@ -75,6 +87,9 @@ export class FranchiseService {
             select: {
               id: true,
               name: true,
+              email: true,
+              phone: true,
+              role: true,
             },
           },
         },
@@ -106,6 +121,9 @@ export class FranchiseService {
             select: {
               id: true,
               name: true,
+              email: true,
+              phone: true,
+              role: true,
             },
           },
           _count: {
@@ -137,6 +155,38 @@ export class FranchiseService {
         throw new BadRequestException(
           `Не удалось удалить франшизу с id: ${id}`,
         );
+      });
+  }
+
+  async connectOwnerToFranchise(dto: ConnectOwnerToFranchiseDto) {
+    const owner = await this.authService.register(dto.registerInfo);
+    return await this.dbService.franchise
+      .update({
+        include: {
+          city: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              role: true,
+            },
+          },
+          _count: { select: { scooters: true } },
+        },
+        where: { id: dto.franchiseId },
+        data: {
+          ownerId: owner.id,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(
+          `Не удалось привязать руководителя к франшизе с id: ${
+            dto.franchiseId
+          } и данными пользователя: ${JSON.stringify(dto.registerInfo)}`,
+        );
+        this.logger.error(err);
       });
   }
 }

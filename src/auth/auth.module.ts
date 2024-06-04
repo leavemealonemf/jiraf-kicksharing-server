@@ -8,7 +8,6 @@ import { options } from './config';
 import { DbModule } from 'src/db/db.module';
 import { STRATEGIES } from './strategies';
 import { GUARDS } from './guards';
-import { FranchiseModule } from 'src/franchise/franchise.module';
 import { MailModule } from 'src/mail/mail.module';
 import { TwilioModule } from 'nestjs-twilio';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -30,11 +29,11 @@ import { CacheModule } from '@nestjs/cache-manager';
     ErpUserModule,
     UserModule,
     DbModule,
-    FranchiseModule,
     MailModule,
     CacheModule.register(),
   ],
   controllers: [AuthController],
   providers: [AuthService, ...STRATEGIES, ...GUARDS],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -18,7 +18,6 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { Cookie, Public, UserAgent } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
-import { FranchiseService } from 'src/franchise/franchise.service';
 import { MailService } from 'src/mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MobileAuthDto } from './dto/auth-mobile.dto';
@@ -34,7 +33,6 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-    private readonly franchiseService: FranchiseService,
     private readonly mailService: MailService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}

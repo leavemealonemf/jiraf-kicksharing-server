@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { Platforms } from '@common/decorators';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
+import { ConnectOwnerToFranchiseDto } from './dto';
 
 @UseGuards(PlatformsGuard)
 @Platforms('WEB')
@@ -30,6 +31,11 @@ export class FranchiseController {
   @Get()
   async findAll() {
     return await this.franchiseService.findAll();
+  }
+
+  @Post()
+  async connectOwnerToFranchise(dto: ConnectOwnerToFranchiseDto) {
+    return await this.franchiseService.connectOwnerToFranchise(dto);
   }
 
   @Get(':id')
