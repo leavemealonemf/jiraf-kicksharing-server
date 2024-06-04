@@ -63,6 +63,9 @@ export class FranchiseService {
 
   async findAll() {
     return await this.dbService.franchise.findMany({
+      orderBy: {
+        id: 'desc',
+      },
       include: {
         city: true,
         owner: {
