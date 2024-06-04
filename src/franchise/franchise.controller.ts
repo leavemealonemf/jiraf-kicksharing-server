@@ -34,7 +34,7 @@ export class FranchiseController {
   }
 
   @Post('connect-owner')
-  async connectOwnerToFranchise(dto: ConnectOwnerToFranchiseDto) {
+  async connectOwnerToFranchise(@Body() dto: ConnectOwnerToFranchiseDto) {
     console.log(JSON.stringify(dto));
     return await this.franchiseService.connectOwnerToFranchise(dto);
   }
