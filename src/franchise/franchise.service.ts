@@ -15,6 +15,12 @@ export class FranchiseService {
         data: dto,
         include: {
           city: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           _count: {
             select: {
               scooters: true,
@@ -39,6 +45,12 @@ export class FranchiseService {
     return await this.dbService.franchise.findMany({
       include: {
         city: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         _count: {
           select: {
             scooters: true,
@@ -59,6 +71,12 @@ export class FranchiseService {
             },
           },
           city: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       })
       .catch((err) => {
@@ -84,6 +102,12 @@ export class FranchiseService {
         },
         include: {
           city: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           _count: {
             select: {
               scooters: true,
