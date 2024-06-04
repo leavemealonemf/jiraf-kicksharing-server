@@ -33,7 +33,7 @@ export class FranchiseController {
     return await this.franchiseService.findAll();
   }
 
-  @Post()
+  @Post('connect-owner')
   async connectOwnerToFranchise(dto: ConnectOwnerToFranchiseDto) {
     return await this.franchiseService.connectOwnerToFranchise(dto);
   }
