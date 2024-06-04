@@ -4,7 +4,7 @@ import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { DbService } from 'src/db/db.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ConnectOwnerToFranchiseDto } from './dto';
-import { Franchise } from '@prisma/client';
+import { CityService } from 'src/city/city.service';
 
 @Injectable()
 export class FranchiseService {
@@ -13,12 +13,23 @@ export class FranchiseService {
   constructor(
     private readonly dbService: DbService,
     private readonly authService: AuthService,
+    private readonly cityService: CityService,
   ) {}
 
   async create(dto: CreateFranchiseDto) {
+    const city = await this.cityService.create(dto.cityCreateData);
+
     const franchise = await this.dbService.franchise
       .create({
-        data: dto,
+        data: {
+          legalAddress: dto.legalAddress,
+          organization: dto.organization,
+          youKassaAccount: dto.youKassaAccount,
+          cityId: city.id,
+          priceForScooterMonth: dto.priceForScooterMonth,
+          taxpayerIdNumber: dto.taxpayerIdNumber,
+          workStatus: dto.workStatus,
+        },
         include: {
           city: true,
           owner: {

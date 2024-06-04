@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { FranchiseWorkStatus } from '@prisma/client';
 import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { CreateCityDto } from 'src/city/dto/create-city.dto';
 
 export class CreateFranchiseDto {
   @ApiProperty({ default: 'ИП Яловик Иван Леонидович' })
@@ -35,8 +36,10 @@ export class CreateFranchiseDto {
   @IsNotEmpty({ message: 'Поле workStatus не должно быть пустым' })
   workStatus: FranchiseWorkStatus;
 
-  @ApiProperty({ default: 1 })
-  @IsNotEmpty({ message: 'Поле cityId не должно быть пустым' })
-  @IsNumber(undefined, { message: 'На вход ожидалось число' })
-  cityId: number;
+  // @ApiProperty({ default: 1 })
+  // @IsNotEmpty({ message: 'Поле cityId не должно быть пустым' })
+  // @IsNumber(undefined, { message: 'На вход ожидалось число' })
+  // cityId: number;
+
+  cityCreateData: CreateCityDto;
 }
