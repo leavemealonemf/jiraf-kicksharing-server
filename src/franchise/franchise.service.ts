@@ -53,6 +53,11 @@ export class FranchiseService {
       .findFirst({
         where: { id: id },
         include: {
+          _count: {
+            select: {
+              scooters: true,
+            },
+          },
           city: true,
         },
       })
