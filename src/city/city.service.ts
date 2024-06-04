@@ -32,7 +32,9 @@ export class CityService {
     const franchises = await this.dbService.city
       .findMany({
         where: {
-          franchise: {},
+          franchise: {
+            NOT: null,
+          },
         },
       })
       .catch((err) => {
