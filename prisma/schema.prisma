@@ -332,6 +332,7 @@ enum ErpUserRoles {
   ADMIN
   MANAGER
   TECHNICIAN
+  FRANCHISE
 }
 
 enum ErpUserStatus {
