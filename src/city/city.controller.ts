@@ -38,6 +38,11 @@ export class CityController {
     return await this.cityService.findAllWhereFranchiseEmpty();
   }
 
+  @Get('with-franchise')
+  async findAllWhereIncludesFranchise() {
+    return await this.cityService.findAllWhereIncludesFranchise();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.cityService.findOne(+id);
