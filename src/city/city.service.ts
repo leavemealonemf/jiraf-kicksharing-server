@@ -33,7 +33,7 @@ export class CityService {
       .findMany({
         where: {
           franchise: {
-            NOT: null,
+            isNot: null,
           },
         },
       })
