@@ -125,10 +125,7 @@ export class FranchiseService {
     const updatedFranchise = await this.dbService.franchise
       .update({
         where: { id: id },
-        data: {
-          priceForScooterMonth: dto.priceForScooterMonth,
-          workStatus: dto.workStatus,
-        },
+        data: dto,
         include: {
           city: true,
           owner: {
