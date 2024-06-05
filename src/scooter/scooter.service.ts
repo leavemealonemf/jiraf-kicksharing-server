@@ -320,6 +320,8 @@ export class ScooterService {
   }
 
   private async getScootersByRole(user: ErpUser) {
+    this.logger.log('в методе фильтра по ролям');
+    this.logger.log(JSON.stringify(user));
     const scooters = [];
     if (user.role === 'ADMIN') {
       const res = await this.dbService.scooter
