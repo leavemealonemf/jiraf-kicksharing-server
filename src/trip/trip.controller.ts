@@ -16,19 +16,21 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, Platforms } from '@common/decorators';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
-@UseGuards(PlatformsGuard)
-@Platforms('MOBILE')
 @ApiTags('Trips (Поездки)')
 @ApiBearerAuth()
 @Controller('trip')
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post()
   create(@Body() createTripDto: CreateTripDto) {
     return this.tripService.create(createTripDto);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Get()
   findAll(
     @Query('interval') interval: string,
@@ -38,11 +40,15 @@ export class TripController {
     return this.tripService.findAll(interval, start, end);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Get('user-trips')
   getUserTrips(@CurrentUser() user: any, @Query('page') page: number) {
     return this.tripService.getUserTrips(user.id, page);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Get('user-trips/:id')
   getOneTripMobile(@Param('id') id: string, @CurrentUser() user: any) {
     return this.tripService.getOneTripMobile(+id, user.id);
