@@ -150,6 +150,8 @@ export class ErpUserService {
   }
 
   hashPassword(password: string) {
+    if (!password) return;
+
     return hashSync(password, genSaltSync(10));
   }
 
