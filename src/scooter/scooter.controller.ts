@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ScooterService } from './scooter.service';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
+import { CurrentUser, Platforms } from '@common/decorators';
+import { ErpUser } from '@prisma/client';
 
 @ApiTags('Scooter (Самокат)')
 @ApiBearerAuth()
@@ -28,9 +32,11 @@ export class ScooterController {
     return this.scooterService.findAll();
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Get('/erp')
-  async findAllErp() {
-    return await this.scooterService.findAllErp();
+  async findAllErp(@CurrentUser() user: ErpUser) {
+    return await this.scooterService.findAllErp(user);
   }
 
   @Get('/mobile')

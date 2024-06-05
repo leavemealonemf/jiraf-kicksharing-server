@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -10,18 +11,20 @@ import { DbService } from 'src/db/db.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
-import { Scooter } from '@prisma/client';
+import { ErpUser, Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
 import { SettingsService } from 'src/settings/settings.service';
+import { FranchiseService } from 'src/franchise/franchise.service';
 
 @Injectable()
 export class ScooterService {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(ScooterService.name);
 
   constructor(
     private readonly dbService: DbService,
     private readonly rightechScooterService: RightechScooterService,
     private readonly settingsService: SettingsService,
+    private readonly franchiseService: FranchiseService,
   ) {}
 
   async create(createScooterDto: CreateScooterDto) {
@@ -107,39 +110,14 @@ export class ScooterService {
     };
   }
 
-  async findAllErp() {
+  async findAllErp(user: ErpUser) {
     const res = await this.rightechScooterService.getAll();
 
     if (!res) {
       throw new ConflictException('Не удалось получить самокаты Rightech');
     }
 
-    const scooters = await this.dbService.scooter.findMany({
-      include: {
-        model: true,
-        franchise: {
-          select: {
-            id: true,
-            organization: true,
-          },
-        },
-        trips: {
-          include: {
-            user: {
-              include: {
-                trips: {
-                  include: {
-                    scooter: true,
-                    tariff: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { addedDate: 'desc' },
-    });
+    const scooters = await this.getScootersByRole(user);
 
     if (scooters.length === 0) {
       return [];
@@ -339,6 +317,100 @@ export class ScooterService {
 
     fs.writeFileSync(filePath, data);
     return filePath;
+  }
+
+  private async getScootersByRole(user: ErpUser) {
+    const scooters = [];
+    if (user.role === 'ADMIN') {
+      const res = await this.dbService.scooter
+        .findMany({
+          include: {
+            model: true,
+            franchise: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+            trips: {
+              include: {
+                user: {
+                  include: {
+                    trips: {
+                      include: {
+                        scooter: true,
+                        tariff: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { addedDate: 'desc' },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          this.logger.error(
+            'Не удалось получить самокаты по роуту /scooters/erp',
+          );
+          throw new BadRequestException('Не удалось получить самокаты');
+        });
+      scooters.push(...res);
+    } else {
+      const franchise = await this.dbService.franchise
+        .findFirst({
+          where: {
+            ownerId: user.id,
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException(
+            'Не удалось найти франшизу по id обладателя: ' + user.id,
+          );
+        });
+
+      const res = await this.dbService.scooter
+        .findMany({
+          where: {
+            franchiseId: franchise.id,
+          },
+          include: {
+            model: true,
+            franchise: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+            trips: {
+              include: {
+                user: {
+                  include: {
+                    trips: {
+                      include: {
+                        scooter: true,
+                        tariff: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { addedDate: 'desc' },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          this.logger.error(
+            'Не удалось получить самокаты по роуту /scooters/erp',
+          );
+          throw new BadRequestException('Не удалось получить самокаты');
+        });
+      scooters.push(...res);
+    }
+    return scooters;
   }
 
   private generateDeviceId(): string {
