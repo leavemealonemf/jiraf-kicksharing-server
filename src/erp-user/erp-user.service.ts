@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -18,7 +19,7 @@ import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class ErpUserService {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(ErpUserService.name);
 
   constructor(
     private readonly dbService: DbService,
@@ -110,18 +111,28 @@ export class ErpUserService {
       this.saveFile(updateErpUserDto.avatar, path);
     }
 
-    return this.dbService.erpUser.update({
-      where: { id },
-      data: {
-        avatar: updateErpUserDto.avatar ? path : user.avatar,
-        email: updateErpUserDto.email,
-        name: updateErpUserDto.name,
-        password: this.hashPassword(updateErpUserDto.password),
-        phone: updateErpUserDto.phone,
-        role: updateErpUserDto.role,
-        status: updateErpUserDto.status,
-      },
-    });
+    return await this.dbService.erpUser
+      .update({
+        where: { id },
+        data: {
+          avatar: updateErpUserDto.avatar ? path : user.avatar,
+          email: updateErpUserDto.email,
+          name: updateErpUserDto.name,
+          password: this.hashPassword(updateErpUserDto.password),
+          phone: updateErpUserDto.phone,
+          role: updateErpUserDto.role,
+          status: updateErpUserDto.status,
+        },
+      })
+      .catch((err) => {
+        const errResponse = JSON.stringify(updateErpUserDto);
+        this.logger.error(
+          `Не удалось обновить erp-пользователя с данными: ${errResponse}`,
+        );
+        throw new BadRequestException(
+          `Не удалось обновить erp-пользователя с данными: ${errResponse}`,
+        );
+      });
   }
 
   async remove(id: number, decUser: ErpUser) {
