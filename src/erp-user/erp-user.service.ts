@@ -75,7 +75,15 @@ export class ErpUserService {
   async findAll() {
     return this.dbService.erpUser.findMany({
       orderBy: { dateTimeCreated: 'desc' },
-      include: { inviter: true },
+      include: {
+        inviter: true,
+        franchise: {
+          select: {
+            id: true,
+            organization: true,
+          },
+        },
+      },
     });
   }
 

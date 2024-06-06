@@ -330,6 +330,7 @@ enum ScooterStatus {
 
 enum ErpUserRoles {
   ADMIN
+  EMPLOYEE
   MANAGER
   TECHNICIAN
   FRANCHISE
