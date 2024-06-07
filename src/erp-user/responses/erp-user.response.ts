@@ -16,8 +16,8 @@ export class ErpUserResponse implements ErpUser {
   inviterId: number;
   @Exclude()
   platform: $Enums.UserPlatform;
-  @Exclude()
-  franchiseEmployeeId: number;
+
+  franchiseEmployeeId: number | null;
 
   constructor(user: ErpUser) {
     Object.assign(this, user);
