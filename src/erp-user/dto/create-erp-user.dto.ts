@@ -21,5 +21,9 @@ export class CreateErpUserDto {
     message: 'Поле не должно быть пустым',
   })
   role: $Enums.ErpUserRoles;
+
+  @ApiProperty({ default: 1 })
+  connectToFranchiseId?: number;
+
   inviterId?: number;
 }

@@ -58,6 +58,14 @@ export class ErpUserService {
 
     await this.mailService.sendUserConfirmation(createErpUserDto, password);
 
+    if (createErpUserDto.connectToFranchiseId) {
+      return await this.connectUserToFranchiseAsEmployee(
+        createErpUserDto,
+        hashedPassword,
+        uuid,
+      );
+    }
+
     return this.dbService.erpUser.create({
       data: {
         uuid: uuid,
@@ -155,6 +163,68 @@ export class ErpUserService {
     }
 
     return this.dbService.erpUser.delete({ where: { id: id } });
+  }
+
+  private async connectUserToFranchiseAsEmployee(
+    dto: CreateErpUserDto,
+    hashedPassword: string,
+    uuid: string,
+  ) {
+    if (dto.connectToFranchiseId && dto.role !== 'FRANCHISE') {
+      return await this.dbService.erpUser
+        .create({
+          data: {
+            uuid: uuid,
+            email: dto.email,
+            name: dto.name,
+            phone: dto.phone,
+            password: hashedPassword,
+            role: dto.role,
+            inviterId: dto.inviterId,
+            franchiseEmployeeId: dto.connectToFranchiseId,
+          },
+          include: { inviter: true },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          this.logger.error(
+            'Не удалось создать и связать пользователя с франшизой (работник)',
+          );
+          throw new BadRequestException(
+            'Не удалось создать и связать пользователя с франшизой (работник)',
+          );
+        });
+    }
+
+    if (dto.connectToFranchiseId && dto.role === 'FRANCHISE') {
+      return await this.dbService.erpUser
+        .create({
+          data: {
+            uuid: uuid,
+            email: dto.email,
+            name: dto.name,
+            phone: dto.phone,
+            password: hashedPassword,
+            role: dto.role,
+            inviterId: dto.inviterId,
+            franchise: {
+              connect: {
+                id: dto.connectToFranchiseId,
+              },
+            },
+          },
+          include: { inviter: true },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          this.logger.error(
+            'Не удалось создать и связать пользователя с франшизой (руководитель)',
+          );
+          throw new BadRequestException(
+            'Не удалось создать и связать пользователя с франшизой (руководитель)',
+          );
+        });
+    }
   }
 
   hashPassword(password: string) {

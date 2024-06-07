@@ -18,7 +18,11 @@ model ErpUser {
   password   String
   status     ErpUserStatus @default(ACTIVE)
   TokenErp     TokenErp[]
-  franchise  Franchise?
+  franchise  Franchise? @relation(name: "FranchiseOwner")
+
+  franchiseEmployee  Franchise? @relation(name: "FranchiseEmployees", fields: [franchiseEmployeeId], references: [id])
+  franchiseEmployeeId Int? // id на франшизу сотрудником которой он является
+
   role      ErpUserRoles @default(MANAGER)
   forgotPassToken ForgotPasswordModel?
   inviter         ErpUser?            @relation("Inviter", fields: [inviterId], references: [id])
@@ -30,7 +34,10 @@ model ErpUser {
 model Franchise {
   id       Int      @id @default(autoincrement())
   ownerId   Int?      @unique
-  owner     ErpUser?     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner     ErpUser?     @relation(name: "FranchiseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  employees ErpUser[] @relation(name: "FranchiseEmployees")
+
   organization String
   taxpayerIdNumber String?
   legalAddress String
