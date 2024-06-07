@@ -11,12 +11,13 @@ export class ErpUserResponse implements ErpUser {
   @Exclude()
   password: string;
   role: $Enums.ErpUserRoles;
-  franchiseId: number;
   status: $Enums.ErpUserStatus;
   dateTimeCreated: Date;
   inviterId: number;
   @Exclude()
   platform: $Enums.UserPlatform;
+  @Exclude()
+  franchiseEmployeeId: number;
 
   constructor(user: ErpUser) {
     Object.assign(this, user);
