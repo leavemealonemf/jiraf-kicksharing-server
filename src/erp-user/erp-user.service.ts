@@ -145,6 +145,21 @@ export class ErpUserService {
           role: updateErpUserDto.role,
           status: updateErpUserDto.status,
         },
+        include: {
+          inviter: true,
+          franchise: {
+            select: {
+              id: true,
+              organization: true,
+            },
+          },
+          franchiseEmployee: {
+            select: {
+              id: true,
+              organization: true,
+            },
+          },
+        },
       })
       .catch((err) => {
         const errResponse = JSON.stringify(updateErpUserDto);
