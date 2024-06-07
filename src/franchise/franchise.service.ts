@@ -77,6 +77,7 @@ export class FranchiseService {
             role: true,
           },
         },
+        employees: true,
         _count: {
           select: {
             scooters: true,
@@ -106,6 +107,7 @@ export class FranchiseService {
               role: true,
             },
           },
+          employees: true,
         },
       })
       .catch((err) => {
