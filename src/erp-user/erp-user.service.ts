@@ -183,7 +183,21 @@ export class ErpUserService {
             inviterId: dto.inviterId,
             franchiseEmployeeId: dto.connectToFranchiseId,
           },
-          include: { inviter: true },
+          include: {
+            inviter: true,
+            franchise: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+            franchiseEmployee: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+          },
         })
         .catch((err) => {
           this.logger.error(err);
@@ -213,7 +227,21 @@ export class ErpUserService {
               },
             },
           },
-          include: { inviter: true },
+          include: {
+            inviter: true,
+            franchise: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+            franchiseEmployee: {
+              select: {
+                id: true,
+                organization: true,
+              },
+            },
+          },
         })
         .catch((err) => {
           this.logger.error(err);
