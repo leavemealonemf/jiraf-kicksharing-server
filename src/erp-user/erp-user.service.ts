@@ -91,6 +91,12 @@ export class ErpUserService {
             organization: true,
           },
         },
+        franchiseEmployee: {
+          select: {
+            id: true,
+            organization: true,
+          },
+        },
       },
     });
   }
