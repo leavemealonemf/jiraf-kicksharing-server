@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -218,7 +217,7 @@ export class ErpUserService {
   async leaveUser(user: ErpUser, leaveUserId: number) {
     const userToLeave = await this.findById(leaveUserId);
     const canLeave = this.canLeaveFabric.canLeave(user.role, userToLeave.role);
-    if (!canLeave) throw new BadGatewayException('У вас недостаточно прав');
+    if (!canLeave) throw new BadRequestException('У вас недостаточно прав');
     const isDeleted = await this.dbService.erpUser
       .delete({
         where: { id: userToLeave.id },

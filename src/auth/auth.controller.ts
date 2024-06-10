@@ -16,7 +16,7 @@ import { ConfirmAuthMobile, LoginDto, RegisterDto, TestDto } from './dto';
 import { Tokens } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { Cookie, Public, UserAgent } from '@common/decorators';
+import { Cookie, CurrentUser, Public, UserAgent } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
 import { MailService } from 'src/mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';

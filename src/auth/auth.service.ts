@@ -247,6 +247,7 @@ export class AuthService {
         phone: user.phone,
         role: user.role,
         platform: user.platform,
+        franchiseEmployeeId: user.franchiseEmployeeId,
       });
     const refreshToken = await this.getRefreshToken(user.id, agent);
     return { accessToken, refreshToken };
