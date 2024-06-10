@@ -39,6 +39,14 @@ export class ErpUserController {
     return this.erpUserService.createBaseUser();
   }
 
+  @Delete('leave/:id')
+  async leaveUser(
+    @Param('id') leaveUserId: number,
+    @CurrentUser() user: ErpUser,
+  ) {
+    return await this.erpUserService.leaveUser(user, +leaveUserId);
+  }
+
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id') id: string) {

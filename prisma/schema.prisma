@@ -34,7 +34,7 @@ model ErpUser {
 model Franchise {
   id       Int      @id @default(autoincrement())
   ownerId   Int?      @unique
-  owner     ErpUser?     @relation(name: "FranchiseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner     ErpUser?     @relation(name: "FranchiseOwner", fields: [ownerId], references: [id])
 
   employees ErpUser[] @relation(name: "FranchiseEmployees")
 

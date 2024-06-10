@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -16,6 +17,7 @@ import * as path from 'path';
 import { generateUUID } from '@common/utils';
 import * as generator from 'generate-password';
 import { MailService } from 'src/mail/mail.service';
+import { CanLeaveUserPermissionFabric } from './fabrics/can-leave-user-permission.fabric';
 
 @Injectable()
 export class ErpUserService {
@@ -24,6 +26,7 @@ export class ErpUserService {
   constructor(
     private readonly dbService: DbService,
     private readonly mailService: MailService,
+    private readonly canLeaveFabric: CanLeaveUserPermissionFabric,
   ) {}
 
   async createBaseUser() {
@@ -184,6 +187,28 @@ export class ErpUserService {
     }
 
     return this.dbService.erpUser.delete({ where: { id: id } });
+  }
+
+  async leaveUser(user: ErpUser, leaveUserId: number) {
+    const userToLeave = await this.findById(leaveUserId);
+    const canLeave = this.canLeaveFabric.canLeave(user.role, userToLeave.role);
+    if (!canLeave) throw new BadGatewayException('У вас недостаточно прав');
+    const isDeleted = await this.dbService.erpUser
+      .delete({
+        where: { id: userToLeave.id },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          `Не удалось удалить пользователя с id ${leaveUserId}`,
+        );
+      });
+
+    if (isDeleted) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private async connectUserToFranchiseAsEmployee(
