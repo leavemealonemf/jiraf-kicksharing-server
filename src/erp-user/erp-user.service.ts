@@ -205,9 +205,15 @@ export class ErpUserService {
       });
 
     if (isDeleted) {
-      return true;
+      return {
+        id: isDeleted.id,
+        deleted: true,
+      };
     } else {
-      return false;
+      return {
+        id: isDeleted.id,
+        deleted: false,
+      };
     }
   }
 
