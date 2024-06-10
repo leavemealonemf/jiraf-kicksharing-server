@@ -83,8 +83,34 @@ export class ErpUserService {
     });
   }
 
-  async findAll() {
-    return this.dbService.erpUser.findMany({
+  async findAll(userId: number) {
+    const user = await this.findById(userId);
+
+    if (user.franchiseEmployeeId) {
+      return await this.dbService.erpUser.findMany({
+        where: {
+          franchiseEmployeeId: user.franchiseEmployeeId,
+        },
+        orderBy: { dateTimeCreated: 'desc' },
+        include: {
+          inviter: true,
+          franchise: {
+            select: {
+              id: true,
+              organization: true,
+            },
+          },
+          franchiseEmployee: {
+            select: {
+              id: true,
+              organization: true,
+            },
+          },
+        },
+      });
+    }
+
+    return await this.dbService.erpUser.findMany({
       orderBy: { dateTimeCreated: 'desc' },
       include: {
         inviter: true,
@@ -278,6 +304,7 @@ export class ErpUserService {
                 id: dto.connectToFranchiseId,
               },
             },
+            franchiseEmployeeId: dto.connectToFranchiseId,
           },
           include: {
             inviter: true,

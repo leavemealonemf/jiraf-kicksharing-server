@@ -28,8 +28,8 @@ export class ErpUserController {
   constructor(private readonly erpUserService: ErpUserService) {}
 
   @Get('all')
-  async findAll() {
-    const users = await this.erpUserService.findAll();
+  async findAll(@CurrentUser() user: ErpUser) {
+    const users = await this.erpUserService.findAll(+user.id);
     return users;
   }
 
