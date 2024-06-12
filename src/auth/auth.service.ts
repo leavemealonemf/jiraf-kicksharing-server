@@ -27,6 +27,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { IFingerprint } from 'nestjs-fingerprint';
 import { ClientFingerPrint } from './types';
+import { FlashCallService } from 'libs/shared/flash-call';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     private readonly twilioService: TwilioService,
+    private readonly flashCallService: FlashCallService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -142,8 +144,6 @@ export class AuthService {
   }
 
   async authMobile(dto: MobileAuthDto, fp: IFingerprint) {
-    const code = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
-
     const TTL_MILISECONDS = 50000;
 
     const reqSession: ClientFingerPrint = await this.cacheManager.get(fp.id);
@@ -152,7 +152,11 @@ export class AuthService {
       throw new ForbiddenException('Превышено максимальное число запросов');
     }
 
-    this.sendSmsCode(dto.phone, code);
+    // Отправка sms - старый метод
+    // this.sendSmsCode(dto.phone, code);
+
+    // FlashCall - сброс-звонок
+    const code = await this.flashCallService.sendCode(dto.phone);
 
     if (!reqSession) {
       await this.cacheManager.set(
@@ -281,21 +285,18 @@ export class AuthService {
   private async generateMobileToken(user: User): Promise<string> {
     const accessToken =
       'Bearer ' +
-      this.jwtService.sign(
-        {
-          id: user.id,
-          clientId: user.clientId,
-          name: user.name,
-          phone: user.phone,
-          email: user.email,
-          balance: user.balance,
-          bonuses: user.bonuses,
-          status: user.status,
-          activePaymentMethod: user.activePaymentMethod,
-          platform: user.platform,
-        },
-        { expiresIn: this.configService.get('JWT_EXP_MOBILE') },
-      );
+      this.jwtService.sign({
+        id: user.id,
+        clientId: user.clientId,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        balance: user.balance,
+        bonuses: user.bonuses,
+        status: user.status,
+        activePaymentMethod: user.activePaymentMethod,
+        platform: user.platform,
+      });
     return accessToken;
   }
 

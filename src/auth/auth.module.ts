@@ -13,6 +13,7 @@ import { TwilioModule } from 'nestjs-twilio';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from 'src/user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { FlashCallModule } from 'libs/shared/flash-call';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     UserModule,
     DbModule,
     MailModule,
+    FlashCallModule,
     CacheModule.register(),
   ],
   controllers: [AuthController],
