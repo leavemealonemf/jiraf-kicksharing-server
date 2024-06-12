@@ -331,20 +331,25 @@ export class TripProcessService {
     const tripCoast = this.calcTripCost(cachedTrip);
     const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
 
-    let balanceSpent = 0.0;
+    let bonusesSpent = 0.0;
     let cardSpent = 0.0;
 
-    if (user.balance > 0) {
-      if (user.balance >= tripCoastPayment) {
-        balanceSpent = tripCoastPayment;
-        cardSpent = 0;
-      } else {
-        balanceSpent = user.balance;
-        cardSpent = tripCoastPayment - user.balance;
-      }
-    } else {
-      cardSpent = tripCoastPayment;
+    const maxBonusUsage = parseFloat((tripCoastPayment * 0.5).toFixed(2));
+    const availableBonuses = Math.min(user.bonuses, maxBonusUsage);
+    const remainingTripCost = parseFloat(
+      (tripCoastPayment - availableBonuses).toFixed(2),
+    );
+
+    cardSpent = parseFloat((remainingTripCost * 0.5).toFixed(2));
+    bonusesSpent = parseFloat((tripCoastPayment - cardSpent).toFixed(2));
+
+    if (bonusesSpent > availableBonuses) {
+      bonusesSpent = availableBonuses;
+      cardSpent = parseFloat((tripCoastPayment - bonusesSpent).toFixed(2));
     }
+
+    cardSpent = parseFloat(cardSpent.toFixed(2));
+    bonusesSpent = parseFloat(bonusesSpent.toFixed(2));
 
     const trip = await this.dbService.trip.update({
       where: { id: dto.tripId },
@@ -357,13 +362,13 @@ export class TripProcessService {
           },
         },
         rating: 5,
-        bonusesUsed: balanceSpent,
+        bonusesUsed: bonusesSpent,
         price: tripCoast,
         distance: cachedTrip.tripInfo.distanceTraveled,
         user: {
           update: {
-            balance: {
-              decrement: balanceSpent,
+            bonuses: {
+              decrement: bonusesSpent,
             },
           },
         },
@@ -413,7 +418,7 @@ export class TripProcessService {
       metadata: {
         type: 'TRIP',
         description: 'Списание за поездку',
-        tripBonusesUsed: balanceSpent,
+        tripBonusesUsed: bonusesSpent,
       },
     };
 
