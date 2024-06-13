@@ -4,7 +4,10 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   Post,
+  Request,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { AcquiringService } from './acquiring.service';
@@ -88,5 +91,18 @@ export class AcquiringController {
   async getAquiringPaymentStatus(@Body() dto: AcquiringPaymentStatusDto) {
     console.log(dto);
     await this.paymentMethodService.agreementPaymentMethodPhase(dto);
+  }
+
+  @Public()
+  @Post('/cloudcassir-payment')
+  async createCassirPayment() {
+    return await this.acquiringService.createPayment();
+  }
+
+  @Public()
+  @Post('cloudcassir-payment-info')
+  async cassirPaymentInfo(@Body() dto: any) {
+    console.log(dto);
+    // return await this.acquiringService.getCloudCassirPaymentInfo(data);
   }
 }

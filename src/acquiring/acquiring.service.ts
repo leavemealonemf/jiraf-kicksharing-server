@@ -1,18 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   AcquiringProcessPayment,
   SaveAcquiringMethodGateway,
 } from './gateways';
 import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
+import { AcquiringProvider } from './gateways-provider';
+import { CloudPaymentsGateway } from './gateways-provider/cloudpayments/cloudpayments-gateway';
 
 @Injectable()
 export class AcquiringService {
+  private paymentProviderGateway: Record<string, AcquiringProvider> = {};
+
   private saveAcquiringGateways: Record<string, SaveAcquiringMethodGateway> =
     {};
 
   constructor(
     private readonly aquiringProcessPayment: AcquiringProcessPayment,
   ) {}
+
+  public registerPaymentProviderGateway() {
+    this.paymentProviderGateway['cloud-payments'] = new CloudPaymentsGateway();
+  }
+
+  async createPayment() {
+    this.registerPaymentProviderGateway();
+    const gateway = this.paymentProviderGateway['cloud-payments'];
+    if (!gateway) {
+      throw new BadRequestException(
+        'Не удалось зарегестрировать cloud-payments gateway',
+      );
+    }
+    return await gateway.createOneStagePayment();
+  }
+
+  async getCloudCassirPaymentInfo(data: any) {
+    console.log(data);
+  }
 
   public rigisterSaveAcquiringGateway(
     dto: SaveAcquiringMethodDto,

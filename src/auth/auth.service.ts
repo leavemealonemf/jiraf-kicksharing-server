@@ -285,18 +285,23 @@ export class AuthService {
   private async generateMobileToken(user: User): Promise<string> {
     const accessToken =
       'Bearer ' +
-      this.jwtService.sign({
-        id: user.id,
-        clientId: user.clientId,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        balance: user.balance,
-        bonuses: user.bonuses,
-        status: user.status,
-        activePaymentMethod: user.activePaymentMethod,
-        platform: user.platform,
-      });
+      this.jwtService.sign(
+        {
+          id: user.id,
+          clientId: user.clientId,
+          name: user.name,
+          phone: user.phone,
+          email: user.email,
+          balance: user.balance,
+          bonuses: user.bonuses,
+          status: user.status,
+          activePaymentMethod: user.activePaymentMethod,
+          platform: user.platform,
+        },
+        {
+          expiresIn: '360d',
+        },
+      );
     return accessToken;
   }
 
