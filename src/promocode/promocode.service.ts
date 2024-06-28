@@ -158,7 +158,7 @@ export class PromocodeService {
             status: 'PAID',
             amount: Number(promocode.sum),
             userId: user.id,
-            description: '',
+            description: `Промокод ${promocode.code}`,
           },
         })
         .catch((err) => {
