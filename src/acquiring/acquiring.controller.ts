@@ -100,6 +100,12 @@ export class AcquiringController {
   }
 
   @Public()
+  @Post('/cloudcassir-reccurent-payment')
+  async createCassirReccurentPayment() {
+    return await this.acquiringService.createReccurentPayment();
+  }
+
+  @Public()
   @Post('cloudcassir-payment-info')
   async cassirPaymentInfo(@Body() dto: any) {
     console.log(dto);

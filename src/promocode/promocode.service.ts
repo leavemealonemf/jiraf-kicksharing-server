@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -9,12 +10,17 @@ import { UpdatePromocodeDto } from './dto/update-promocode.dto';
 import { DbService } from 'src/db/db.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PromocodeStatus } from '@prisma/client';
+import { PaymentsService } from 'src/payments/payments.service';
+import { paymentType } from 'src/acquiring/dtos';
 
 @Injectable()
 export class PromocodeService {
-  private logger = new Logger();
+  private readonly logger = new Logger();
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly paymentService: PaymentsService,
+  ) {}
 
   async create(createPromocodeDto: CreatePromocodeDto) {
     return this.dbService.promocode
@@ -109,23 +115,60 @@ export class PromocodeService {
       throw new ForbiddenException(`Вы уже использовали промокод ${code}`);
     }
 
-    return this.dbService.promocode.update({
-      where: { id: promocode.id },
-      data: {
-        usedByUsers: {
-          connect: {
-            clientId: userId,
-          },
-          update: {
-            where: { clientId: userId },
-            data: {
-              bonuses: {
-                increment: Number(promocode.sum),
+    return this.dbService.$transaction(async (tx) => {
+      const promoRes = await this.dbService.promocode.update({
+        where: { id: promocode.id },
+        data: {
+          usedByUsers: {
+            connect: {
+              clientId: userId,
+            },
+            update: {
+              where: { clientId: userId },
+              data: {
+                bonuses: {
+                  increment: Number(promocode.sum),
+                },
               },
             },
           },
         },
-      },
+      });
+
+      if (!promoRes) {
+        throw new BadRequestException('Не удалось использовать промокод');
+      }
+
+      const user = await this.dbService.user
+        .findFirst({
+          where: { clientId: userId },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException(
+            `Не найден пользователь по clientId: ${userId}`,
+          );
+        });
+
+      await this.dbService.payment
+        .create({
+          data: {
+            type: 'REPLACEMENT',
+            service: 'BALANCE',
+            status: 'PAID',
+            amount: Number(promocode.sum),
+            userId: user.id,
+            description: '',
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException(
+            'Не удалось создать платеж по типу BALANCE',
+          );
+        });
+
+      return promoRes;
     });
   }
 
