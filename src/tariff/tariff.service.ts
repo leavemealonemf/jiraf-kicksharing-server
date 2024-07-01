@@ -20,7 +20,7 @@ export class TariffService {
 
   async findAll() {
     return this.dbService.tariff.findMany({
-      orderBy: { addedDate: 'desc' },
+      orderBy: { orderInList: 'desc' },
     });
   }
 
