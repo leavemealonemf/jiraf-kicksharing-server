@@ -8,9 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TariffService } from './tariff.service';
-import { CreateTariffDto } from './dto/create-tariff.dto';
-import { UpdateTariffDto } from './dto/update-tariff.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UpdateTariffOrdersDto, CreateTariffDto, UpdateTariffDto } from './dto';
 
 @ApiTags('Tariff (Тариф)')
 @ApiBearerAuth()
@@ -19,13 +18,18 @@ export class TariffController {
   constructor(private readonly tariffService: TariffService) {}
 
   @Post()
-  create(@Body() createTariffDto: CreateTariffDto) {
-    return this.tariffService.create(createTariffDto);
+  async create(@Body() createTariffDto: CreateTariffDto) {
+    return await this.tariffService.create(createTariffDto);
   }
 
   @Get()
   findAll() {
     return this.tariffService.findAll();
+  }
+
+  @Post('update-orders')
+  async updateTariffsOrders(dto: UpdateTariffOrdersDto) {
+    return await this.updateTariffsOrders(dto);
   }
 
   @Get(':id')

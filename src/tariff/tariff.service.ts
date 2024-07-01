@@ -1,7 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CreateTariffDto } from './dto/create-tariff.dto';
-import { UpdateTariffDto } from './dto/update-tariff.dto';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
+import { UpdateTariffOrdersDto, CreateTariffDto, UpdateTariffDto } from './dto';
 
 @Injectable()
 export class TariffService {
@@ -30,6 +34,23 @@ export class TariffService {
       throw new NotFoundException(`Запись с id ${id} не найдена`);
     }
     return tariff;
+  }
+
+  async updateTariffsOrders(dto: UpdateTariffOrdersDto) {
+    return await this.dbService.$transaction(async () => {
+      try {
+        for (const tariff of dto.tariffs) {
+          await this.dbService.tariff.update({
+            where: { id: tariff.id },
+            data: { orderInList: tariff.orderInList },
+          });
+        }
+      } catch (error) {
+        throw new BadRequestException(
+          'Не удалось поменять позиции элементов: ' + JSON.stringify(dto),
+        );
+      }
+    });
   }
 
   async update(id: number, updateTariffDto: UpdateTariffDto) {
