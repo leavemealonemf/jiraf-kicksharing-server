@@ -97,19 +97,26 @@ export class TariffService {
       .catch((err) => {
         this.logger.error(err);
         throw new BadRequestException(
-          'Не удалость поменять статус у тарифа с данными: ' +
+          'Не удалось поменять статус у тарифа с данными: ' +
             JSON.stringify(dto),
         );
       });
 
     if (updatedTariff.status === 'ARCHIVE') {
-      await this.updateTariffsOrderAfterChangeStatus(activeTariffs);
+      await this.updateTariffsOrderAfterChangeStatus();
     }
 
     return updatedTariff;
   }
 
-  private async updateTariffsOrderAfterChangeStatus(activeTariffs: Tariff[]) {
+  private async updateTariffsOrderAfterChangeStatus() {
+    const activeTariffs = await this.dbService.tariff.findMany({
+      where: {
+        status: 'ACTIVE',
+      },
+      orderBy: { orderInList: 'desc' },
+    });
+
     await this.dbService.$transaction(async () => {
       try {
         for (let i = 0; i < activeTariffs.length; i++) {
