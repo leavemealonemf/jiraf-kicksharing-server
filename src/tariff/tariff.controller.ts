@@ -37,6 +37,14 @@ export class TariffController {
     return await this.tariffService.getApplicationViewTariffs();
   }
 
+  @Patch('change-status/:id')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateTariffDto: UpdateTariffDto,
+  ) {
+    return await this.tariffService.changeTariffStatus(+id, updateTariffDto);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tariffService.findOne(+id);

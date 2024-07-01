@@ -72,6 +72,65 @@ export class TariffService {
     });
   }
 
+  async changeTariffStatus(id: number, dto: UpdateTariffDto): Promise<Tariff> {
+    const tariff = await this.dbService.tariff.findFirst({ where: { id: id } });
+
+    if (!tariff) {
+      throw new NotFoundException(`Запись с id ${id} не найдена`);
+    }
+
+    const activeTariffs = await this.dbService.tariff.findMany({
+      where: {
+        status: 'ACTIVE',
+      },
+      orderBy: { orderInList: 'desc' },
+    });
+
+    const updatedTariff = await this.dbService.tariff
+      .update({
+        where: { id: id },
+        data: {
+          status: dto.status,
+          orderInList: dto.status === 'ARCHIVE' ? 0 : activeTariffs.length + 1,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          'Не удалость поменять статус у тарифа с данными: ' +
+            JSON.stringify(dto),
+        );
+      });
+
+    if (updatedTariff.status === 'ARCHIVE') {
+      await this.updateTariffsOrderAfterChangeStatus(activeTariffs);
+    }
+
+    return updatedTariff;
+  }
+
+  private async updateTariffsOrderAfterChangeStatus(activeTariffs: Tariff[]) {
+    await this.dbService.$transaction(async () => {
+      try {
+        for (let i = 0; i < activeTariffs.length; i++) {
+          await this.dbService.tariff.update({
+            where: { id: activeTariffs[i].id },
+            data: {
+              orderInList: activeTariffs.length - i,
+            },
+          });
+        }
+      } catch (error) {
+        this.logger.error(error);
+
+        throw new BadRequestException(
+          'Не удалось поменять позиции элементов после свича статуса: ' +
+            JSON.stringify(activeTariffs),
+        );
+      }
+    });
+  }
+
   async update(id: number, updateTariffDto: UpdateTariffDto) {
     const tariff = await this.dbService.tariff.findFirst({ where: { id: id } });
 
