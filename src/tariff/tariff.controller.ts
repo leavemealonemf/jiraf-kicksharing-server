@@ -28,7 +28,7 @@ export class TariffController {
   }
 
   @Post('update-orders')
-  async updateTariffsOrders(dto: UpdateTariffOrdersDto) {
+  async updateTariffsOrders(@Body() dto: UpdateTariffOrdersDto) {
     return await this.tariffService.updateTariffsOrders(dto);
   }
 
