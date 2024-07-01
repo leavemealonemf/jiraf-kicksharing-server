@@ -203,7 +203,7 @@ model Tariff {
   status             TariffStatus @default(ACTIVE)  
   addedDate          DateTime @default(now())
   trips              Trip[]
-  orderInList        Int @unique @default(autoincrement())
+  orderInList        Int @default(autoincrement())
 }
 
 model Promocode {
