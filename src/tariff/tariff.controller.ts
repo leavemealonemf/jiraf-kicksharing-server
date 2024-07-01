@@ -29,7 +29,7 @@ export class TariffController {
 
   @Post('update-orders')
   async updateTariffsOrders(dto: UpdateTariffOrdersDto) {
-    return await this.updateTariffsOrders(dto);
+    return await this.tariffService.updateTariffsOrders(dto);
   }
 
   @Get(':id')
