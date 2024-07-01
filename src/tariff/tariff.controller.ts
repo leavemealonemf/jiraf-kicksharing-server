@@ -32,6 +32,11 @@ export class TariffController {
     return await this.tariffService.updateTariffsOrders(dto);
   }
 
+  @Get('app-tariffs')
+  async getApplicationViewTariffs() {
+    return await this.tariffService.getApplicationViewTariffs();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tariffService.findOne(+id);

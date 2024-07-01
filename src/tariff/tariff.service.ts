@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { UpdateTariffOrdersDto, CreateTariffDto, UpdateTariffDto } from './dto';
+import { Tariff } from '@prisma/client';
 
 @Injectable()
 export class TariffService {
@@ -34,6 +35,20 @@ export class TariffService {
       throw new NotFoundException(`Запись с id ${id} не найдена`);
     }
     return tariff;
+  }
+
+  async getApplicationViewTariffs(): Promise<Tariff[]> {
+    return await this.dbService.tariff
+      .findMany({
+        where: {
+          status: 'ACTIVE',
+        },
+        orderBy: { orderInList: 'desc' },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('Не удалось получить видимые тарифы');
+      });
   }
 
   async updateTariffsOrders(dto: UpdateTariffOrdersDto) {
