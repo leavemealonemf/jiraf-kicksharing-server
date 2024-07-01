@@ -24,7 +24,7 @@ export class TariffService {
 
   async findAll() {
     return this.dbService.tariff.findMany({
-      orderBy: { orderInList: 'desc' },
+      orderBy: { addedDate: 'desc' },
     });
   }
 
@@ -42,7 +42,9 @@ export class TariffService {
         for (const tariff of dto.tariffs) {
           await this.dbService.tariff.update({
             where: { id: tariff.id },
-            data: { orderInList: tariff.orderInList },
+            data: {
+              orderInList: tariff.status === 'ACTIVE' ? tariff.orderInList : 0,
+            },
           });
         }
       } catch (error) {
