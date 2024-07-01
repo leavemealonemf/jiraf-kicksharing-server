@@ -9,7 +9,7 @@ import { UpdateTariffOrdersDto, CreateTariffDto, UpdateTariffDto } from './dto';
 
 @Injectable()
 export class TariffService {
-  private logger = new Logger();
+  private logger = new Logger(TariffService.name);
 
   constructor(private readonly dbService: DbService) {}
 
@@ -46,6 +46,8 @@ export class TariffService {
           });
         }
       } catch (error) {
+        this.logger.error(error);
+
         throw new BadRequestException(
           'Не удалось поменять позиции элементов: ' + JSON.stringify(dto),
         );
