@@ -312,6 +312,8 @@ model Settings {
   id   Int            @id @default(autoincrement())
   scooterSettings     Json @default("{ \"metersToBooking\": 1500, \"metersToRent\": 1000 }")
   companySettings     Json  @default("{}")
+  tripSettings        Json @default("{}")
+  promocodeSettings   Json @default("{}")
 }
 
 model Fine {

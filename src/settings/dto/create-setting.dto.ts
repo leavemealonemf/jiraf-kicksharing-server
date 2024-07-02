@@ -8,7 +8,7 @@ class ScooterSettings {
 }
 
 class CompanyClientSupportResources {
-  @ApiProperty({ default: 't.me/giraffego_support' })
+  @ApiProperty({ default: 'https:/t.me/giraffego_support' })
   tgLink: string;
 }
 
@@ -17,7 +17,7 @@ class CompanyInformationResources {
   site: string;
   @ApiProperty({ default: 'https://vk.ru/giraffegroup' })
   vkGroup: string;
-  @ApiProperty({ default: 't.me/giraffego' })
+  @ApiProperty({ default: 'https:/t.me/giraffego' })
   tgChannel: string;
   @ApiProperty({ default: 'https://instagram.com/giraffego' })
   instagram: string;
@@ -44,9 +44,48 @@ class CompanySettings {
   legalInformation: CompanyLegalInformation;
 }
 
+class TripParams {
+  @ApiProperty({ default: 1 })
+  tripCountLimit: number;
+}
+
+class TripBookingParams {
+  @ApiProperty({ default: true })
+  canBooking: boolean;
+  @ApiProperty({ default: 1500 })
+  metersToBooking: number;
+  @ApiProperty({ default: 20 })
+  timeBooking: number;
+  @ApiProperty({ default: '#000' })
+  cardColor: string;
+}
+
+class TripSettings {
+  @ApiProperty({ default: TripParams })
+  trips: TripParams;
+  @ApiProperty({ default: TripBookingParams })
+  booking: TripBookingParams;
+}
+
+class PromocodeReferalProgram {
+  @ApiProperty({ default: false })
+  active: boolean;
+  @ApiProperty({ default: 55 })
+  referalBonus: number;
+}
+
+class PromocodeSettings {
+  @ApiProperty({ default: PromocodeReferalProgram })
+  referalProgram: PromocodeReferalProgram;
+}
+
 export class CreateSettingDto {
   @ApiProperty({ default: ScooterSettings })
   scooterSettings: ScooterSettings;
   @ApiProperty({ default: CompanySettings })
   companySettings: CompanySettings;
+  @ApiProperty({ default: TripSettings })
+  tripSettings: TripSettings;
+  @ApiProperty({ default: PromocodeSettings })
+  promocodeSettings: PromocodeSettings;
 }
