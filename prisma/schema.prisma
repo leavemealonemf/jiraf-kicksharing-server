@@ -311,6 +311,35 @@ model UserSubscriptionsOptions {
 model Settings {
   id   Int            @id @default(autoincrement())
   scooterSettings     Json @default("{ \"metersToBooking\": 1500, \"metersToRent\": 1000 }")
+  companySettings     Json  @default("{}")
+}
+
+model Fine {
+  id   Int            @id @default(autoincrement())
+  fineNumber String @unique
+  tripUUID String @unique
+  deviceType DeviceType
+  deviceUUID String @unique
+  cause String
+  description String
+  createdAt DateTime @default(now())
+  closedAt DateTime
+  photos String[]
+  initiator String @unique
+  price Int
+  paidStatus FinePaidStatus
+
+  @@map("fine")
+}
+
+enum FinePaidStatus {
+  PAID
+  NOTPAID
+}
+
+enum DeviceType {
+  SCOOTER
+  BIKE
 }
 
 enum PaymentService {

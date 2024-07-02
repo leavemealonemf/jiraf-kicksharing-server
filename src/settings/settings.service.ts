@@ -29,12 +29,7 @@ export class SettingsService {
 
     return this.dbService.settings.update({
       where: { id: id },
-      data: {
-        scooterSettings: {
-          metersToBooking: dto.metersToBooking,
-          metersToRent: dto.metersToRent,
-        },
-      },
+      data: JSON.parse(JSON.stringify(dto)),
     });
   }
 
