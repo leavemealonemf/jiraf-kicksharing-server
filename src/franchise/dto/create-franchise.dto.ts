@@ -42,4 +42,7 @@ export class CreateFranchiseDto {
   // cityId: number;
 
   cityCreateData: CreateCityDto;
+
+  @ApiProperty({ default: 'https://t.me/mysupport' })
+  supportLink?: string;
 }

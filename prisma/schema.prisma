@@ -48,6 +48,7 @@ model Franchise {
   geofences Geofence[]
   cityId Int @unique
   city City @relation(fields: [cityId], references: [id])
+  supportLink String? 
 }
 
 model City {
