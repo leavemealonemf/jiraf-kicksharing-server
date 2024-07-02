@@ -29,6 +29,7 @@ export class FranchiseService {
           priceForScooterMonth: dto.priceForScooterMonth,
           taxpayerIdNumber: dto.taxpayerIdNumber,
           workStatus: dto.workStatus,
+          supportLink: dto.supportLink,
         },
         include: {
           city: true,
