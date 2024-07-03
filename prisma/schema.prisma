@@ -48,7 +48,8 @@ model Franchise {
   geofences Geofence[]
   cityId Int @unique
   city City @relation(fields: [cityId], references: [id])
-  supportLink String? 
+  supportLink String?
+  finesIssued Fine[] 
 }
 
 model City {
@@ -81,6 +82,7 @@ model User {
   subscriptionsOptions   UserSubscriptionsOptions?
   usedPromocodes Promocode[]
   activeTrips ActiveTrip[]
+  fines Fine[]
 }
 
 model Payment {
@@ -142,6 +144,7 @@ model Trip {
   scooterId      Int?      
   scooter        Scooter?  @relation(fields: [scooterId], references: [id])
   coordinates    String?
+  fines Fine[]
 }
 
 model ActiveTrip {
@@ -320,19 +323,35 @@ model Settings {
 model Fine {
   id   Int            @id @default(autoincrement())
   fineNumber String @unique
-  tripUUID String @unique
+  tripUUID String
   deviceType DeviceType
-  deviceUUID String @unique
-  cause String
+  causeType FineReason
+
+  causeText String
+
   description String
   createdAt DateTime @default(now())
-  closedAt DateTime
+  closedAt DateTime?
   photos String[]
-  initiator String @unique
+  initiatorId Int
+  initiator Franchise @relation(fields: [initiatorId], references: [id])
+
+  tripId Int
+  trip Trip @relation(fields: [tripId], references: [id])
+
+  intruderId Int 
+  intruder User @relation(fields: [intruderId], references: [id])
+
   price Int
-  paidStatus FinePaidStatus
+  paidStatus FinePaidStatus @default(NOTPAID)
 
   @@map("fine")
+}
+
+enum FineReason {
+  DAMAGE
+  LOSS
+  OUTPARKING
 }
 
 enum FinePaidStatus {

@@ -32,6 +32,7 @@ import { AcquiringModule } from './acquiring/acquiring.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { UserPaymentsModule } from './user-payments/user-payments.module';
 import { CityModule } from './city/city.module';
+import { FineModule } from './fine/fine.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -76,6 +77,7 @@ console.log(NODE_ENV);
     PaymentMethodModule,
     UserPaymentsModule,
     CityModule,
+    FineModule,
   ],
   controllers: [],
   providers: [
