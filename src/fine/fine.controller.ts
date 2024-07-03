@@ -1,12 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { FineService } from './fine.service';
 import { CreateFineDto } from './dto';
-import { CurrentUser } from '@common/decorators';
+import { CurrentUser, Platforms } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
-// @UseGuards(PlatformsGuard)
-// @Platforms('WEB')
 @ApiTags('Штрафы')
 @ApiBearerAuth()
 @Controller('fine')
@@ -18,6 +17,8 @@ export class FineController {
     return await this.fineService.getAll();
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Post()
   async create(@Body() dto: CreateFineDto, @CurrentUser() erpUser: ErpUser) {
     return await this.fineService.create(dto, erpUser);
