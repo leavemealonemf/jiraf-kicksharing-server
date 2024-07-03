@@ -24,6 +24,7 @@ export class FineService {
         intruder: true,
         trip: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
