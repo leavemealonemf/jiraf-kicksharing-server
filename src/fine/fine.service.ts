@@ -1,9 +1,4 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { CreateFineDto } from './dto';
 import { ErpUser, ErpUserRoles } from '@prisma/client';
@@ -18,7 +13,17 @@ export class FineService {
 
   async getAll() {
     return await this.dbService.fine.findMany({
-      include: { initiator: true, intruder: true, trip: true },
+      include: {
+        initiator: {
+          include: {
+            city: {
+              select: { name: true },
+            },
+          },
+        },
+        intruder: true,
+        trip: true,
+      },
     });
   }
 
@@ -29,7 +34,7 @@ export class FineService {
     );
 
     if (!isAccess) {
-      throw new BadGatewayException(
+      throw new BadRequestException(
         'У вас недостаточно прав для выполнения этой операции',
       );
     }
@@ -58,7 +63,7 @@ export class FineService {
     }
 
     if (trip.scooter.franchiseId !== erpUser.franchiseEmployeeId) {
-      throw new BadGatewayException(
+      throw new BadRequestException(
         'У вас недостаточно прав для выполнения этой операции',
       );
     }
