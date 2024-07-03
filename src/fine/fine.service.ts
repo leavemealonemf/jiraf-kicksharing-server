@@ -72,6 +72,17 @@ export class FineService {
 
     return await this.dbService.fine
       .create({
+        include: {
+          initiator: {
+            include: {
+              city: {
+                select: { name: true },
+              },
+            },
+          },
+          intruder: true,
+          trip: true,
+        },
         data: {
           tripUUID: dto.tripUUID,
           deviceType: dto.deviceType,
