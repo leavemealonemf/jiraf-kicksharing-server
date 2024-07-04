@@ -101,7 +101,15 @@ export class FineService {
             },
           },
           intruder: true,
-          trip: true,
+          trip: {
+            include: {
+              scooter: {
+                select: {
+                  deviceId: true,
+                },
+              },
+            },
+          },
         },
         data: {
           tripUUID: dto.tripUUID,
