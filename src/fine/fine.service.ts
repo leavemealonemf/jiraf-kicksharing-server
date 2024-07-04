@@ -22,7 +22,15 @@ export class FineService {
           },
         },
         intruder: true,
-        trip: true,
+        trip: {
+          include: {
+            scooter: {
+              select: {
+                deviceId: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
