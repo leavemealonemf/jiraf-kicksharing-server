@@ -4,6 +4,9 @@ import { CreateFineDto } from './dto';
 import { ErpUser, ErpUserRoles } from '@prisma/client';
 import { generateUUID } from '@common/utils';
 import { FineCauseEnum } from './enums';
+import * as path from 'path';
+import * as fs from 'fs';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class FineService {
@@ -79,6 +82,14 @@ export class FineService {
 
     const causeTxt: string = FineCauseEnum[dto.causeType];
 
+    // save images
+    const photos: string[] = [];
+
+    if (dto.photos.length > 0) {
+      const res = this.saveImage(dto.photos);
+      photos.push(...res);
+    }
+
     return await this.dbService.fine
       .create({
         include: {
@@ -98,7 +109,7 @@ export class FineService {
           causeType: dto.causeType,
           causeText: causeTxt,
           description: dto.description,
-          // photos: dto.photos,
+          photos: photos,
           price: dto.price,
           fineNumber: fineUUID,
           initiatorId: erpUser.franchiseEmployeeId,
@@ -114,8 +125,34 @@ export class FineService {
       });
   }
 
-  private saveImages() {
-    return null;
+  private saveImage(photos: string[]): string[] {
+    const imagesPaths = [];
+
+    for (const photo of photos) {
+      if (!photo) continue;
+
+      const uuidPath = v4();
+      const uuidName = v4();
+
+      const entityPath = `uploads/images/fines/${uuidPath}/photo/${uuidName}.png`;
+
+      const base64String = photo;
+      const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      const base64Data = matches[2];
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      const filePath = entityPath;
+
+      const directoryPath = path.dirname(filePath);
+      if (!fs.existsSync(directoryPath)) {
+        fs.mkdirSync(directoryPath, { recursive: true });
+      }
+
+      fs.writeFileSync(filePath, buffer);
+
+      imagesPaths.push(entityPath);
+    }
+    return imagesPaths;
   }
 
   private checkRolePermisson(role: ErpUserRoles, franchiseId: number): boolean {
