@@ -86,7 +86,7 @@ export class FineService {
     const photos: string[] = [];
 
     if (dto.photos.length > 0) {
-      const res = this.saveImage(dto.photos);
+      const res = this.saveImage(dto.photos, fineUUID);
       photos.push(...res);
     }
 
@@ -157,22 +157,24 @@ export class FineService {
 
     return await this.dbService.fine
       .delete({ where: { id: id } })
+      .then((res) => {
+        this.deleteFolder(res.fineNumber);
+      })
       .catch((err) => {
         this.logger.error(err);
         throw new BadRequestException(`Не удалось удалить штраф ${id}`);
       });
   }
 
-  private saveImage(photos: string[]): string[] {
+  private saveImage(photos: string[], folderNameId: string): string[] {
     const imagesPaths = [];
 
     for (const photo of photos) {
       if (!photo) continue;
 
-      const uuidPath = v4();
       const uuidName = v4();
 
-      const entityPath = `uploads/images/fines/${uuidPath}/photo/${uuidName}.png`;
+      const entityPath = `uploads/images/fines/${folderNameId}/photo/${uuidName}.png`;
 
       const base64String = photo;
       const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -191,6 +193,12 @@ export class FineService {
       imagesPaths.push(entityPath);
     }
     return imagesPaths;
+  }
+
+  private deleteFolder(folderNameId: string) {
+    fs.rmSync(`uploads/images/fines/${folderNameId}`, {
+      recursive: true,
+    });
   }
 
   private checkRolePermisson(role: ErpUserRoles, franchiseId: number): boolean {
