@@ -133,6 +133,36 @@ export class FineService {
       });
   }
 
+  async delete(id: number, erpUser: ErpUser) {
+    const isAccess = this.checkRolePermisson(
+      erpUser.role,
+      erpUser.franchiseEmployeeId,
+    );
+
+    if (!isAccess) {
+      throw new BadRequestException(
+        'У вас недостаточно прав для выполнения этой операции',
+      );
+    }
+
+    const fine = await this.dbService.fine
+      .findFirst({ where: { id: id } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!fine) {
+      throw new BadRequestException(`Не удалось найти штраф ${id}`);
+    }
+
+    return await this.dbService.fine
+      .delete({ where: { id: id } })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(`Не удалось удалить штраф ${id}`);
+      });
+  }
+
   private saveImage(photos: string[]): string[] {
     const imagesPaths = [];
 

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { FineService } from './fine.service';
 import { CreateFineDto } from './dto';
 import { CurrentUser, Platforms } from '@common/decorators';
@@ -22,5 +30,12 @@ export class FineController {
   @Post()
   async create(@Body() dto: CreateFineDto, @CurrentUser() erpUser: ErpUser) {
     return await this.fineService.create(dto, erpUser);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
+  @Delete(':id')
+  async delete(@Param('id') id: string, @CurrentUser() erpUser: ErpUser) {
+    return await this.fineService.delete(+id, erpUser);
   }
 }
