@@ -155,15 +155,19 @@ export class FineService {
       throw new BadRequestException(`Не удалось найти штраф ${id}`);
     }
 
-    return await this.dbService.fine
+    const deleted = await this.dbService.fine
       .delete({ where: { id: id } })
-      .then((res) => {
-        this.deleteFolder(res.fineNumber);
-      })
       .catch((err) => {
         this.logger.error(err);
-        throw new BadRequestException(`Не удалось удалить штраф ${id}`);
       });
+
+    if (!deleted) {
+      throw new BadRequestException(`Не удалось удалить штраф ${id}`);
+    }
+
+    this.deleteFolder(deleted.fineNumber);
+
+    return deleted;
   }
 
   private saveImage(photos: string[], folderNameId: string): string[] {
