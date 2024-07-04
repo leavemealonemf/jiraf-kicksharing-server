@@ -165,7 +165,9 @@ export class FineService {
       throw new BadRequestException(`Не удалось удалить штраф ${id}`);
     }
 
-    this.deleteFolder(deleted.fineNumber);
+    if (deleted.photos.length > 0) {
+      this.deleteFolder(deleted.fineNumber);
+    }
 
     return deleted;
   }
