@@ -134,7 +134,7 @@ export class FineService {
   }
 
   async delete(id: number, erpUser: ErpUser) {
-    const isAccess = this.checkRolePermisson(
+    const isAccess = this.checkRoleDeleteFinePermisson(
       erpUser.role,
       erpUser.franchiseEmployeeId,
     );
@@ -208,6 +208,20 @@ export class FineService {
   }
 
   private checkRolePermisson(role: ErpUserRoles, franchiseId: number): boolean {
+    if (role === 'FRANCHISE' && franchiseId) {
+      return true;
+    }
+    return false;
+  }
+
+  private checkRoleDeleteFinePermisson(
+    role: ErpUserRoles,
+    franchiseId: number,
+  ): boolean {
+    if (role === 'ADMIN') {
+      return true;
+    }
+
     if (role === 'FRANCHISE' && franchiseId) {
       return true;
     }
