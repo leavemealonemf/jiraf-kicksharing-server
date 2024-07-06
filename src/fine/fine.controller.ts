@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -30,6 +31,13 @@ export class FineController {
   @Post()
   async create(@Body() dto: CreateFineDto, @CurrentUser() erpUser: ErpUser) {
     return await this.fineService.create(dto, erpUser);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
+  @Patch(':id')
+  async makeFinePaid(@Param('id') id: string) {
+    return await this.fineService.makeFinePaid(+id);
   }
 
   @UseGuards(PlatformsGuard)

@@ -172,6 +172,23 @@ export class FineService {
     return deleted;
   }
 
+  async makeFinePaid(id: number) {
+    return await this.dbService.fine
+      .update({
+        where: { id: id },
+        data: {
+          paidStatus: 'PAID',
+          closedAt: new Date().toISOString(),
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          `Не удалось изменить статус штрафа ${id}`,
+        );
+      });
+  }
+
   private saveImage(photos: string[], folderNameId: string): string[] {
     const imagesPaths = [];
 
