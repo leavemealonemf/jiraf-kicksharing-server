@@ -74,9 +74,35 @@ export class UserService {
       where: { clientId: uuid },
       include: {
         paymentMethods: true,
-        // payments: {
-        //   include: { paymentMethod: true },
-        // },
+        fines: {
+          include: {
+            initiator: {
+              select: {
+                id: true,
+                organization: true,
+                supportLink: true,
+              },
+              include: {
+                city: {
+                  select: { name: true },
+                },
+              },
+            },
+            trip: {
+              select: {
+                startTime: true,
+                endTime: true,
+              },
+              include: {
+                scooter: {
+                  select: {
+                    deviceId: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         subscriptionsOptions: true,
       },
     });
