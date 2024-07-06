@@ -75,6 +75,7 @@ export class UserService {
       include: {
         paymentMethods: true,
         fines: {
+          orderBy: { createdAt: 'desc' },
           include: {
             initiator: {
               select: {
@@ -87,11 +88,6 @@ export class UserService {
                   },
                 },
               },
-              // include: {
-              //   city: {
-              //     select: { name: true },
-              //   },
-              // },
             },
             trip: {
               select: {
