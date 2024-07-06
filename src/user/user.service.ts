@@ -97,8 +97,6 @@ export class UserService {
               select: {
                 startTime: true,
                 endTime: true,
-              },
-              include: {
                 scooter: {
                   select: {
                     deviceId: true,
