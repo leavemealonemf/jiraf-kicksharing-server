@@ -81,12 +81,17 @@ export class UserService {
                 id: true,
                 organization: true,
                 supportLink: true,
-              },
-              include: {
                 city: {
-                  select: { name: true },
+                  select: {
+                    name: true,
+                  },
                 },
               },
+              // include: {
+              //   city: {
+              //     select: { name: true },
+              //   },
+              // },
             },
             trip: {
               select: {
