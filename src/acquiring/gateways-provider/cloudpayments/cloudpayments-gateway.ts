@@ -34,7 +34,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         RequireConfirmation: true,
         JsonData: JSON.stringify({
           methodUuid: uuid.v4(),
-          userId: userId ? userId : 1,
+          userId: userId,
           service: 'payment-method',
         }),
       })

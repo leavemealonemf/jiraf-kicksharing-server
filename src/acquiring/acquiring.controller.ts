@@ -100,9 +100,10 @@ export class AcquiringController {
     await this.paymentMethodService.agreementPaymentMethodPhase(dto);
   }
 
-  @Public()
+  // @Public()
   @Post('/cloudpayments-create-payment-method')
   async createPaymentMethodCloudPayments(@CurrentUser() user: User) {
+    console.log(user);
     return await this.acquiringService.createAuthorizedPaymentMethod(
       user ? user.id : 1,
     );
