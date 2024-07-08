@@ -8,6 +8,7 @@ import {
 import { DbService } from 'src/db/db.service';
 import { UserService } from 'src/user/user.service';
 import { IPaymentMethodCloudPaymentsResponse } from './interfaces';
+import { IDefaultTransactionNotification } from 'src/acquiring/gateways-provider/cloudpayments/interfaces';
 
 @Injectable()
 export class PaymentMethodService {
@@ -96,7 +97,7 @@ export class PaymentMethodService {
   }
 
   async agreementPaymentMehodCloudPayments(
-    response: IPaymentMethodCloudPaymentsResponse,
+    response: IDefaultTransactionNotification,
     userId: number,
   ) {
     if (!response) {
