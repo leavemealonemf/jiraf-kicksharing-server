@@ -7,6 +7,7 @@ import {
 } from 'src/acquiring/dtos';
 import { DbService } from 'src/db/db.service';
 import { UserService } from 'src/user/user.service';
+import { IPaymentMethodCloudPaymentsResponse } from './interfaces';
 
 @Injectable()
 export class PaymentMethodService {
@@ -92,6 +93,39 @@ export class PaymentMethodService {
     }
 
     await this.checkIsCardAlreadyExist(dto, updatedPaymentMethod);
+  }
+
+  async agreementPaymentMehodCloudPayments(
+    response: IPaymentMethodCloudPaymentsResponse,
+    userId: number,
+  ) {
+    if (!response) {
+      return false;
+    }
+
+    const cardExpData = response.CardExpDate.split('/');
+
+    await this.dbService.paymentMethod
+      .create({
+        data: {
+          paymentId: response.Token,
+          cardType: response.CardType,
+          type: 'bank_card',
+          active: true,
+          cardFirstSix: response.CardFirstSix,
+          cardLastFour: response.CardLastFour,
+          userId: userId,
+          accountId: response.AccountId,
+          expMonth: cardExpData[0],
+          expYear: cardExpData[1],
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return false;
+      });
+
+    return true;
   }
 
   private async checkIsCardAlreadyExist(

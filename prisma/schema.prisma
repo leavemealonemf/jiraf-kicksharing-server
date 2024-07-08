@@ -114,6 +114,7 @@ model PaymentMethod {
   expMonth String?
   cardType String?
   payments Payment[]
+  accountId String?
 }
 
 model TokenErp {

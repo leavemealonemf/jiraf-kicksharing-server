@@ -6,6 +6,7 @@ import {
 import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
 import { AcquiringProvider } from './gateways-provider';
 import { CloudPaymentsGateway } from './gateways-provider/cloudpayments/cloudpayments-gateway';
+import { IVoidPaymentData } from './gateways-provider/cloudpayments/interfaces';
 
 @Injectable()
 export class AcquiringService {
@@ -23,7 +24,7 @@ export class AcquiringService {
     this.paymentProviderGateway['cloud-payments'] = new CloudPaymentsGateway();
   }
 
-  async createPayment() {
+  async createAuthorizedPaymentMethod(userId: number) {
     this.registerPaymentProviderGateway();
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
@@ -31,7 +32,7 @@ export class AcquiringService {
         'Не удалось зарегестрировать cloud-payments gateway',
       );
     }
-    return await gateway.createOneStagePayment();
+    return await gateway.createAuthorizedPaymentMethod(userId);
   }
 
   async createReccurentPayment() {
@@ -45,10 +46,25 @@ export class AcquiringService {
     return await gateway.createReccurentPayment();
   }
 
+  async voidPayment(data: IVoidPaymentData) {
+    this.registerPaymentProviderGateway();
+    const gateway = this.paymentProviderGateway['cloud-payments'];
+    if (!gateway) {
+      throw new BadRequestException(
+        'Не удалось зарегестрировать cloud-payments gateway',
+      );
+    }
+    return await gateway.cancelPayment(data);
+  }
+
   async getCloudCassirPaymentInfo(data: any) {
     console.log('pay-info', data);
     console.log('receipt', JSON.parse(data.Data));
   }
+
+  // YOOKASSA SERVICES
+  // YOOKASSA SERVICES
+  // YOOKASSA SERVICES
 
   public rigisterSaveAcquiringGateway(
     dto: SaveAcquiringMethodDto,

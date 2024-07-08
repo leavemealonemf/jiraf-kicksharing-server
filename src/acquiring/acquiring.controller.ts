@@ -17,8 +17,19 @@ import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AcquiringSaveMethodFabric } from './gateways';
 import { PaymentsService } from 'src/payments/payments.service';
-import { AcquiringPaymentStatusDto } from './dtos/acquiring-payment.response.dto';
+import {
+  AcquiringPaymentEvent,
+  AcquiringPaymentStatusDto,
+} from './dtos/acquiring-payment.response.dto';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
+import {
+  CheckNotification,
+  DefaultTransactionNotification,
+  TransactionNotification,
+  TransactionStatus,
+} from 'cloudpayments';
+import { IPaymentJsonData } from './gateways-provider/cloudpayments/interfaces/payment-jsondata.interface';
+import { User } from '@prisma/client';
 
 @ApiTags('Эквайринг')
 @Controller('acquiring')
@@ -94,9 +105,11 @@ export class AcquiringController {
   }
 
   @Public()
-  @Post('/cloudcassir-payment')
-  async createCassirPayment() {
-    return await this.acquiringService.createPayment();
+  @Post('/cloudpayments-create-payment-method')
+  async createPaymentMethodCloudPayments(@CurrentUser() user: User) {
+    return await this.acquiringService.createAuthorizedPaymentMethod(
+      user ? user.id : 1,
+    );
   }
 
   @Public()
@@ -107,8 +120,33 @@ export class AcquiringController {
 
   @Public()
   @Post('cloudcassir-payment-info')
-  async cassirPaymentInfo(@Body() dto: any) {
-    console.log(dto);
+  async cassirPaymentInfo(@Body() dto: DefaultTransactionNotification) {
+    if (!dto.Data || !dto.Data.length) {
+      console.log('PAYMENT JSON DATA IS EMPTY');
+      return;
+    }
+    const providedData: IPaymentJsonData = JSON.parse(dto.Data);
+    console.log(providedData.methodUuid);
+    // void payment if is two-stage payment
+    if (
+      dto.Status === TransactionStatus.Authorized &&
+      providedData.service === 'payment-method'
+    ) {
+      await this.paymentMethodService.agreementPaymentMehodCloudPayments(
+        dto,
+        providedData.userId,
+      );
+
+      const cancelPayment = await this.acquiringService.voidPayment({
+        TransactionId: Number(dto.TransactionId),
+      });
+      console.log(cancelPayment);
+    }
     // return await this.acquiringService.getCloudCassirPaymentInfo(data);
+  }
+  @Public()
+  @Post('cloudcassir-payment-info-check')
+  async cassirPaymentInfoCheck(@Body() dto: DefaultTransactionNotification) {
+    console.log(dto);
   }
 }

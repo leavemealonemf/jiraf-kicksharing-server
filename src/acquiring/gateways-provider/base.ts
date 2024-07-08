@@ -1,8 +1,9 @@
 export abstract class AcquiringProvider {
-  abstract createOneStagePayment(): Promise<any>;
+  abstract createOneStageCryptogramPayment(): Promise<any>;
+  abstract createAuthorizedPaymentMethod(userId: number): Promise<any>;
   abstract createTwoStagePayment(): Promise<any>;
   abstract acceptPayment(): Promise<any>;
-  abstract cancelPayment(): Promise<any>;
+  abstract cancelPayment(data: any): Promise<any>;
   abstract getPaymentStatus(): Promise<any>;
   abstract createReccurentPayment(): Promise<any>;
   abstract confirm3DSecure(): Promise<any>;

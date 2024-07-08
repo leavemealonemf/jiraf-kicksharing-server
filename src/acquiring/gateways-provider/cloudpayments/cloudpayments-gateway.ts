@@ -1,21 +1,29 @@
 import { BadRequestException, Logger } from '@nestjs/common';
 import { AcquiringProvider } from '../base';
-import { ClientService, ReceiptTypes, TaxationSystem } from 'cloudpayments';
+import { ClientService, ReceiptTypes } from 'cloudpayments';
+import { IVoidPaymentData } from './interfaces';
+import * as uuid from 'uuid';
 
 export class CloudPaymentsGateway extends AcquiringProvider {
   private readonly logger = new Logger(CloudPaymentsGateway.name);
   private readonly client = new ClientService({
     publicId: 'pk_42204cdc701ea748b587162053789',
     privateKey: 'e35b382e426a29b928ce49a435a93f90',
-    org: {
-      taxationSystem: TaxationSystem.GENERAL,
-      inn: 575102520630,
-    },
   });
 
   // TEST CARD TOKEN tk_2c74ff1601af6d95d8a0a96ffe94a
 
-  async createOneStagePayment(): Promise<any> {
+  async createOneStageCryptogramPayment(): Promise<any> {
+    // const payment = await this.client.getClientApi().chargeCryptogramPayment({
+    //   Amount: 1,
+    //   CardCryptogramPacket:
+    // })
+    // const handler = await this.client.getNotificationHandlers();
+    // handler.handleCheckRequest()
+    return new Promise(() => '');
+  }
+
+  async createAuthorizedPaymentMethod(userId: number): Promise<any> {
     const payment = await this.client
       .getClientApi()
       .createOrder({
@@ -23,6 +31,12 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         email: 'strangemisterio78@gmail.com',
         Currency: 'RUB',
         Description: 'Привязка платежного метода к сервиску GiraffeGo',
+        RequireConfirmation: true,
+        JsonData: JSON.stringify({
+          methodUuid: uuid.v4(),
+          userId: userId ? userId : 1,
+          service: 'payment-method',
+        }),
       })
       .catch((err) => {
         this.logger.error(err);
@@ -39,7 +53,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
       .getClientApi()
       .chargeTokenPayment({
         AccountId: 'strangemisterio78@gmail.com',
-        Token: 'tk_2c74ff1601af6d95d8a0a96ffe94a',
+        Token: 'tk_bdbf138c096255437259d75e6289a',
         Amount: 150,
         Currency: 'RUB',
         JsonData: JSON.stringify(receipt),
@@ -48,9 +62,8 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         this.logger.error(err);
         throw new BadRequestException('CloudPayment payment error!');
       });
-    // this.logger.log(JSON.stringify(payment));
-    return await this.createReceipt();
-    // return payment;
+    this.logger.log(JSON.stringify(payment));
+    return payment;
   }
 
   createTwoStagePayment(): Promise<any> {
@@ -59,8 +72,19 @@ export class CloudPaymentsGateway extends AcquiringProvider {
   acceptPayment(): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  cancelPayment(): Promise<any> {
-    throw new Error('Method not implemented.');
+  async cancelPayment(data: IVoidPaymentData): Promise<any> {
+    const payment = await this.client
+      .getClientApi()
+      .voidPayment({
+        TransactionId: data.TransactionId,
+        CultureName: 'ru-RU',
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('CloudPayment cancel payment error!');
+      });
+    this.logger.log(JSON.stringify(payment));
+    return payment;
   }
   getPaymentStatus(): Promise<any> {
     throw new Error('Method not implemented.');
