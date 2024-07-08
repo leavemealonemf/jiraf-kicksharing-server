@@ -22,14 +22,10 @@ import {
   AcquiringPaymentStatusDto,
 } from './dtos/acquiring-payment.response.dto';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
-import {
-  CheckNotification,
-  DefaultTransactionNotification,
-  TransactionNotification,
-  TransactionStatus,
-} from 'cloudpayments';
+import { TransactionStatus } from 'cloudpayments';
 import { IPaymentJsonData } from './gateways-provider/cloudpayments/interfaces/payment-jsondata.interface';
 import { User } from '@prisma/client';
+import { IDefaultTransactionNotification } from './gateways-provider/cloudpayments/interfaces';
 
 @ApiTags('Эквайринг')
 @Controller('acquiring')
@@ -120,7 +116,7 @@ export class AcquiringController {
 
   @Public()
   @Post('cloudcassir-payment-info')
-  async cassirPaymentInfo(@Body() dto: DefaultTransactionNotification) {
+  async cassirPaymentInfo(@Body() dto: IDefaultTransactionNotification) {
     if (!dto.Data || !dto.Data.length) {
       console.log('PAYMENT JSON DATA IS EMPTY');
       return;
@@ -146,7 +142,7 @@ export class AcquiringController {
   }
   @Public()
   @Post('cloudcassir-payment-info-check')
-  async cassirPaymentInfoCheck(@Body() dto: DefaultTransactionNotification) {
+  async cassirPaymentInfoCheck(@Body() dto: IDefaultTransactionNotification) {
     console.log(dto);
   }
 }
