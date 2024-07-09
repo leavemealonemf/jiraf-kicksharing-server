@@ -3,6 +3,8 @@ import { AcquiringProvider } from '../base';
 import { ClientService, ReceiptTypes } from 'cloudpayments';
 import { IVoidPaymentData } from './interfaces';
 import * as uuid from 'uuid';
+import { ReccurentPaymentDto } from 'src/acquiring/dtos';
+import { PaymentMethod } from '@prisma/client';
 
 export class CloudPaymentsGateway extends AcquiringProvider {
   private readonly logger = new Logger(CloudPaymentsGateway.name);
@@ -46,17 +48,25 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return payment;
   }
 
-  async createReccurentPayment(): Promise<any> {
+  async createReccurentPayment(
+    paymentData: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ): Promise<any> {
     const receipt = this.createReceiptData();
 
     const payment = await this.client
       .getClientApi()
       .chargeTokenPayment({
-        AccountId: 'strangemisterio78@gmail.com',
-        Token: 'tk_bdbf138c096255437259d75e6289a',
-        Amount: 150,
+        AccountId: paymentMethod.accountId,
+        Token: paymentMethod.paymentId,
+        Amount: paymentData.amount,
         Currency: 'RUB',
-        JsonData: JSON.stringify(receipt),
+        JsonData: JSON.stringify({
+          userId: userId,
+          service: 'payment',
+          ...receipt,
+        }),
       })
       .catch((err) => {
         this.logger.error(err);

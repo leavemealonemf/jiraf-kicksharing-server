@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AcquiringProcessPaymentDto } from 'src/acquiring/dtos';
+import { ReccurentPaymentDto } from 'src/acquiring/dtos';
 import {
   SaveBalancePayment,
   SaveSubscriptionPayment,
@@ -8,7 +8,7 @@ import {
 
 @Injectable()
 export class SavePaymentFabric {
-  public getGateway(dto: AcquiringProcessPaymentDto) {
+  public getGateway(dto: ReccurentPaymentDto) {
     switch (dto.metadata.type) {
       case 'BALANCE':
         return new SaveBalancePayment();

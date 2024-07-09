@@ -4,23 +4,17 @@ import {
   Body,
   Controller,
   ForbiddenException,
-  Get,
   Post,
-  Request,
-  Response,
   UseGuards,
 } from '@nestjs/common';
 import { AcquiringService } from './acquiring.service';
-import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
+import { ReccurentPaymentDto, SaveAcquiringMethodDto } from './dtos';
 import { CurrentUser, Platforms, Public } from '@common/decorators';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AcquiringSaveMethodFabric } from './gateways';
 import { PaymentsService } from 'src/payments/payments.service';
-import {
-  AcquiringPaymentEvent,
-  AcquiringPaymentStatusDto,
-} from './dtos/acquiring-payment.response.dto';
+import { AcquiringPaymentStatusDto } from './dtos/acquiring-payment.response.dto';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { TransactionStatus } from 'cloudpayments';
 import { IPaymentJsonData } from './gateways-provider/cloudpayments/interfaces/payment-jsondata.interface';
@@ -76,22 +70,22 @@ export class AcquiringController {
     return isAcquiringMethodSave;
   }
 
-  @ApiBearerAuth()
-  @UseGuards(PlatformsGuard)
-  @Platforms('MOBILE')
-  @Post('/create-aquiring-payment')
-  async createAquiringProcessPayment(
-    @Body() dto: AcquiringProcessPaymentDto,
-    @CurrentUser() user: any,
-  ) {
-    const payment = await this.acquiringService.processPayment(dto);
+  // @ApiBearerAuth()
+  // @UseGuards(PlatformsGuard)
+  // @Platforms('MOBILE')
+  // @Post('/create-aquiring-payment')
+  // async createAquiringProcessPayment(
+  //   @Body() dto: AcquiringProcessPaymentDto,
+  //   @CurrentUser() user: any,
+  // ) {
+  //   const payment = await this.acquiringService.processPayment(dto);
 
-    if (!payment) {
-      throw new BadRequestException('Не удалось обработать платеж');
-    }
+  //   if (!payment) {
+  //     throw new BadRequestException('Не удалось обработать платеж');
+  //   }
 
-    return await this.paymentsService.savePayment(dto, user.id);
-  }
+  //   return await this.paymentsService.savePayment(dto, user.id);
+  // }
 
   @Public()
   @Post('/get-aquiring-status')
@@ -109,10 +103,32 @@ export class AcquiringController {
     );
   }
 
-  @Public()
-  @Post('/cloudcassir-reccurent-payment')
-  async createCassirReccurentPayment() {
-    return await this.acquiringService.createReccurentPayment();
+  // @Public()
+  @ApiBearerAuth()
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Post('/cloudpayments-reccurent-payment')
+  async createCassirReccurentPayment(
+    @Body() dto: ReccurentPaymentDto,
+    @CurrentUser() userRes: User,
+  ) {
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(userRes.id);
+
+    const reccurentPayment = await this.acquiringService.createReccurentPayment(
+      dto,
+      userRes.id,
+      paymentMethod,
+    );
+
+    const payment = await this.paymentsService.savePayment(
+      dto,
+      userRes.id,
+      paymentMethod,
+    );
+
+    const res = await Promise.all([reccurentPayment, payment]);
+    return res[1];
   }
 
   @Public()

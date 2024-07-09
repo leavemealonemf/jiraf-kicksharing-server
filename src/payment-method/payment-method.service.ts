@@ -7,7 +7,6 @@ import {
 } from 'src/acquiring/dtos';
 import { DbService } from 'src/db/db.service';
 import { UserService } from 'src/user/user.service';
-import { IPaymentMethodCloudPaymentsResponse } from './interfaces';
 import { IDefaultTransactionNotification } from 'src/acquiring/gateways-provider/cloudpayments/interfaces';
 
 @Injectable()
@@ -170,5 +169,57 @@ export class PaymentMethodService {
           this.logger.error(err);
         });
     }
+  }
+
+  async getActivePaymentMethod(userId: number): Promise<PaymentMethod> {
+    const user = await this.dbService.user.findFirst({ where: { id: userId } });
+
+    if (!user) {
+      throw new BadRequestException(
+        'Такого пользователя не существует: ' + JSON.stringify(user),
+      );
+    }
+
+    const paymentMethod = await this.checkIsPaymentMethodExist(
+      user.activePaymentMethod,
+      user.id,
+    );
+
+    if (!paymentMethod) {
+      throw new BadRequestException(
+        `Ошибка. Платежного метода с id ${user.activePaymentMethod} не существует или он не активен`,
+      );
+    }
+
+    if (!paymentMethod.active) {
+      throw new BadRequestException(
+        `Ошибка. Невозможно использовать данный платежный метод`,
+      );
+    }
+
+    return paymentMethod;
+  }
+
+  private async checkIsPaymentMethodExist(
+    paymentId: number,
+    userId: number,
+  ): Promise<PaymentMethod | null> {
+    const paymentMethod = await this.dbService.paymentMethod
+      .findFirst({
+        where: { id: paymentId },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!paymentMethod) {
+      return null;
+    }
+
+    if (paymentMethod.userId !== userId) {
+      return null;
+    }
+
+    return paymentMethod;
   }
 }

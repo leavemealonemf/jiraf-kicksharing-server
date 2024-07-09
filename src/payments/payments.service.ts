@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { YooCheckout, ICreatePayment, IReceipt } from '@a2seven/yoo-checkout';
+import { YooCheckout, ICreatePayment } from '@a2seven/yoo-checkout';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { DbService } from 'src/db/db.service';
@@ -7,9 +7,10 @@ import { DbService } from 'src/db/db.service';
 import { UserService } from 'src/user/user.service';
 import { SubscriptionService } from 'src/subscription/subscription.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AcquiringProcessPaymentDto } from 'src/acquiring/dtos';
+import { ReccurentPaymentDto } from 'src/acquiring/dtos';
 import { SavePaymentGateway } from './gateways';
 import { SavePaymentFabric } from './gateways/payments.save-paymnet.fabric';
+import { PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService {
@@ -30,13 +31,17 @@ export class PaymentsService {
   ) {}
 
   public rigisterPaymentGateway(
-    dto: AcquiringProcessPaymentDto,
+    dto: ReccurentPaymentDto,
     gateway: SavePaymentGateway,
   ) {
     this.savePaymentsGateways[dto.metadata.type] = gateway;
   }
 
-  async savePayment(dto: AcquiringProcessPaymentDto, userId: number) {
+  async savePayment(
+    dto: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ) {
     const fabric = this.gatewayFabric.getGateway(dto);
 
     if (!fabric) {
@@ -51,7 +56,8 @@ export class PaymentsService {
     if (!gateway) {
       throw new Error('Невозможно сохранить платеж');
     }
-    return await gateway.savePayment(dto, userId);
+
+    return await gateway.savePayment(dto, userId, paymentMethod);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -189,26 +195,5 @@ export class PaymentsService {
 
   private getSubscriptionExpDate(days: number) {
     return days * 24 * 60 * 60 * 1000;
-  }
-
-  private createReceipt(description: string, amount: string): IReceipt {
-    return {
-      customer: {
-        email: 'strangemisterio78@gmail.com',
-      },
-      items: [
-        {
-          description: description,
-          quantity: '1.00',
-          amount: {
-            value: amount,
-            currency: 'RUB',
-          },
-          vat_code: 2,
-          payment_mode: 'full_payment',
-          payment_subject: 'commodity',
-        },
-      ],
-    };
   }
 }

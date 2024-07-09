@@ -3,10 +3,15 @@ import {
   AcquiringProcessPayment,
   SaveAcquiringMethodGateway,
 } from './gateways';
-import { AcquiringProcessPaymentDto, SaveAcquiringMethodDto } from './dtos';
+import {
+  AcquiringProcessPaymentDto,
+  ReccurentPaymentDto,
+  SaveAcquiringMethodDto,
+} from './dtos';
 import { AcquiringProvider } from './gateways-provider';
 import { CloudPaymentsGateway } from './gateways-provider/cloudpayments/cloudpayments-gateway';
 import { IVoidPaymentData } from './gateways-provider/cloudpayments/interfaces';
+import { PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class AcquiringService {
@@ -20,6 +25,7 @@ export class AcquiringService {
   ) {}
 
   // Set payment gateway provider (cloudpayments / yookassa)
+
   public registerPaymentProviderGateway() {
     this.paymentProviderGateway['cloud-payments'] = new CloudPaymentsGateway();
   }
@@ -35,7 +41,11 @@ export class AcquiringService {
     return await gateway.createAuthorizedPaymentMethod(userId);
   }
 
-  async createReccurentPayment() {
+  async createReccurentPayment(
+    paymentData: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ) {
     this.registerPaymentProviderGateway();
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
@@ -43,7 +53,11 @@ export class AcquiringService {
         'Не удалось зарегестрировать cloud-payments gateway',
       );
     }
-    return await gateway.createReccurentPayment();
+    return await gateway.createReccurentPayment(
+      paymentData,
+      userId,
+      paymentMethod,
+    );
   }
 
   async voidPayment(data: IVoidPaymentData) {
