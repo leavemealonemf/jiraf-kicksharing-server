@@ -25,10 +25,10 @@ export class TripProcessController {
     return this.tripProcessService.start(dto, user);
   }
 
-  @Post('/end')
-  async end(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
-    return this.tripProcessService.end(dto, user.clientId);
-  }
+  // @Post('/end')
+  // async end(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
+  //   return this.tripProcessService.end(dto, user.clientId);
+  // }
 
   @Post('/end-test')
   async endTest(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
