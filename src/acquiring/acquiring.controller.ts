@@ -131,6 +131,33 @@ export class AcquiringController {
     return res[1];
   }
 
+  @ApiBearerAuth()
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Post('/cloudpayments-reccurent-payment-two-stage')
+  async createCassirReccurentPaymentTwoStage(
+    @Body() dto: ReccurentPaymentDto,
+    @CurrentUser() userRes: User,
+  ) {
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(userRes.id);
+
+    const reccurentPayment =
+      await this.acquiringService.createReccurentPaymentTwoStage(
+        dto,
+        userRes.id,
+        paymentMethod,
+      );
+
+    // const payment = await this.paymentsService.savePayment(
+    //   dto,
+    //   userRes.id,
+    //   paymentMethod,
+    // );
+
+    return reccurentPayment;
+  }
+
   @Public()
   @Post('cloudcassir-payment-info')
   async cassirPaymentInfo(@Body() dto: IDefaultTransactionNotification) {

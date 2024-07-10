@@ -53,7 +53,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     userId: number,
     paymentMethod: PaymentMethod,
   ): Promise<any> {
-    const receipt = this.createReceiptData();
+    const receipt = this.createReceiptData(paymentData.amount, 'Услуга');
 
     const payment = await this.client
       .getClientApi()
@@ -76,12 +76,40 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return payment;
   }
 
-  createTwoStagePayment(): Promise<any> {
-    throw new Error('Method not implemented.');
+  async createTwoStagePayment(
+    paymentData: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ): Promise<any> {
+    const receipt = this.createReceiptData(
+      paymentData.amount,
+      'Залог за поездку',
+    );
+    const payment = await this.client
+      .getClientApi()
+      .authorizeTokenPayment({
+        AccountId: paymentMethod.accountId,
+        Token: paymentMethod.paymentId,
+        Amount: paymentData.amount,
+        Currency: 'RUB',
+        JsonData: JSON.stringify({
+          userId: userId,
+          service: 'payment',
+          ...receipt,
+        }),
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('CloudPayment payment error!');
+      });
+    this.logger.log(JSON.stringify(payment));
+    return payment;
   }
+
   acceptPayment(): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
   async cancelPayment(data: IVoidPaymentData): Promise<any> {
     const payment = await this.client
       .getClientApi()
@@ -96,16 +124,20 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     this.logger.log(JSON.stringify(payment));
     return payment;
   }
+
   getPaymentStatus(): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
   confirm3DSecure(): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
   refundPayments(): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  async createReceipt(): Promise<any> {
+
+  async createReceipt(price: number, label: string): Promise<any> {
     const receipt = await this.client
       .getReceiptApi()
       .createReceipt(
@@ -117,10 +149,10 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         {
           Items: [
             {
-              label: 'Поездка на самокате', //наименование товара
-              price: 100.0, //цена
+              label: label,
+              price: price, //цена
               quantity: 1.0, //количество
-              amount: 100.0, //сумма
+              amount: price, //сумма
               vat: 0, //ставка НДС
             },
           ],
@@ -134,14 +166,14 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return receipt;
   }
 
-  private createReceiptData() {
+  private createReceiptData(price: number, label: string) {
     const receipt = {
       items: [
         {
-          label: 'Поездка на самокате', //наименование товара
-          price: 100.0, //цена
+          label: label, //наименование товара
+          price: price, //цена
           quantity: 1.0, //количество
-          amount: 100.0, //сумма
+          amount: price, //сумма
           vat: 0, //ставка НДС
           method: 0, // тег-1214 признак способа расчета - признак способа расчета
           object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета

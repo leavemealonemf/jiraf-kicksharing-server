@@ -27,7 +27,11 @@ import * as path from 'path';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
 import { Geofence, Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
-import { AcquiringProcessPaymentDto, paymentType } from 'src/acquiring/dtos';
+import {
+  AcquiringProcessPaymentDto,
+  paymentType,
+  ReccurentPaymentDto,
+} from 'src/acquiring/dtos';
 import {
   ScooterCommandHandler,
   getScooterPackets,
@@ -75,12 +79,8 @@ export class TripProcessService {
       throw new BadRequestException('Отсутствует активный платежный метод');
     }
 
-    const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
-      userDb.id,
-      userDb.activePaymentMethod,
-    );
-
-    //
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(userDb.id);
 
     const tariff = await this.tariffService.findOne(dto.tariffId);
 
@@ -96,17 +96,17 @@ export class TripProcessService {
     }
 
     const paymentStartDeposit =
-      await this.acquiringService.processPaymentTwoSteps({
-        description: 'Залог',
-        paymentMethodId: paymentMethod.id,
-        paymentMethodStringId: paymentMethod.paymentId,
-        metadata: {
-          type: 'TRIP',
-          description: 'Залог за поездку',
+      await this.acquiringService.createReccurentPaymentTwoStage(
+        {
+          amount: 300,
+          metadata: {
+            description: 'Залог за поездку',
+            type: 'TRIP',
+          },
         },
-        type: paymentType.CARD,
-        value: 300,
-      });
+        userDb.id,
+        paymentMethod,
+      );
 
     if (!paymentStartDeposit) {
       this.scooterCommandHandlerIOT
@@ -168,7 +168,7 @@ export class TripProcessService {
         uuid: isTripCreated.tripId,
         tariffId: isTripCreated.tariffId,
         paused: false,
-        processPaymentId: paymentStartDeposit.id,
+        processPaymentId: paymentStartDeposit.response.Model.TransactionId,
         pricing: {
           minute: tariff.minuteCost,
           pause: tariff.pauseCost,
@@ -216,109 +216,6 @@ export class TripProcessService {
     }
 
     return cachedTrips;
-  }
-
-  async end(dto: EndTripProcessDto, userId: string) {
-    const user = await this.userService.findOneByUUID(userId);
-
-    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
-      dto.tripUUID,
-    );
-
-    const tripCoast = this.calcTripCost(cachedTrip);
-
-    let balanceSpent = 0;
-    let cardSpent = 0;
-
-    if (user.balance > 0) {
-      balanceSpent = user.balance;
-      cardSpent = tripCoast - user.bonuses;
-    } else {
-      cardSpent = tripCoast;
-    }
-
-    const trip = await this.dbService.trip.update({
-      where: { id: dto.tripId },
-      data: {
-        endTime: new Date().toISOString(),
-        coordinates: dto.coordinates ? dto.coordinates : null,
-        scooter: {
-          update: {
-            rented: false,
-          },
-        },
-        rating: 5,
-        bonusesUsed: balanceSpent,
-        price: tripCoast,
-        distance: cachedTrip.tripInfo.distanceTraveled,
-      },
-    });
-
-    const scooter: Scooter = await this.scooterService.findOne(trip.scooterId);
-
-    await this.scooterCommandHandlerIOT.sendCommand(
-      scooter.deviceIMEI,
-      DEVICE_COMMANDS.LOCK,
-    );
-
-    if (!trip) {
-      throw new BadRequestException(
-        `Не удалось завершить поездку с id: ${dto.tripId}`,
-      );
-    }
-
-    // const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
-    //   dto.tripUUID,
-    // );
-
-    const copy = Object.assign({}, cachedTrip);
-
-    const backUserDeposit = await this.acquiringService.cancelPayment(
-      copy.tripInfo.processPaymentId,
-    );
-
-    if (!backUserDeposit) {
-      throw new BadRequestException('Не удалось вернуть залог');
-    }
-
-    await this.cacheManager.del(dto.tripUUID);
-
-    const getPackets: any[] = await getScooterPackets(
-      scooter.deviceIMEI,
-      trip.startTime.toISOString(),
-      trip.endTime.toISOString(),
-    );
-
-    if (!getPackets) {
-      throw new BadRequestException('Не удалось получить пакеты');
-    }
-
-    const coordinates = getPackets.map((p) => {
-      return {
-        lat: p.lat,
-        lon: p.lon,
-      };
-    });
-
-    this.dbService.trip
-      .update({
-        where: { id: dto.tripId },
-        data: {
-          coordinates: JSON.stringify(coordinates),
-        },
-      })
-      .catch((err) => {
-        this.logger.error(err);
-        return 'Не удалось сохранить координаты';
-      });
-
-    this.dbService.activeTrip
-      .delete({ where: { tripUUID: copy.uuid } })
-      .catch((err) => {
-        this.logger.error(err);
-      });
-
-    return copy;
   }
 
   async endTripTest(dto: EndTripProcessDto, userUUID: any) {
@@ -394,9 +291,9 @@ export class TripProcessService {
 
     const copy = Object.assign({}, cachedTrip);
 
-    const backUserDeposit = await this.acquiringService.cancelPayment(
-      copy.tripInfo.processPaymentId,
-    );
+    const backUserDeposit = await this.acquiringService.voidPayment({
+      TransactionId: Number(copy.tripInfo.processPaymentId),
+    });
 
     if (!backUserDeposit) {
       throw new BadRequestException('Не удалось вернуть залог');
@@ -404,31 +301,25 @@ export class TripProcessService {
 
     // Списание и сохранение платежа
 
-    const paymentMethod = await this.paymentMethodService.getUserPaymentMethod(
-      user.id,
-      user.activePaymentMethod,
-    );
-
-    const paymentData: AcquiringProcessPaymentDto = {
-      description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
-      paymentMethodId: paymentMethod.id,
-      paymentMethodStringId: paymentMethod.paymentId,
-      type: paymentType.CARD,
-      value: tripCoastPayment,
+    const paymentData: ReccurentPaymentDto = {
+      amount: tripCoastPayment,
       metadata: {
+        description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
         type: 'TRIP',
-        description: 'Списание за поездку',
-        tripBonusesUsed: bonusesSpent,
       },
     };
 
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(user.id);
+
     if (cardSpent > 0) {
-      const payment = await this.acquiringService.processPayment(paymentData);
+      const payment = await this.acquiringService.createReccurentPayment(
+        paymentData,
+        user.id,
+        paymentMethod,
+      );
 
       if (!payment) {
-        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-        this.logger.log('НЕ УДАЛОСЬ СП ИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
         this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
       }
     }
@@ -436,12 +327,10 @@ export class TripProcessService {
     const savedPayment = await this.paymentsService.savePayment(
       paymentData,
       user.id,
+      paymentMethod,
     );
 
     if (!savedPayment) {
-      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
-      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
-      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
       this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
     }
 

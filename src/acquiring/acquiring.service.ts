@@ -60,6 +60,25 @@ export class AcquiringService {
     );
   }
 
+  async createReccurentPaymentTwoStage(
+    paymentData: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ) {
+    this.registerPaymentProviderGateway();
+    const gateway = this.paymentProviderGateway['cloud-payments'];
+    if (!gateway) {
+      throw new BadRequestException(
+        'Не удалось зарегестрировать cloud-payments gateway',
+      );
+    }
+    return await gateway.createTwoStagePayment(
+      paymentData,
+      userId,
+      paymentMethod,
+    );
+  }
+
   async voidPayment(data: IVoidPaymentData) {
     this.registerPaymentProviderGateway();
     const gateway = this.paymentProviderGateway['cloud-payments'];
