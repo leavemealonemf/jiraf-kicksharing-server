@@ -106,8 +106,13 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return payment;
   }
 
-  acceptPayment(): Promise<any> {
-    throw new Error('Method not implemented.');
+  async acceptPayment(amount: number, transactionId: number): Promise<any> {
+    const payment = await this.client.getClientApi().confirmPayment({
+      Amount: amount,
+      TransactionId: transactionId,
+      CultureName: 'ru-RU',
+    });
+    return payment;
   }
 
   async cancelPayment(data: IVoidPaymentData): Promise<any> {

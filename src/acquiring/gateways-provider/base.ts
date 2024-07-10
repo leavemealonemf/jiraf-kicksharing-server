@@ -6,7 +6,7 @@ export abstract class AcquiringProvider {
     userId: number,
     paymentMethod: any,
   ): Promise<any>;
-  abstract acceptPayment(): Promise<any>;
+  abstract acceptPayment(amount: number, transactionId: number): Promise<any>;
   abstract cancelPayment(data: any): Promise<any>;
   abstract getPaymentStatus(): Promise<any>;
   abstract createReccurentPayment(

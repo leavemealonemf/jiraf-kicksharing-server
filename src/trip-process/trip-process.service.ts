@@ -291,14 +291,6 @@ export class TripProcessService {
 
     const copy = Object.assign({}, cachedTrip);
 
-    const backUserDeposit = await this.acquiringService.voidPayment({
-      TransactionId: Number(copy.tripInfo.processPaymentId),
-    });
-
-    if (!backUserDeposit) {
-      throw new BadRequestException('Не удалось вернуть залог');
-    }
-
     // Списание и сохранение платежа
 
     const paymentData: ReccurentPaymentDto = {
@@ -313,15 +305,35 @@ export class TripProcessService {
       await this.paymentMethodService.getActivePaymentMethod(user.id);
 
     if (cardSpent > 0) {
-      const payment = await this.acquiringService.createReccurentPayment(
+      if (cardSpent > 300) {
+        await this.acquiringService
+          .createReccurentPayment(
+            { ...paymentData, amount: cardSpent - 300 },
+            user.id,
+            paymentMethod,
+          )
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+          });
+      } else {
+        await this.acquiringService
+          .acceptPayment(300, Number(copy.tripInfo.processPaymentId))
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
+          });
+
+        await this.acquiringService
+          .createReccurentPayment(paymentData, user.id, paymentMethod)
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+          });
+      }
+
+      await this.acquiringService.createReccurentPayment(
         paymentData,
         user.id,
         paymentMethod,
       );
-
-      if (!payment) {
-        this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
-      }
     }
 
     const savedPayment = await this.paymentsService.savePayment(

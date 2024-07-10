@@ -90,6 +90,17 @@ export class AcquiringService {
     return await gateway.cancelPayment(data);
   }
 
+  async acceptPayment(amount: number, transactionId: number) {
+    this.registerPaymentProviderGateway();
+    const gateway = this.paymentProviderGateway['cloud-payments'];
+    if (!gateway) {
+      throw new BadRequestException(
+        'Не удалось зарегестрировать cloud-payments gateway',
+      );
+    }
+    return await gateway.acceptPayment(amount, transactionId);
+  }
+
   async getCloudCassirPaymentInfo(data: any) {
     console.log('pay-info', data);
     console.log('receipt', JSON.parse(data.Data));
