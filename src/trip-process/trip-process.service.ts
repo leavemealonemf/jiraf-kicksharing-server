@@ -331,12 +331,6 @@ export class TripProcessService {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
           });
       }
-
-      await this.acquiringService.createReccurentPayment(
-        paymentData,
-        user.id,
-        paymentMethod,
-      );
     }
 
     const savedPayment = await this.paymentsService.savePayment(
