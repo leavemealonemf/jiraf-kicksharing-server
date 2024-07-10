@@ -63,64 +63,35 @@ export class SaveBalancePayment implements SavePaymentGateway {
   }
 }
 
-// export class SaveSubscriptionPayment implements SavePaymentGateway {
-//   private readonly logger = new Logger(SaveSubscriptionPayment.name);
-//   private readonly dbService: DbService;
+export class SaveSubscriptionPayment implements SavePaymentGateway {
+  private readonly logger = new Logger(SaveSubscriptionPayment.name);
+  private readonly dbService: DbService;
 
-//   constructor() {
-//     this.dbService = new DbService();
-//   }
+  constructor() {
+    this.dbService = new DbService();
+  }
 
-//   async savePayment(
-//     dto: AcquiringProcessPaymentDto,
-//     userId: number,
-//   ): Promise<Payment> {
-//     const isPaymentMethodExist = await this.checkIsPaymentMethodExist(
-//       dto.paymentMethodId,
-//     );
-
-//     if (!isPaymentMethodExist) {
-//       throw new BadRequestException(
-//         `Ошибка. Платежного метода с id ${dto.paymentMethodId} не существует`,
-//       );
-//     }
-
-//     if (!isPaymentMethodExist.active) {
-//       throw new BadRequestException(
-//         `Ошибка. Невозможно произвести платеж с данного платежного метода`,
-//       );
-//     }
-
-//     const activePayment = await this.dbService.payment.create({
-//       data: {
-//         service: 'SUBSCRIPTION',
-//         status: 'PAID',
-//         type: 'WRITEOFF',
-//         description: dto.description,
-//         userId: userId,
-//         paymentMethodId: dto.paymentMethodId,
-//         amount: dto.value,
-//       },
-//       include: {
-//         paymentMethod: true,
-//       },
-//     });
-
-//     return activePayment;
-//   }
-
-//   private async checkIsPaymentMethodExist(paymnetId: number) {
-//     const paymentMethod = await this.dbService.paymentMethod.findFirst({
-//       where: { id: paymnetId },
-//     });
-
-//     if (!paymentMethod) {
-//       return null;
-//     }
-
-//     return paymentMethod;
-//   }
-// }
+  async savePayment(
+    dto: ReccurentPaymentDto,
+    userId: number,
+    paymentMethod: PaymentMethod,
+  ): Promise<Payment> {
+    return await this.dbService.payment.create({
+      data: {
+        service: 'SUBSCRIPTION',
+        status: 'PAID',
+        type: 'WRITEOFF',
+        description: dto.metadata.description,
+        userId: userId,
+        paymentMethodId: paymentMethod.id,
+        amount: dto.amount,
+      },
+      include: {
+        paymentMethod: true,
+      },
+    });
+  }
+}
 
 export class SaveTripPayment implements SavePaymentGateway {
   private readonly logger = new Logger(SaveTripPayment.name);
@@ -154,17 +125,5 @@ export class SaveTripPayment implements SavePaymentGateway {
         this.logger.error(err);
         throw new BadRequestException(`Не удалось сохранить платеж поездки`);
       });
-  }
-
-  private async checkIsPaymentMethodExist(paymnetId: number) {
-    const paymentMethod = await this.dbService.paymentMethod.findFirst({
-      where: { id: paymnetId },
-    });
-
-    if (!paymentMethod) {
-      return null;
-    }
-
-    return paymentMethod;
   }
 }

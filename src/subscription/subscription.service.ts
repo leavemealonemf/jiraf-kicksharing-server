@@ -7,7 +7,7 @@ import { UpdateSubscriptionOptionsDto } from './dto/update-subscription-options.
 
 @Injectable()
 export class SubscriptionService {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(SubscriptionService.name);
 
   constructor(private readonly dbService: DbService) {}
 
