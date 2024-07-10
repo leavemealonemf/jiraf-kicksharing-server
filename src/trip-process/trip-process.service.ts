@@ -294,7 +294,7 @@ export class TripProcessService {
     // Списание и сохранение платежа
 
     const paymentData: ReccurentPaymentDto = {
-      amount: tripCoastPayment,
+      amount: cardSpent,
       metadata: {
         description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
         type: 'TRIP',
@@ -306,7 +306,8 @@ export class TripProcessService {
 
     if (cardSpent > 0) {
       if (cardSpent > 300) {
-        await this.acquiringService
+        console.log(cardSpent);
+        const acceptAuthPayment = await this.acquiringService
           .createReccurentPayment(
             { ...paymentData, amount: cardSpent - 300 },
             user.id,
@@ -315,6 +316,8 @@ export class TripProcessService {
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
           });
+
+        console.log('ACCEPT AUTH PAYMENT', acceptAuthPayment);
       } else {
         await this.acquiringService
           .acceptPayment(300, Number(copy.tripInfo.processPaymentId))
