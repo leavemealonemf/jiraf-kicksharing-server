@@ -306,7 +306,12 @@ export class TripProcessService {
 
     if (cardSpent > 0) {
       if (cardSpent > 300) {
-        console.log(cardSpent);
+        await this.acquiringService
+          .acceptPayment(300, Number(copy.tripInfo.processPaymentId))
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
+          });
+
         const acceptAuthPayment = await this.acquiringService
           .createReccurentPayment(
             { ...paymentData, amount: cardSpent - 300 },
@@ -319,11 +324,9 @@ export class TripProcessService {
 
         console.log('ACCEPT AUTH PAYMENT', acceptAuthPayment);
       } else {
-        await this.acquiringService
-          .acceptPayment(300, Number(copy.tripInfo.processPaymentId))
-          .catch(() => {
-            this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
-          });
+        await this.acquiringService.voidPayment({
+          TransactionId: Number(copy.tripInfo.processPaymentId),
+        });
 
         await this.acquiringService
           .createReccurentPayment(paymentData, user.id, paymentMethod)
