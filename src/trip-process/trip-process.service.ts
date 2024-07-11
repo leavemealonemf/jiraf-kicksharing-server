@@ -73,6 +73,10 @@ export class TripProcessService {
       throw new BadRequestException('Не удалось начать поездку. Самокат занят');
     }
 
+    const franchise = await this.dbService.franchise.findFirst({
+      where: { id: scooterRes.scooter.franchiseId },
+    });
+
     const userDb = await this.userService.findOneByUUID(user.clientId);
 
     if (!userDb.activePaymentMethod) {
@@ -106,8 +110,8 @@ export class TripProcessService {
         },
         userDb.id,
         paymentMethod,
-        '213',
-        '123',
+        franchise.youKassaAccount,
+        franchise.cloudpaymentsKey,
       );
 
     if (!paymentStartDeposit) {
@@ -276,6 +280,10 @@ export class TripProcessService {
 
     const scooter: Scooter = await this.scooterService.findOne(trip.scooterId);
 
+    const franchise = await this.dbService.franchise.findFirst({
+      where: { id: scooter.franchiseId },
+    });
+
     await this.scooterCommandHandlerIOT.sendCommand(
       scooter.deviceIMEI,
       DEVICE_COMMANDS.LOCK,
@@ -312,8 +320,8 @@ export class TripProcessService {
           .acceptPayment(
             300,
             Number(copy.tripInfo.processPaymentId),
-            '213',
-            '123',
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
           )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
@@ -324,8 +332,8 @@ export class TripProcessService {
             { ...paymentData, amount: cardSpent - 300 },
             user.id,
             paymentMethod,
-            '213',
-            '123',
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
           )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
@@ -337,8 +345,8 @@ export class TripProcessService {
           {
             TransactionId: Number(copy.tripInfo.processPaymentId),
           },
-          '213',
-          '123',
+          franchise.youKassaAccount,
+          franchise.cloudpaymentsKey,
         );
 
         await this.acquiringService
@@ -346,8 +354,8 @@ export class TripProcessService {
             paymentData,
             user.id,
             paymentMethod,
-            '213',
-            '123',
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
           )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
