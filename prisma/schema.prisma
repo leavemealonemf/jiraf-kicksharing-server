@@ -210,7 +210,7 @@ model Tariff {
   trips                   Trip[]
   orderInList             Int            @default(autoincrement())
   type                    TariffType     @default(MINUTE)
-  fixedCost               Float          @default(0.0)
+  fixedCost               Float?          @default(0.0)
   fixedCostMinutes        Int            @default(0) 
   costForMinuteAfterFixed Float          @default(0.0)
 }
