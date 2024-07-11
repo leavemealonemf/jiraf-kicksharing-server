@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TariffStatus } from '@prisma/client';
+import { TariffStatus, TariffType } from '@prisma/client';
 import { IsNotEmpty } from 'class-validator';
 
 export class CreateTariffDto {
@@ -23,8 +23,7 @@ export class CreateTariffDto {
     message: 'Поле pauseCost не должно быть пустым',
   })
   pauseCost: number;
-  @ApiProperty({ default: 10 })
-  fixedCost?: number;
+
   @ApiProperty({ default: 100 })
   @IsNotEmpty({
     message: 'Поле reservationCost не должно быть пустым',
@@ -40,4 +39,16 @@ export class CreateTariffDto {
     message: 'Поле status не должно быть пустым',
   })
   status: TariffStatus;
+
+  @ApiProperty({ default: TariffType.MINUTE })
+  type: TariffType;
+
+  @ApiProperty({ default: 399 })
+  fixedCost?: number;
+
+  @ApiProperty({ default: 30 })
+  fixedCostMinutes?: number;
+
+  @ApiProperty({ default: 5.5 })
+  costForMinuteAfterFixed?: number;
 }

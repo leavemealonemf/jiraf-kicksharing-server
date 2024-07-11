@@ -45,4 +45,7 @@ export class CreateFranchiseDto {
 
   @ApiProperty({ default: 'https://t.me/mysupport' })
   supportLink?: string;
+
+  @ApiProperty({ default: 'qdqwdqwkndqwegmergoip213hash' })
+  cloudpaymentsKey?: string;
 }

@@ -26,12 +26,19 @@ export class AcquiringService {
 
   // Set payment gateway provider (cloudpayments / yookassa)
 
-  public registerPaymentProviderGateway() {
-    this.paymentProviderGateway['cloud-payments'] = new CloudPaymentsGateway();
+  public registerPaymentProviderGateway(publicId: string, privateKey: string) {
+    this.paymentProviderGateway['cloud-payments'] = new CloudPaymentsGateway(
+      publicId,
+      privateKey,
+    );
   }
 
-  async createAuthorizedPaymentMethod(userId: number) {
-    this.registerPaymentProviderGateway();
+  async createAuthorizedPaymentMethod(
+    userId: number,
+    publicId: string,
+    privateKey: string,
+  ) {
+    this.registerPaymentProviderGateway(publicId, privateKey);
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
       throw new BadRequestException(
@@ -45,8 +52,10 @@ export class AcquiringService {
     paymentData: ReccurentPaymentDto,
     userId: number,
     paymentMethod: PaymentMethod,
+    publicId: string,
+    privateKey: string,
   ) {
-    this.registerPaymentProviderGateway();
+    this.registerPaymentProviderGateway(publicId, privateKey);
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
       throw new BadRequestException(
@@ -64,8 +73,10 @@ export class AcquiringService {
     paymentData: ReccurentPaymentDto,
     userId: number,
     paymentMethod: PaymentMethod,
+    publicId: string,
+    privateKey: string,
   ) {
-    this.registerPaymentProviderGateway();
+    this.registerPaymentProviderGateway(publicId, privateKey);
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
       throw new BadRequestException(
@@ -79,8 +90,12 @@ export class AcquiringService {
     );
   }
 
-  async voidPayment(data: IVoidPaymentData) {
-    this.registerPaymentProviderGateway();
+  async voidPayment(
+    data: IVoidPaymentData,
+    publicId: string,
+    privateKey: string,
+  ) {
+    this.registerPaymentProviderGateway(publicId, privateKey);
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
       throw new BadRequestException(
@@ -90,8 +105,13 @@ export class AcquiringService {
     return await gateway.cancelPayment(data);
   }
 
-  async acceptPayment(amount: number, transactionId: number) {
-    this.registerPaymentProviderGateway();
+  async acceptPayment(
+    amount: number,
+    transactionId: number,
+    publicId: string,
+    privateKey: string,
+  ) {
+    this.registerPaymentProviderGateway(publicId, privateKey);
     const gateway = this.paymentProviderGateway['cloud-payments'];
     if (!gateway) {
       throw new BadRequestException(

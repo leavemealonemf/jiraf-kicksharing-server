@@ -4,9 +4,11 @@ import { AcquiringController } from './acquiring.controller';
 import { AcquiringProcessPayment, AcquiringSaveMethodFabric } from './gateways';
 import { PaymentsModule } from 'src/payments/payments.module';
 import { PaymentMethodModule } from 'src/payment-method/payment-method.module';
+import { FranchiseModule } from 'src/franchise/franchise.module';
+import { DbModule } from 'src/db/db.module';
 
 @Module({
-  imports: [PaymentsModule, PaymentMethodModule],
+  imports: [PaymentsModule, PaymentMethodModule, FranchiseModule, DbModule],
   controllers: [AcquiringController],
   providers: [
     AcquiringService,

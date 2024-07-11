@@ -8,10 +8,15 @@ import { PaymentMethod } from '@prisma/client';
 
 export class CloudPaymentsGateway extends AcquiringProvider {
   private readonly logger = new Logger(CloudPaymentsGateway.name);
-  private readonly client = new ClientService({
-    publicId: 'pk_42204cdc701ea748b587162053789',
-    privateKey: 'e35b382e426a29b928ce49a435a93f90',
-  });
+  private readonly client: ClientService;
+
+  constructor(publicId: string, privateKey: string) {
+    super();
+    this.client = new ClientService({
+      publicId: publicId,
+      privateKey: privateKey,
+    });
+  }
 
   // TEST CARD TOKEN tk_2c74ff1601af6d95d8a0a96ffe94a
 

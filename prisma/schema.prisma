@@ -42,6 +42,7 @@ model Franchise {
   taxpayerIdNumber String?
   legalAddress String
   youKassaAccount String
+  cloudpaymentsKey String?
   priceForScooterMonth Float? 
   workStatus FranchiseWorkStatus @default(WORK)
   scooters Scooter[]
@@ -197,18 +198,21 @@ model Parking {
 }
 
 model Tariff {
-  id                 Int      @id @default(autoincrement())
-  name               String
-  boardingCost       Float
-  minuteCost         Float
-  pauseCost         Float
-  fixedCost          Float?
-  reservationCost   Float
-  colorHex           String
-  status             TariffStatus @default(ACTIVE)  
-  addedDate          DateTime @default(now())
-  trips              Trip[]
-  orderInList        Int @default(autoincrement())
+  id                      Int            @id @default(autoincrement())
+  name                    String
+  boardingCost            Float
+  minuteCost              Float
+  pauseCost               Float
+  reservationCost         Float
+  colorHex                String
+  status                  TariffStatus   @default(ACTIVE)  
+  addedDate               DateTime       @default(now())
+  trips                   Trip[]
+  orderInList             Int            @default(autoincrement())
+  type                    TariffType     @default(MINUTE)
+  fixedCost               Float          @default(0.0)
+  fixedCostMinutes        Int            @default(0) 
+  costForMinuteAfterFixed Float          @default(0.0)
 }
 
 model Promocode {
@@ -347,6 +351,11 @@ model Fine {
   paidStatus FinePaidStatus @default(NOTPAID)
 
   @@map("fine")
+}
+
+enum TariffType {
+  FIXED
+  MINUTE
 }
 
 enum FineReason {

@@ -18,8 +18,9 @@ import { AcquiringPaymentStatusDto } from './dtos/acquiring-payment.response.dto
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { TransactionStatus } from 'cloudpayments';
 import { IPaymentJsonData } from './gateways-provider/cloudpayments/interfaces/payment-jsondata.interface';
-import { User } from '@prisma/client';
+import { Franchise, User } from '@prisma/client';
 import { IDefaultTransactionNotification } from './gateways-provider/cloudpayments/interfaces';
+import { DbService } from 'src/db/db.service';
 
 @ApiTags('Эквайринг')
 @Controller('acquiring')
@@ -29,6 +30,7 @@ export class AcquiringController {
     private readonly saveAcquiringFabric: AcquiringSaveMethodFabric,
     private readonly paymentsService: PaymentsService,
     private readonly paymentMethodService: PaymentMethodService,
+    private readonly dbService: DbService,
   ) {}
 
   @ApiBearerAuth()
@@ -94,16 +96,16 @@ export class AcquiringController {
     await this.paymentMethodService.agreementPaymentMethodPhase(dto);
   }
 
-  // @Public()
   @Post('/cloudpayments-create-payment-method')
   async createPaymentMethodCloudPayments(@CurrentUser() user: User) {
-    console.log(user);
+    const franchise = await this.findCurrentFranchise();
     return await this.acquiringService.createAuthorizedPaymentMethod(
       user ? user.id : 1,
+      franchise.youKassaAccount,
+      franchise.cloudpaymentsKey,
     );
   }
 
-  // @Public()
   @ApiBearerAuth()
   @UseGuards(PlatformsGuard)
   @Platforms('MOBILE')
@@ -115,10 +117,14 @@ export class AcquiringController {
     const paymentMethod =
       await this.paymentMethodService.getActivePaymentMethod(userRes.id);
 
+    const franchise = await this.findCurrentFranchise();
+
     const reccurentPayment = await this.acquiringService.createReccurentPayment(
       dto,
       userRes.id,
       paymentMethod,
+      franchise.youKassaAccount,
+      franchise.cloudpaymentsKey,
     );
 
     const payment = await this.paymentsService.savePayment(
@@ -142,11 +148,15 @@ export class AcquiringController {
     const paymentMethod =
       await this.paymentMethodService.getActivePaymentMethod(userRes.id);
 
+    const franchise = await this.findCurrentFranchise();
+
     const reccurentPayment =
       await this.acquiringService.createReccurentPaymentTwoStage(
         dto,
         userRes.id,
         paymentMethod,
+        franchise.youKassaAccount,
+        franchise.cloudpaymentsKey,
       );
 
     // const payment = await this.paymentsService.savePayment(
@@ -177,9 +187,15 @@ export class AcquiringController {
         providedData.userId,
       );
 
-      const cancelPayment = await this.acquiringService.voidPayment({
-        TransactionId: Number(dto.TransactionId),
-      });
+      const franchise = await this.findCurrentFranchise();
+
+      const cancelPayment = await this.acquiringService.voidPayment(
+        {
+          TransactionId: Number(dto.TransactionId),
+        },
+        franchise.youKassaAccount,
+        franchise.cloudpaymentsKey,
+      );
       console.log(cancelPayment);
     }
     // return await this.acquiringService.getCloudCassirPaymentInfo(data);
@@ -188,5 +204,26 @@ export class AcquiringController {
   @Post('cloudcassir-payment-info-check')
   async cassirPaymentInfoCheck(@Body() dto: IDefaultTransactionNotification) {
     console.log(dto);
+  }
+
+  private async findCurrentFranchise(): Promise<Franchise> {
+    const franchise = await this.dbService.franchise
+      .findFirst({
+        where: { youKassaAccount: 'pk_42204cdc701ea748b587162053789' },
+        include: {
+          city: true,
+        },
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    if (!franchise) {
+      throw new BadRequestException(
+        'ACQUIRING: Не удалось опеределить франчайзера',
+      );
+    }
+
+    return franchise;
   }
 }
