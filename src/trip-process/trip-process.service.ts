@@ -106,6 +106,8 @@ export class TripProcessService {
         },
         userDb.id,
         paymentMethod,
+        '213',
+        '123',
       );
 
     if (!paymentStartDeposit) {
@@ -307,7 +309,12 @@ export class TripProcessService {
     if (cardSpent > 0) {
       if (cardSpent > 300) {
         await this.acquiringService
-          .acceptPayment(300, Number(copy.tripInfo.processPaymentId))
+          .acceptPayment(
+            300,
+            Number(copy.tripInfo.processPaymentId),
+            '213',
+            '123',
+          )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
           });
@@ -317,6 +324,8 @@ export class TripProcessService {
             { ...paymentData, amount: cardSpent - 300 },
             user.id,
             paymentMethod,
+            '213',
+            '123',
           )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
@@ -324,12 +333,22 @@ export class TripProcessService {
 
         console.log('ACCEPT AUTH PAYMENT', acceptAuthPayment);
       } else {
-        await this.acquiringService.voidPayment({
-          TransactionId: Number(copy.tripInfo.processPaymentId),
-        });
+        await this.acquiringService.voidPayment(
+          {
+            TransactionId: Number(copy.tripInfo.processPaymentId),
+          },
+          '213',
+          '123',
+        );
 
         await this.acquiringService
-          .createReccurentPayment(paymentData, user.id, paymentMethod)
+          .createReccurentPayment(
+            paymentData,
+            user.id,
+            paymentMethod,
+            '213',
+            '123',
+          )
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
           });
