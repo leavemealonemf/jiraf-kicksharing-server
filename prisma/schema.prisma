@@ -51,6 +51,8 @@ model Franchise {
   city City @relation(fields: [cityId], references: [id])
   supportLink String?
   finesIssued Fine[] 
+
+  debts Debt[]
 }
 
 model City {
@@ -84,6 +86,7 @@ model User {
   usedPromocodes Promocode[]
   activeTrips ActiveTrip[]
   fines Fine[]
+  depts Debt[]
 }
 
 model Payment {
@@ -147,6 +150,7 @@ model Trip {
   scooter        Scooter?  @relation(fields: [scooterId], references: [id])
   coordinates    String?
   fines Fine[]
+  dept Debt?
 }
 
 model ActiveTrip {
@@ -351,6 +355,38 @@ model Fine {
   paidStatus FinePaidStatus @default(NOTPAID)
 
   @@map("fine")
+}
+
+model Debt {
+  id   Int            @id @default(autoincrement())
+  debtUUID            String @unique
+  cause               String @default("Задолженность за поездку")
+  description         String @default("Поездка не оплачена частично или полностью")
+
+  price               Float
+
+  tripUUID            String
+
+  createdAt           DateTime @default(now())
+  closedAt            DateTime?
+  
+  initiatorId         Int
+  initiator           Franchise @relation(fields: [initiatorId], references: [id])
+
+  intruderId          Int 
+  intruder            User @relation(fields: [intruderId], references: [id])
+
+  tripId              Int @unique
+  trip                Trip @relation(fields: [tripId], references: [id])
+
+  paidStatus          DebtPayStatus @default(NOTPAID)
+
+  @@map("debt")
+}
+
+enum DebtPayStatus {
+  PAID
+  NOTPAID
 }
 
 enum TariffType {
