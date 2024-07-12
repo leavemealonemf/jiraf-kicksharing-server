@@ -102,6 +102,20 @@ export class UserService {
             },
           },
         },
+        depts: {
+          include: {
+            initiator: {
+              select: {
+                organization: true,
+              },
+            },
+            trip: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
         subscriptionsOptions: true,
       },
     });
