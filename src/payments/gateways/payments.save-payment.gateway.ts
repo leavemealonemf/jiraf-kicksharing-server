@@ -147,7 +147,7 @@ export class SaveDebtPayment implements SavePaymentGateway {
           data: {
             service: 'DEBT',
             status: 'PAID',
-            type: 'REPLACEMENT',
+            type: 'WRITEOFF',
             description: dto.metadata.description,
             userId: userId,
             paymentMethodId: paymentMethod.id,
@@ -199,7 +199,7 @@ export class SaveFinePayment implements SavePaymentGateway {
           data: {
             service: 'FINE',
             status: 'PAID',
-            type: 'REPLACEMENT',
+            type: 'WRITEOFF',
             description: dto.metadata.description,
             userId: userId,
             paymentMethodId: paymentMethod.id,
