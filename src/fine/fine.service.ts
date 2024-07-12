@@ -1,18 +1,26 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { CreateFineDto } from './dto';
-import { ErpUser, ErpUserRoles } from '@prisma/client';
+import { ErpUser, ErpUserRoles, Fine } from '@prisma/client';
 import { generateUUID } from '@common/utils';
 import { FineCauseEnum } from './enums';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 } from 'uuid';
+import { AcquiringService } from 'src/acquiring/acquiring.service';
+import { PaymentMethodService } from 'src/payment-method/payment-method.service';
+import { PaymentsService } from 'src/payments/payments.service';
 
 @Injectable()
 export class FineService {
   private readonly logger = new Logger(FineService.name);
 
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly dbService: DbService,
+    private readonly acquiringService: AcquiringService,
+    private readonly paymentMethodService: PaymentMethodService,
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
   async getAll() {
     return await this.dbService.fine.findMany({
@@ -189,6 +197,82 @@ export class FineService {
       });
   }
 
+  async payOfFine(userId: number, fineUUID: string) {
+    const fine = await this.checkIsFineExist(fineUUID);
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(userId);
+
+    const franchise = await this.dbService.franchise.findFirst({
+      where: { id: fine.initiatorId },
+    });
+
+    const acquiringPayment = await this.acquiringService
+      .createReccurentPayment(
+        {
+          amount: fine.price,
+          metadata: {
+            description: `№ ${fineUUID}`,
+            type: 'FINE',
+          },
+        },
+        userId,
+        paymentMethod,
+        franchise.youKassaAccount,
+        franchise.cloudpaymentsKey,
+      )
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!acquiringPayment) {
+      throw new BadRequestException(
+        `Не удалось обработать транзакцию списания штрафа №${fineUUID}`,
+      );
+    }
+
+    await this.paymentsService.savePayment(
+      {
+        amount: fine.price,
+        metadata: {
+          description: `№ ${fineUUID}`,
+          type: 'FINE',
+        },
+      },
+      userId,
+      paymentMethod,
+    );
+
+    return await this.dbService.fine
+      .update({
+        where: { id: fine.id },
+        data: {
+          closedAt: new Date().toISOString(),
+          paidStatus: 'PAID',
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(`Не удалось обновить штраф №${fineUUID}`);
+      });
+  }
+
+  private async checkIsFineExist(fineUUID: string): Promise<Fine> {
+    const fine = await this.dbService.fine
+      .findFirst({
+        where: { fineNumber: fineUUID },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!fine) {
+      throw new BadRequestException(
+        `Штраф с идентификатором ${fineUUID} не найдено`,
+      );
+    }
+
+    return fine;
+  }
   private saveImage(photos: string[], folderNameId: string): string[] {
     const imagesPaths = [];
 

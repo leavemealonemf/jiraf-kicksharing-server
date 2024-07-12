@@ -11,7 +11,7 @@ import {
 import { FineService } from './fine.service';
 import { CreateFineDto } from './dto';
 import { CurrentUser, Platforms } from '@common/decorators';
-import { ErpUser } from '@prisma/client';
+import { ErpUser, User } from '@prisma/client';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
@@ -38,6 +38,13 @@ export class FineController {
   @Patch(':id')
   async makeFinePaid(@Param('id') id: string) {
     return await this.fineService.makeFinePaid(+id);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Patch('pay/:uuid')
+  async payOfFine(@Param('uuid') fineUUID: string, @CurrentUser() user: User) {
+    return await this.fineService.payOfFine(user.id, fineUUID);
   }
 
   @UseGuards(PlatformsGuard)
