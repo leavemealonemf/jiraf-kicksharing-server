@@ -107,6 +107,7 @@ export class UserService {
             initiator: {
               select: {
                 organization: true,
+                supportLink: true,
               },
             },
             trip: {
