@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-type PAYMENT_TYPE = 'BALANCE' | 'TRIP' | 'SUBSCRIPTION';
+type PAYMENT_TYPE = 'BALANCE' | 'TRIP' | 'SUBSCRIPTION' | 'DEBT' | 'FINE';
 
 class ReccurentPaymentMetadataDto {
   @ApiProperty({ default: 'BALANCE' })

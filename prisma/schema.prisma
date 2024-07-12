@@ -414,6 +414,8 @@ enum PaymentService {
   TRIP
   SUBSCRIPTION
   BALANCE
+  DEBT
+  FINE
 }
 
 enum PaymentType {
