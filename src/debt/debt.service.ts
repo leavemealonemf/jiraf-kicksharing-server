@@ -5,6 +5,7 @@ import { CreateDebtDto } from './dto';
 import { generateUUID } from '@common/utils';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
+import { PaymentsService } from 'src/payments/payments.service';
 
 interface IDebtService {
   getAll(): Promise<Debt[]>;
@@ -19,6 +20,7 @@ export class DebtService implements IDebtService {
     private readonly dbService: DbService,
     private readonly acquiringService: AcquiringService,
     private readonly paymentMethodService: PaymentMethodService,
+    private readonly paymentsService: PaymentsService,
   ) {}
 
   async getAll(): Promise<Debt[]> {
@@ -83,7 +85,7 @@ export class DebtService implements IDebtService {
       where: { id: debt.initiatorId },
     });
 
-    const payment = await this.acquiringService
+    const acquiringPayment = await this.acquiringService
       .createReccurentPayment(
         {
           amount: debt.price,
@@ -101,11 +103,23 @@ export class DebtService implements IDebtService {
         this.logger.error(err);
       });
 
-    if (!payment) {
+    if (!acquiringPayment) {
       throw new BadRequestException(
         `Не удалось обработать транзакцию списания задолженности №${debtUUID}`,
       );
     }
+
+    await this.paymentsService.savePayment(
+      {
+        amount: debt.price,
+        metadata: {
+          description: `№ ${debtUUID}`,
+          type: 'DEBT',
+        },
+      },
+      userId,
+      paymentMethod,
+    );
 
     return await this.dbService.debt
       .update({
