@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ReccurentPaymentDto } from 'src/acquiring/dtos';
 import {
   SaveBalancePayment,
+  SaveDebtPayment,
+  SaveFinePayment,
   SaveSubscriptionPayment,
   SaveTripPayment,
 } from './payments.save-payment.gateway';
@@ -16,6 +18,10 @@ export class SavePaymentFabric {
         return new SaveSubscriptionPayment();
       case 'TRIP':
         return new SaveTripPayment();
+      case 'DEBT':
+        return new SaveDebtPayment();
+      case 'FINE':
+        return new SaveFinePayment();
       default:
         return null;
     }
