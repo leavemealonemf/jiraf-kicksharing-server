@@ -103,6 +103,7 @@ export class UserService {
           },
         },
         depts: {
+          orderBy: { createdAt: 'desc' },
           include: {
             initiator: {
               select: {

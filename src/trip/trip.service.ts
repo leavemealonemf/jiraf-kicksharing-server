@@ -70,6 +70,13 @@ export class TripService {
               colorHex: true,
             },
           },
+          dept: {
+            select: {
+              id: true,
+              price: true,
+              paidStatus: true,
+            },
+          },
         },
       })
       .catch((err) => {
