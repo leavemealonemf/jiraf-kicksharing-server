@@ -108,6 +108,11 @@ export class UserService {
               select: {
                 organization: true,
                 supportLink: true,
+                city: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
             trip: {
