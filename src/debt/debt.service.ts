@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { Debt } from '@prisma/client';
+import { Debt, ErpUser, ErpUserRoles } from '@prisma/client';
 import { DbService } from 'src/db/db.service';
 import { CreateDebtDto } from './dto';
 import { generateUUID } from '@common/utils';
@@ -159,6 +159,30 @@ export class DebtService implements IDebtService {
       });
   }
 
+  async deleteDebt(uuid: string, erpUser: ErpUser) {
+    const isAccess = this.checkRoleDeleteDebtPermisson(
+      erpUser.role,
+      erpUser.franchiseEmployeeId,
+    );
+
+    if (!isAccess) {
+      throw new BadRequestException(
+        'У вас недостаточно прав для выполнения операции',
+      );
+    }
+
+    await this.checkIsDebtExist(uuid);
+
+    return await this.dbService.debt
+      .delete({ where: { debtUUID: uuid } })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          'Не удалось удалить задолженность с id:' + uuid,
+        );
+      });
+  }
+
   private async checkIsDebtExist(debtUUID: string): Promise<Debt> {
     const debt = await this.dbService.debt
       .findFirst({
@@ -175,5 +199,19 @@ export class DebtService implements IDebtService {
     }
 
     return debt;
+  }
+
+  private checkRoleDeleteDebtPermisson(
+    role: ErpUserRoles,
+    franchiseId: number,
+  ): boolean {
+    if (role === 'ADMIN') {
+      return true;
+    }
+
+    if (role === 'FRANCHISE' && franchiseId) {
+      return true;
+    }
+    return false;
   }
 }

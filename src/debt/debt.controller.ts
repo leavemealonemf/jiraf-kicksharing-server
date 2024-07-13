@@ -11,7 +11,7 @@ import { DebtService } from './debt.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateDebtDto } from './dto';
 import { CurrentUser, Platforms } from '@common/decorators';
-import { User } from '@prisma/client';
+import { ErpUser, User } from '@prisma/client';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
 @ApiTags('Задолженности')
@@ -35,5 +35,15 @@ export class DebtController {
   @Patch(':uuid')
   async payOfDebt(@Param('uuid') debtUUID: string, @CurrentUser() user: User) {
     return await this.debtService.payOfDebt(user.id, debtUUID);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
+  @Patch(':uuid')
+  async deleteDebt(
+    @Param('uuid') debtUUID: string,
+    @CurrentUser() user: ErpUser,
+  ) {
+    return await this.debtService.deleteDebt(debtUUID, user);
   }
 }
