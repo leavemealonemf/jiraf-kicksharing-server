@@ -26,9 +26,30 @@ export class DebtService implements IDebtService {
   async getAll(): Promise<Debt[]> {
     return await this.dbService.debt.findMany({
       include: {
-        initiator: true,
-        intruder: true,
-        trip: true,
+        initiator: {
+          include: {
+            city: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        intruder: {
+          select: {
+            id: true,
+            clientId: true,
+          },
+        },
+        trip: {
+          select: {
+            scooter: {
+              select: {
+                deviceId: true,
+              },
+            },
+          },
+        },
       },
     });
   }
