@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { DebtService } from './debt.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -39,7 +40,7 @@ export class DebtController {
 
   @UseGuards(PlatformsGuard)
   @Platforms('WEB')
-  @Patch(':uuid')
+  @Delete(':uuid')
   async deleteDebt(
     @Param('uuid') debtUUID: string,
     @CurrentUser() user: ErpUser,
