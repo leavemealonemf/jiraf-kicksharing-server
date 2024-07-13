@@ -121,7 +121,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     this.logger.log(JSON.stringify(payment));
 
     if (payment.getResponse().Success === false) {
-      throw new BadRequestException('CloudPayment payment error!');
+      throw new BadRequestException('Ошибка. На карте недостаточно средств');
     }
 
     return payment;

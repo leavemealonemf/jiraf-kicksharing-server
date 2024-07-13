@@ -90,15 +90,6 @@ export class TripProcessService {
 
     const tripUUID = uuid();
 
-    const scooterUnlockIOT = await this.scooterCommandHandlerIOT.sendCommand(
-      scooterRes.scooter.deviceIMEI,
-      DEVICE_COMMANDS.UNLOCK,
-    );
-
-    if (!scooterUnlockIOT) {
-      throw new BadRequestException('Не удалось разблокировать устройство');
-    }
-
     const paymentStartDeposit =
       await this.acquiringService.createReccurentPaymentTwoStage(
         {
@@ -115,35 +106,51 @@ export class TripProcessService {
       );
 
     if (!paymentStartDeposit) {
-      this.scooterCommandHandlerIOT
-        .sendCommand(scooterRes.scooter.deviceIMEI, DEVICE_COMMANDS.LOCK)
-        .catch((err) => {
-          this.logger.error(err);
-          throw new BadRequestException('Не удалось отключить устройство');
-        });
+      // this.scooterCommandHandlerIOT
+      //   .sendCommand(scooterRes.scooter.deviceIMEI, DEVICE_COMMANDS.LOCK)
+      //   .catch((err) => {
+      //     this.logger.error(err);
+      //     throw new BadRequestException('Не удалось отключить устройство');
+      //   });
       throw new BadRequestException(
         'Не удалось начать поездку. Не удалось списать залог',
       );
     }
 
-    const [isTripCreated, isActiveTripCreated, updateScooterStatus] =
+    const scooterUnlockIOT = await this.scooterCommandHandlerIOT.sendCommand(
+      scooterRes.scooter.deviceIMEI,
+      DEVICE_COMMANDS.UNLOCK,
+    );
+
+    if (!scooterUnlockIOT) {
+      await this.acquiringService.voidPayment(
+        {
+          TransactionId: Number(paymentStartDeposit.Model.TransactionId),
+        },
+        franchise.youKassaAccount,
+        franchise.cloudpaymentsKey,
+      );
+      throw new BadRequestException('Не удалось разблокировать устройство');
+    }
+
+    const { isTripCreated, isActiveTripCreated, updateScooterStatus } =
       await this.dbService
-        .$transaction([
-          this.dbService.trip.create({
+        .$transaction(async () => {
+          const isTripCreated = await this.dbService.trip.create({
             data: {
               tripId: generateUUID(),
               userId: userDb.id,
               scooterId: scooterRes.scooter.id,
               tariffId: dto.tariffId,
             },
-          }),
-          this.dbService.activeTrip.create({
+          });
+          const isActiveTripCreated = await this.dbService.activeTrip.create({
             data: {
               userId: userDb.id,
               tripUUID: tripUUID,
             },
-          }),
-          this.dbService.scooter.update({
+          });
+          const updateScooterStatus = await this.dbService.scooter.update({
             where: { deviceId: dto.scooterId },
             include: {
               model: true,
@@ -151,16 +158,27 @@ export class TripProcessService {
             data: {
               rented: true,
             },
-          }),
-        ])
+          });
+
+          return { isTripCreated, isActiveTripCreated, updateScooterStatus };
+        })
         .catch(async (err) => {
           this.logger.error(err);
-          await this.acquiringService.cancelPayment(paymentStartDeposit.id);
-          this.scooterCommandHandlerIOT
+
+          await this.acquiringService.voidPayment(
+            {
+              TransactionId: Number(paymentStartDeposit.Model.TransactionId),
+            },
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
+          );
+
+          await this.scooterCommandHandlerIOT
             .sendCommand(scooterRes.scooter.deviceIMEI, DEVICE_COMMANDS.LOCK)
             .catch((err) => {
               this.logger.error(err);
             });
+
           throw new ForbiddenException(
             'Не удалось начать поездку. Ошибка при создании поездки',
           );
