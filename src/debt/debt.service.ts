@@ -39,6 +39,7 @@ export class DebtService implements IDebtService {
           select: {
             id: true,
             clientId: true,
+            name: true,
           },
         },
         trip: {
