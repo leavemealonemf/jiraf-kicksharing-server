@@ -50,6 +50,11 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         throw new BadRequestException('CloudCassir payment error!');
       });
     this.logger.log(JSON.stringify(payment));
+
+    if (payment.getResponse().Success === false) {
+      throw new BadRequestException('CloudPayment payment error!');
+    }
+
     return payment;
   }
 
@@ -77,7 +82,13 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         this.logger.error(err);
         throw new BadRequestException('CloudPayment payment error!');
       });
+
     this.logger.log(JSON.stringify(payment));
+
+    if (payment.getResponse().Success === false) {
+      throw new BadRequestException('CloudPayment payment error!');
+    }
+
     return payment;
   }
 
@@ -108,15 +119,31 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         throw new BadRequestException('CloudPayment payment error!');
       });
     this.logger.log(JSON.stringify(payment));
+
+    if (payment.getResponse().Success === false) {
+      throw new BadRequestException('CloudPayment payment error!');
+    }
+
     return payment;
   }
 
   async acceptPayment(amount: number, transactionId: number): Promise<any> {
-    const payment = await this.client.getClientApi().confirmPayment({
-      Amount: amount,
-      TransactionId: transactionId,
-      CultureName: 'ru-RU',
-    });
+    const payment = await this.client
+      .getClientApi()
+      .confirmPayment({
+        Amount: amount,
+        TransactionId: transactionId,
+        CultureName: 'ru-RU',
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('CloudPayment payment error!');
+      });
+
+    if (payment.getResponse().Success === false) {
+      throw new BadRequestException('CloudPayment payment error!');
+    }
+
     return payment;
   }
 
@@ -132,6 +159,11 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         throw new BadRequestException('CloudPayment cancel payment error!');
       });
     this.logger.log(JSON.stringify(payment));
+
+    if (payment.getResponse().Success === false) {
+      throw new BadRequestException('CloudPayment cancel payment error!');
+    }
+
     return payment;
   }
 
