@@ -22,7 +22,7 @@ export class FineService {
     private readonly paymentsService: PaymentsService,
   ) {}
 
-  async getAll() {
+  async getAll(erpUser: ErpUser) {
     return await this.dbService.fine.findMany({
       include: {
         initiator: {
@@ -327,5 +327,56 @@ export class FineService {
       return true;
     }
     return false;
+  }
+
+  private async getFinesByRole(erpUser: ErpUser) {
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      return await this.dbService.fine.findMany({
+        include: {
+          initiator: {
+            include: {
+              city: {
+                select: { name: true },
+              },
+            },
+          },
+          intruder: true,
+          trip: {
+            include: {
+              scooter: {
+                select: {
+                  deviceId: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    } else {
+      return await this.dbService.fine.findMany({
+        where: { initiatorId: erpUser.franchiseEmployeeId },
+        include: {
+          initiator: {
+            include: {
+              city: {
+                select: { name: true },
+              },
+            },
+          },
+          intruder: true,
+          trip: {
+            include: {
+              scooter: {
+                select: {
+                  deviceId: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
   }
 }

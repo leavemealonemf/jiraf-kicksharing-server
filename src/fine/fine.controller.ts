@@ -21,9 +21,11 @@ import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 export class FineController {
   constructor(private readonly fineService: FineService) {}
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Get()
-  async getAll() {
-    return await this.fineService.getAll();
+  async getAll(@CurrentUser() erpUser: ErpUser) {
+    return await this.fineService.getAll(erpUser);
   }
 
   @UseGuards(PlatformsGuard)

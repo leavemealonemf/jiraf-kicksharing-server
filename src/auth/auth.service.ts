@@ -240,6 +240,22 @@ export class AuthService {
   }
 
   private async generateTokens(user: ErpUser, agent: string): Promise<Tokens> {
+    let franchise = null;
+
+    if (user.franchiseEmployeeId) {
+      franchise = await this.dbService.franchise
+        .findFirst({
+          where: { id: user.franchiseEmployeeId },
+          include: {
+            city: true,
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          this.logger.error('Не удалось подвязать франшизу');
+        });
+    }
+
     const accessToken =
       'Bearer ' +
       this.jwtService.sign({
@@ -252,6 +268,7 @@ export class AuthService {
         role: user.role,
         platform: user.platform,
         franchiseEmployeeId: user.franchiseEmployeeId,
+        franchise: franchise,
       });
     const refreshToken = await this.getRefreshToken(user.id, agent);
     return { accessToken, refreshToken };
