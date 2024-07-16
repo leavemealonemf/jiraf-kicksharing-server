@@ -4,8 +4,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import * as DeviceDetector from 'device-detector-js';
 
-type OS = 'android' | 'ios';
-
 @ApiBearerAuth()
 @ApiTags('Перенаправление на скачивание приложения')
 @Controller('/store')
@@ -17,7 +15,7 @@ export class ClientRedirectController {
       skipBotDetection: true,
     });
 
-    const os: OS = deviceDetector
+    const os = deviceDetector
       .parse(req.headers['user-agent'])
       .os.name.toLowerCase();
 
