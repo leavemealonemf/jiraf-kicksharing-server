@@ -13,7 +13,7 @@ export class ClientRedirectController {
   async redirectToMobileStore(@Res() res: Response, @Req() req: Request) {
     const deviceDetector = new DeviceDetector();
 
-    const device = deviceDetector.parse(req.headers['user-agent']).os.name;
+    const device = deviceDetector.parse(req.headers['user-agent']);
     console.log(device);
 
     res.status(301).redirect('https://giraffe-go.ru/');
