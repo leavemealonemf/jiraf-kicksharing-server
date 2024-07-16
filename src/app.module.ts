@@ -34,6 +34,7 @@ import { UserPaymentsModule } from './user-payments/user-payments.module';
 import { CityModule } from './city/city.module';
 import { FineModule } from './fine/fine.module';
 import { DebtModule } from './debt/debt.module';
+import { ClientRedirectModule } from './client-redirect/client-redirect.module';
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -80,6 +81,7 @@ console.log(NODE_ENV);
     CityModule,
     FineModule,
     DebtModule,
+    ClientRedirectModule,
   ],
   controllers: [],
   providers: [
