@@ -11,7 +11,7 @@ import {
 import { AcquiringProvider } from './gateways-provider';
 import { CloudPaymentsGateway } from './gateways-provider/cloudpayments/cloudpayments-gateway';
 import { IVoidPaymentData } from './gateways-provider/cloudpayments/interfaces';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod, User } from '@prisma/client';
 
 @Injectable()
 export class AcquiringService {
@@ -34,7 +34,7 @@ export class AcquiringService {
   }
 
   async createAuthorizedPaymentMethod(
-    userId: number,
+    dbUser: User,
     publicId: string,
     privateKey: string,
   ) {
@@ -45,7 +45,7 @@ export class AcquiringService {
         'Не удалось зарегестрировать cloud-payments gateway',
       );
     }
-    return await gateway.createAuthorizedPaymentMethod(userId);
+    return await gateway.createAuthorizedPaymentMethod(dbUser);
   }
 
   async createReccurentPayment(

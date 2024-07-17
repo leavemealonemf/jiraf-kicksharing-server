@@ -99,8 +99,19 @@ export class AcquiringController {
   @Post('/cloudpayments-create-payment-method')
   async createPaymentMethodCloudPayments(@CurrentUser() user: User) {
     const franchise = await this.findCurrentFranchise();
+
+    const dbUser = await this.dbService.user.findFirst({
+      where: { id: user.id },
+    });
+
+    if (!dbUser) {
+      throw new BadRequestException(
+        'Не удалось привязать платежный метод. Пользователь не найден',
+      );
+    }
+
     return await this.acquiringService.createAuthorizedPaymentMethod(
-      user ? user.id : 1,
+      dbUser,
       franchise.youKassaAccount,
       franchise.cloudpaymentsKey,
     );

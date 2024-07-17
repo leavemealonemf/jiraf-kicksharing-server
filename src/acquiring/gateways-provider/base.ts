@@ -1,6 +1,6 @@
 export abstract class AcquiringProvider {
   abstract createOneStageCryptogramPayment(): Promise<any>;
-  abstract createAuthorizedPaymentMethod(userId: number): Promise<any>;
+  abstract createAuthorizedPaymentMethod(user: any): Promise<any>;
   abstract createTwoStagePayment(
     paymentData: any,
     userId: number,

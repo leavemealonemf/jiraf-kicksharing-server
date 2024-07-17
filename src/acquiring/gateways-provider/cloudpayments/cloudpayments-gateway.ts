@@ -4,7 +4,7 @@ import { ClientService, ReceiptTypes } from 'cloudpayments';
 import { IVoidPaymentData } from './interfaces';
 import * as uuid from 'uuid';
 import { ReccurentPaymentDto } from 'src/acquiring/dtos';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod, User } from '@prisma/client';
 
 export class CloudPaymentsGateway extends AcquiringProvider {
   private readonly logger = new Logger(CloudPaymentsGateway.name);
@@ -30,24 +30,25 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return new Promise(() => '');
   }
 
-  async createAuthorizedPaymentMethod(userId: number): Promise<any> {
+  async createAuthorizedPaymentMethod(dbUser: User): Promise<any> {
     const payment = await this.client
       .getClientApi()
       .createOrder({
         Amount: 1,
-        email: 'strangemisterio78@gmail.com',
+        email:
+          dbUser.email && dbUser.email.length > 0 ? dbUser.email : dbUser.phone,
         Currency: 'RUB',
-        Description: 'Привязка платежного метода к сервиску GiraffeGo',
+        Description: 'Привязка платежного метода к сервису GiraffeGo',
         RequireConfirmation: true,
         JsonData: JSON.stringify({
           methodUuid: uuid.v4(),
-          userId: userId,
+          userId: dbUser.id,
           service: 'payment-method',
         }),
       })
       .catch((err) => {
         this.logger.error(err);
-        throw new BadRequestException('CloudCassir payment error!');
+        throw new BadRequestException('CloudPayment payment error!');
       });
     this.logger.log(JSON.stringify(payment));
 
