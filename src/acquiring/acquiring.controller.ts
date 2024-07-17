@@ -241,6 +241,7 @@ export class AcquiringController {
   @Public()
   @Post('cloudpayment-receipt-notifications')
   getCloudpaymentsReceiptNotifications(@Body() dto: any) {
+    console.log('В обработчике уведомления чека');
     console.log(dto);
   }
 }
