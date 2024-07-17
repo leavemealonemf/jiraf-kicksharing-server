@@ -34,7 +34,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     const payment = await this.client
       .getClientApi()
       .createOrder({
-        Amount: 1,
+        Amount: 10,
         AccountId: dbUser.clientId,
         Currency: 'RUB',
         Description: 'Привязка платежного метода к сервису GiraffeGo',
