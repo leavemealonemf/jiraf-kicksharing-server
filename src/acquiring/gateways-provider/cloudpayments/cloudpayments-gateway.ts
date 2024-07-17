@@ -222,6 +222,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
           measurementUnit: 'шт', //единица измерения
         },
       ],
+      email: 'strangemisterio78@gmail.com',
     };
     return {
       CloudPayments: {
