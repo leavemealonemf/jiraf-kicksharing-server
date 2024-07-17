@@ -166,6 +166,59 @@ export class UserService {
       });
   }
 
+  async deleteUserAccount(userId: number) {
+    const user = await this.dbService.user.findFirst({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(
+        `Не получается удалить. Пользователя с id ${userId} не существует!`,
+      );
+    }
+
+    if (userId !== user.id) {
+      throw new BadRequestException('Невозможно удалить аккаунт');
+    }
+
+    const updated = await this.dbService.user.update({
+      where: { id: userId },
+      data: {
+        status: 'DELETED',
+        phone: user.phone + ':deleted',
+      },
+    });
+
+    await this.dbService.$transaction(async () => {
+      const updated = await this.dbService.user
+        .update({
+          where: { id: userId },
+          data: {
+            status: 'DELETED',
+            phone: user.phone + ':deleted',
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+        });
+
+      await this.dbService.userSubscriptionsOptions
+        .delete({
+          where: { userId: user.id },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+        });
+
+      return updated;
+    });
+
+    if (!updated) {
+      throw new BadRequestException('Не удалось удалить аккаунт');
+    }
+
+    return {
+      message: 'success',
+    };
+  }
+
   async remove(id: number) {
     const user = await this.dbService.user.findFirst({ where: { id: id } });
     if (!user) {
