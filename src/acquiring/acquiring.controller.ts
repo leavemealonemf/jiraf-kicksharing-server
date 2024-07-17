@@ -182,6 +182,9 @@ export class AcquiringController {
   @Public()
   @Post('cloudcassir-payment-info')
   async cassirPaymentInfo(@Body() dto: IDefaultTransactionNotification) {
+    console.log('PAY NOTIFICATION ENDPOINT:');
+    console.log(dto);
+
     if (!dto.Data || !dto.Data.length) {
       console.log('PAYMENT JSON DATA IS EMPTY');
       return;
