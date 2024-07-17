@@ -35,8 +35,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
       .getClientApi()
       .createOrder({
         Amount: 1,
-        // email: 'strangemisterio78@gmail.com',
-        AccountId: dbUser.phone,
+        AccountId: dbUser.clientId,
         Currency: 'RUB',
         Description: 'Привязка платежного метода к сервису GiraffeGo',
         RequireConfirmation: true,

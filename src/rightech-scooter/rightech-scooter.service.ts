@@ -3,6 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { IRightechScooter } from './interfaces';
 
+const MODELS_IOT = {
+  models: {
+    arnavi3: {
+      modelID: '6665afbe3cf021e5df25c9bd',
+    },
+    teltonika: {
+      modelID: '661b0ed4b5ee4df6483c0a12',
+    },
+  },
+};
+
 @Injectable()
 export class RightechScooterService {
   private readonly logger = new Logger(RightechScooterService.name);
@@ -44,10 +55,12 @@ export class RightechScooterService {
 
   async create(deviceIMEI: string) {
     try {
+      const deviceOnlyIMEI = deviceIMEI.split(':')[1];
+
       const { data } = await axios.post(
         `${this.baseUrl}/objects`,
         {
-          model: '661b0ed4b5ee4df6483c0a12',
+          model: MODELS_IOT.models[deviceOnlyIMEI].modelID,
           id: deviceIMEI,
         },
         {
