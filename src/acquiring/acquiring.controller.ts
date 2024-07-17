@@ -237,4 +237,10 @@ export class AcquiringController {
 
     return franchise;
   }
+
+  @Public()
+  @Post('cloudpayment-receipt-notifications')
+  getCloudpaymentsReceiptNotifications(@Body() dto: any) {
+    console.log(dto);
+  }
 }

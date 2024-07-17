@@ -56,8 +56,12 @@ export class ScooterService {
       })
       .catch((err) => {
         this.logger.error(err);
-        return null;
       });
+
+    if (!instance) {
+      this.deleteScooterSourceFolder(deviceId);
+      throw new BadRequestException('Не удалось создать самокат');
+    }
 
     const res = await this.rightechScooterService.create(
       createScooterDto.deviceIMEI,
@@ -284,6 +288,12 @@ export class ScooterService {
     });
 
     return deletedItem;
+  }
+
+  private deleteScooterSourceFolder(deviceId: string) {
+    fs.rmSync(`uploads/images/scooters/${deviceId}`, {
+      recursive: true,
+    });
   }
 
   private saveFile(photo: string, entityPath: string) {
