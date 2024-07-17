@@ -23,28 +23,8 @@ export class FineService {
   ) {}
 
   async getAll(erpUser: ErpUser) {
-    return await this.dbService.fine.findMany({
-      include: {
-        initiator: {
-          include: {
-            city: {
-              select: { name: true },
-            },
-          },
-        },
-        intruder: true,
-        trip: {
-          include: {
-            scooter: {
-              select: {
-                deviceId: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const fines = await this.getFinesByRole(erpUser);
+    return fines;
   }
 
   async create(dto: CreateFineDto, erpUser: ErpUser) {
@@ -330,8 +310,9 @@ export class FineService {
   }
 
   private async getFinesByRole(erpUser: ErpUser) {
+    const fines = [];
     if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
-      return await this.dbService.fine.findMany({
+      const res = await this.dbService.fine.findMany({
         include: {
           initiator: {
             include: {
@@ -353,8 +334,9 @@ export class FineService {
         },
         orderBy: { createdAt: 'desc' },
       });
+      fines.push(...res);
     } else {
-      return await this.dbService.fine.findMany({
+      const res = await this.dbService.fine.findMany({
         where: { initiatorId: erpUser.franchiseEmployeeId },
         include: {
           initiator: {
@@ -377,6 +359,8 @@ export class FineService {
         },
         orderBy: { createdAt: 'desc' },
       });
+      fines.push(...res);
     }
+    return fines;
   }
 }

@@ -8,7 +8,7 @@ import { PaymentMethodService } from 'src/payment-method/payment-method.service'
 import { PaymentsService } from 'src/payments/payments.service';
 
 interface IDebtService {
-  getAll(): Promise<Debt[]>;
+  getAll(erpUser: ErpUser): Promise<Debt[]>;
   create(dto: CreateDebtDto): Promise<Debt>;
 }
 
@@ -23,36 +23,9 @@ export class DebtService implements IDebtService {
     private readonly paymentsService: PaymentsService,
   ) {}
 
-  async getAll(): Promise<Debt[]> {
-    return await this.dbService.debt.findMany({
-      include: {
-        initiator: {
-          include: {
-            city: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        intruder: {
-          select: {
-            id: true,
-            clientId: true,
-            name: true,
-          },
-        },
-        trip: {
-          select: {
-            scooter: {
-              select: {
-                deviceId: true,
-              },
-            },
-          },
-        },
-      },
-    });
+  async getAll(erpUser: ErpUser): Promise<Debt[]> {
+    const debts = await this.getDebtsByRole(erpUser);
+    return debts;
   }
 
   async create(dto: CreateDebtDto): Promise<Debt> {
@@ -213,5 +186,74 @@ export class DebtService implements IDebtService {
       return true;
     }
     return false;
+  }
+
+  private async getDebtsByRole(erpUser: ErpUser): Promise<Debt[]> {
+    const debts = [];
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      const res = await this.dbService.debt.findMany({
+        include: {
+          initiator: {
+            include: {
+              city: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          intruder: {
+            select: {
+              id: true,
+              clientId: true,
+              name: true,
+            },
+          },
+          trip: {
+            select: {
+              scooter: {
+                select: {
+                  deviceId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      debts.push(...res);
+    } else {
+      const res = await this.dbService.debt.findMany({
+        where: { initiatorId: erpUser.franchiseEmployeeId },
+        include: {
+          initiator: {
+            include: {
+              city: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          intruder: {
+            select: {
+              id: true,
+              clientId: true,
+              name: true,
+            },
+          },
+          trip: {
+            select: {
+              scooter: {
+                select: {
+                  deviceId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      debts.push(...res);
+    }
+    return debts;
   }
 }

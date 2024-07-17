@@ -21,11 +21,15 @@ import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 export class DebtController {
   constructor(private readonly debtService: DebtService) {}
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Get()
-  async getAll() {
-    return await this.debtService.getAll();
+  async getAll(@CurrentUser() erpUser: ErpUser) {
+    return await this.debtService.getAll(erpUser);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
   @Post()
   async create(@Body() dto: CreateDebtDto) {
     return await this.debtService.create(dto);
