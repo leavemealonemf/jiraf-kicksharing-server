@@ -178,15 +178,7 @@ export class UserService {
       throw new BadRequestException('Невозможно удалить аккаунт');
     }
 
-    const updated = await this.dbService.user.update({
-      where: { id: userId },
-      data: {
-        status: 'DELETED',
-        phone: user.phone + ':deleted',
-      },
-    });
-
-    await this.dbService.$transaction(async () => {
+    const updated = await this.dbService.$transaction(async () => {
       const updated = await this.dbService.user
         .update({
           where: { id: userId },
