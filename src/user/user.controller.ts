@@ -58,6 +58,6 @@ export class UserController {
   @Platforms('MOBILE')
   @Get('delete-account')
   async deleteAccount(@CurrentUser() user: User) {
-    return this.userService.deleteUserAccount(user.id);
+    return await this.userService.deleteUserAccount(user.id);
   }
 }

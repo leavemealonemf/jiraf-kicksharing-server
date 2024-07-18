@@ -10,6 +10,8 @@ import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableShutdownHooks(); // listen gracefull shutdown hooks
+
   app.enableCors({
     credentials: true,
     origin: true,

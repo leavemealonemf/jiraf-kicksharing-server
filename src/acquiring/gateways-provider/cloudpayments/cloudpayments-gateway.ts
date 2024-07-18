@@ -37,7 +37,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
         Amount: 10,
         AccountId: dbUser.clientId,
         Currency: 'RUB',
-        Description: 'Привязка платежного метода к сервису GiraffeGo',
+        Description: 'Добваление карты к сервису GiraffeGo',
         RequireConfirmation: true,
         JsonData: JSON.stringify({
           methodUuid: uuid.v4(),

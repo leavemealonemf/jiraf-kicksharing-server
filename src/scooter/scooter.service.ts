@@ -15,6 +15,7 @@ import { ErpUser, Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
 import { SettingsService } from 'src/settings/settings.service';
 import { FranchiseService } from 'src/franchise/franchise.service';
+import { qrRedirectQueryName, qrRedirectURL } from '@common/constants';
 
 @Injectable()
 export class ScooterService {
@@ -313,8 +314,9 @@ export class ScooterService {
   }
 
   private async qrQenerator(deviceId: string) {
+    const payload = `${qrRedirectURL}${qrRedirectQueryName}${deviceId}`;
     const { data } = await axios.get(
-      `https://api.qrserver.com/v1/create-qr-code/?size=76x76&data=${deviceId}`,
+      `https://api.qrserver.com/v1/create-qr-code/?size=76x76&data=${payload}`,
       { responseType: 'arraybuffer' },
     );
 
