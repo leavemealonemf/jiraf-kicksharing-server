@@ -232,6 +232,8 @@ export class AcquiringController {
 
     console.log('ENTITY:', entity);
 
+    console.log('DTO OBJECT RECEIPT URL:', dto.Receipt.ReceiptLocalUrl);
+
     await this.updateEntityWhereTransactionIdEqual(
       entity,
       dto.Receipt.ReceiptLocalUrl,
@@ -240,7 +242,7 @@ export class AcquiringController {
 
   private async updateEntityWhereTransactionIdEqual(
     entity: Trip,
-    receiptUrl: string,
+    receiptUrl: any,
   ) {
     // for now we only update trip information, but there will be more of this method in the future
 
@@ -249,7 +251,7 @@ export class AcquiringController {
       .update({
         where: { id: entity.id },
         data: {
-          receiptUrl: receiptUrl,
+          receiptUrl: receiptUrl.toString(),
         },
       })
       .then((res) => {
