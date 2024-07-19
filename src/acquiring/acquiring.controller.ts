@@ -266,7 +266,6 @@ export class AcquiringController {
 
   private async getEntityWhereTransactonIdEqual(transactionId: string) {
     // for now we only get trip information, but there will be more of this method in the future
-    console.log('в методе поиска поездки');
     const entity: any = await this.dbService.$queryRaw`
       SELECT * FROM "Trip"
       WHERE "paymentData"->>'transactionId' = ${transactionId}
@@ -274,13 +273,19 @@ export class AcquiringController {
       console.log(err);
     });
 
+    if (!entity.length) {
+      throw new BadRequestException(
+        'Не удалось найти сущность по переданной транзакции',
+      );
+    }
+
     if (!entity) {
       throw new BadRequestException(
         'Не удалось найти сущность по переданной транзакции',
       );
     }
 
-    return entity;
+    return entity[0];
   }
 
   private async findCurrentFranchise(): Promise<Franchise> {
