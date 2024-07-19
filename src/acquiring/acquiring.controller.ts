@@ -230,13 +230,11 @@ export class AcquiringController {
       dto.TransactionId,
     );
 
-    console.log('ENTITY:', entity);
-
-    console.log('DTO OBJECT RECEIPT URL:', dto.Receipt.ReceiptLocalUrl);
+    const receipt = JSON.parse(dto.Receipt);
 
     await this.updateEntityWhereTransactionIdEqual(
       entity,
-      dto.Receipt.ReceiptLocalUrl,
+      receipt.ReceiptLocalUrl,
     );
   }
 
