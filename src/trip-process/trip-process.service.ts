@@ -97,6 +97,9 @@ export class TripProcessService {
           metadata: {
             description: 'Залог за поездку',
             type: 'TRIP',
+            receiptData: {
+              receiptType: 'PLEDGE',
+            },
           },
         },
         userDb.id,
