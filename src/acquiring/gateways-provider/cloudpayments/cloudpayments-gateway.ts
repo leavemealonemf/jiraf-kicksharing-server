@@ -231,10 +231,13 @@ export class CloudPaymentsGateway extends AcquiringProvider {
             },
             {
               label: 'Поминутный тариф', //наименование товара
-              price: paymentData.metadata.receiptData.tripOneMinutePrice, //цена
+              price:
+                paymentData.metadata.receiptData.tripOneMinutePrice.toFixed(2), //цена
               quantity: paymentData.metadata.receiptData.tripDurationInMinutes, //количество
               amount:
-                paymentData.metadata.receiptData.tripTotalPriceWithoutStart, //сумма
+                paymentData.metadata.receiptData.tripTotalPriceWithoutStart.toFixed(
+                  2,
+                ), //сумма
               vat: 0, //ставка НДС
               method: 0, // тег-1214 признак способа расчета - признак способа расчета
               object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
