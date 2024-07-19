@@ -220,27 +220,6 @@ export class AcquiringController {
     console.log(dto);
   }
 
-  private async findCurrentFranchise(): Promise<Franchise> {
-    const franchise = await this.dbService.franchise
-      .findFirst({
-        where: { youKassaAccount: 'pk_42204cdc701ea748b587162053789' },
-        include: {
-          city: true,
-        },
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    if (!franchise) {
-      throw new BadRequestException(
-        'ACQUIRING: Не удалось опеределить франчайзера',
-      );
-    }
-
-    return franchise;
-  }
-
   @Public()
   @Post('cloudpayment-receipt-notifications')
   async getCloudpaymentsReceiptNotifications(@Body() dto: any) {
@@ -292,7 +271,7 @@ export class AcquiringController {
         where: {
           paymentData: {
             path: ['transactionId'],
-            equals: transactionId,
+            equals: Number(transactionId),
           },
         },
       })
@@ -307,5 +286,26 @@ export class AcquiringController {
     }
 
     return entity;
+  }
+
+  private async findCurrentFranchise(): Promise<Franchise> {
+    const franchise = await this.dbService.franchise
+      .findFirst({
+        where: { youKassaAccount: 'pk_42204cdc701ea748b587162053789' },
+        include: {
+          city: true,
+        },
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    if (!franchise) {
+      throw new BadRequestException(
+        'ACQUIRING: Не удалось опеределить франчайзера',
+      );
+    }
+
+    return franchise;
   }
 }
