@@ -244,6 +244,7 @@ export class AcquiringController {
   ) {
     // for now we only update trip information, but there will be more of this method in the future
 
+    console.log('в методе обновления поездки');
     await this.dbService.trip
       .update({
         where: { id: entity.id },
@@ -265,7 +266,7 @@ export class AcquiringController {
 
   private async getEntityWhereTransactonIdEqual(transactionId: string) {
     // for now we only get trip information, but there will be more of this method in the future
-
+    console.log('в методе поиска поездки');
     const entity = await this.dbService.trip
       .findFirst({
         where: {
