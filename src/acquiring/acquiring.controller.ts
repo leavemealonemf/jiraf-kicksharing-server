@@ -251,6 +251,8 @@ export class AcquiringController {
       dto.TransactionId,
     );
 
+    console.log('ENTITY:', entity);
+
     await this.updateEntityWhereTransactionIdEqual(
       entity,
       dto.Receipt.ReceiptLocalUrl,
