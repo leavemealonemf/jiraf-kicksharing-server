@@ -269,7 +269,7 @@ export class AcquiringController {
     console.log('в методе поиска поездки');
     const entity: any = await this.dbService.$queryRaw`
       SELECT * FROM "Trip"
-      WHERE paymentData->>'transactionId' = ${Number(transactionId)}
+      WHERE "paymentData"->>'transactionId' = ${Number(transactionId)}
     `.catch((err) => {
       console.log(err);
     });
