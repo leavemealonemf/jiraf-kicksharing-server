@@ -243,16 +243,16 @@ export class CloudPaymentsGateway extends AcquiringProvider {
               object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
               measurementUnit: 'Мин.', //единица измерения
             },
-            {
-              label: 'Бонусы', //наименование товара
-              price: paymentData.metadata.receiptData.bonusesPaid, //цена
-              quantity: paymentData.metadata.receiptData.isBonusesUsed ? 1 : 0, //количество
-              amount: paymentData.metadata.receiptData.bonusesPaid, //сумма
-              vat: 0, //ставка НДС
-              method: 0, // тег-1214 признак способа расчета - признак способа расчета
-              object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
-              measurementUnit: 'Шт.', //единица измерения
-            },
+            // {
+            //   label: 'Бонусы', //наименование товара
+            //   price: paymentData.metadata.receiptData.bonusesPaid, //цена
+            //   quantity: paymentData.metadata.receiptData.isBonusesUsed ? 1 : 0, //количество
+            //   amount: paymentData.metadata.receiptData.bonusesPaid, //сумма
+            //   vat: 0, //ставка НДС
+            //   method: 0, // тег-1214 признак способа расчета - признак способа расчета
+            //   object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
+            //   measurementUnit: 'Шт.', //единица измерения
+            // },
           ],
           // email: 'strangemisterio78@gmail.com',
         };
