@@ -1,15 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-type PAYMENT_TYPE = 'BALANCE' | 'TRIP' | 'SUBSCRIPTION' | 'DEBT' | 'FINE';
+type PAYMENT_TYPE =
+  | 'BALANCE'
+  | 'TRIP'
+  | 'SUBSCRIPTION'
+  | 'DEBT'
+  | 'FINE'
+  | 'PLEDGE';
 
-type ReceiptType = 'TRIP' | 'SUBSCRIPTION';
+type ReceiptType = PAYMENT_TYPE;
 
-class CustomReceiptData {
+export class CustomReceiptData {
   receiptType: ReceiptType;
-  tripStartPrice: number;
-  tripDurationInMinutes: number;
-  tripTotalPriceWithoutStart: number;
+  servicePrice?: number;
+  tripStartPrice?: number;
+  tripDurationInMinutes?: number;
+  tripTotalPriceWithoutStart?: number;
+  tripOneMinutePrice?: number;
+  isBonusesUsed?: boolean;
+  bonusesPaid?: number;
 }
 
 class ReccurentPaymentMetadataDto {

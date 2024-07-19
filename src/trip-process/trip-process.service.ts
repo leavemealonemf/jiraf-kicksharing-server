@@ -249,7 +249,7 @@ export class TripProcessService {
       dto.tripUUID,
     );
 
-    const tripCoast = this.calcTripCost(cachedTrip);
+    const { tripCoast, tripDurationMinutes } = this.calcTripCost(cachedTrip);
     const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
 
     let bonusesSpent = 0.0;
@@ -349,7 +349,24 @@ export class TripProcessService {
 
         const acceptAuthPayment = await this.acquiringService
           .createReccurentPayment(
-            { ...paymentData, amount: cardSpent - 300 },
+            {
+              ...paymentData,
+              amount: cardSpent - 300,
+              metadata: {
+                ...paymentData.metadata,
+                isReceiptIncludes: true,
+                receiptData: {
+                  receiptType: 'TRIP',
+                  tripOneMinutePrice: copy.tripInfo.pricing.minute,
+                  tripStartPrice: copy.tripInfo.pricing.board,
+                  tripTotalPriceWithoutStart:
+                    cardSpent - copy.tripInfo.pricing.board + 300,
+                  tripDurationInMinutes: tripDurationMinutes,
+                  isBonusesUsed: bonusesSpent > 0 ? true : false,
+                  bonusesPaid: bonusesSpent > 0 ? bonusesSpent : 0,
+                },
+              },
+            },
             user.id,
             paymentMethod,
             franchise.youKassaAccount,
@@ -372,7 +389,24 @@ export class TripProcessService {
 
         const acceptAuthPayment = await this.acquiringService
           .createReccurentPayment(
-            paymentData,
+            {
+              ...paymentData,
+              amount: cardSpent,
+              metadata: {
+                ...paymentData.metadata,
+                isReceiptIncludes: true,
+                receiptData: {
+                  receiptType: 'TRIP',
+                  tripOneMinutePrice: copy.tripInfo.pricing.minute,
+                  tripStartPrice: copy.tripInfo.pricing.board,
+                  tripTotalPriceWithoutStart:
+                    cardSpent - copy.tripInfo.pricing.board,
+                  tripDurationInMinutes: tripDurationMinutes,
+                  isBonusesUsed: bonusesSpent > 0 ? true : false,
+                  bonusesPaid: bonusesSpent > 0 ? bonusesSpent : 0,
+                },
+              },
+            },
             user.id,
             paymentMethod,
             franchise.youKassaAccount,
@@ -729,7 +763,9 @@ export class TripProcessService {
     const tripDurationMillis = endTime.getTime() - startTime.getTime();
     const tripDurationMinutes = Math.ceil(tripDurationMillis / (1000 * 60));
 
-    return tripDurationMinutes * trip.tripInfo.pricing.minute; // ОБЩАЯ СУММА
+    const tripCoast = tripDurationMinutes * trip.tripInfo.pricing.minute;
+
+    return { tripCoast, tripDurationMinutes };
   }
 
   private async getPer30SecPackets(objectId: string, startTime: string) {

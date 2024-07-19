@@ -63,7 +63,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     userId: number,
     paymentMethod: PaymentMethod,
   ): Promise<any> {
-    const receipt = this.createReceiptData(paymentData.amount, 'Услуга');
+    const receipt = this.createReceiptData(paymentData);
 
     const payment = await this.client
       .getClientApi()
@@ -97,10 +97,7 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     userId: number,
     paymentMethod: PaymentMethod,
   ): Promise<any> {
-    const receipt = this.createReceiptData(
-      paymentData.amount,
-      'Залог за поездку',
-    );
+    const receipt = this.createReceiptData(paymentData);
     const payment = await this.client
       .getClientApi()
       .authorizeTokenPayment({
@@ -208,26 +205,73 @@ export class CloudPaymentsGateway extends AcquiringProvider {
     return receipt;
   }
 
-  private createReceiptData(price: number, label: string) {
-    const receipt = {
-      items: [
-        {
-          label: label, //наименование товара
-          price: price, //цена
-          quantity: 1.0, //количество
-          amount: price, //сумма
-          vat: 0, //ставка НДС
-          method: 0, // тег-1214 признак способа расчета - признак способа расчета
-          object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
-          measurementUnit: 'шт', //единица измерения
-        },
-      ],
-      email: 'strangemisterio78@gmail.com',
-    };
+  private createReceiptData(paymentData: ReccurentPaymentDto) {
+    const receipt = this.createReceiptFabric(paymentData);
     return {
       CloudPayments: {
         CustomerReceipt: receipt, //онлайн-чек
       },
     };
+  }
+
+  private createReceiptFabric(paymentData: ReccurentPaymentDto) {
+    switch (paymentData.metadata.receiptData.receiptType) {
+      case 'TRIP':
+        return {
+          items: [
+            {
+              label: 'Старт поездки', //наименование товара
+              price: paymentData.metadata.receiptData.tripStartPrice, //цена
+              quantity: 1.0, //количество
+              amount: paymentData.metadata.receiptData.tripStartPrice, //сумма
+              vat: 0, //ставка НДС
+              method: 0, // тег-1214 признак способа расчета - признак способа расчета
+              object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
+              measurementUnit: 'Шт.', //единица измерения
+            },
+            {
+              label: 'Поминутный тариф', //наименование товара
+              price: paymentData.metadata.receiptData.tripOneMinutePrice, //цена
+              quantity: paymentData.metadata.receiptData.tripDurationInMinutes, //количество
+              amount:
+                paymentData.metadata.receiptData.tripTotalPriceWithoutStart, //сумма
+              vat: 0, //ставка НДС
+              method: 0, // тег-1214 признак способа расчета - признак способа расчета
+              object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
+              measurementUnit: 'Мин.', //единица измерения
+            },
+            {
+              label: 'Бонусы', //наименование товара
+              price: paymentData.metadata.receiptData.bonusesPaid, //цена
+              quantity: 1, //количество
+              amount: paymentData.metadata.receiptData.bonusesPaid, //сумма
+              vat: 0, //ставка НДС
+              method: 0, // тег-1214 признак способа расчета - признак способа расчета
+              object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
+              measurementUnit: 'Мин.', //единица измерения
+            },
+          ],
+          // email: 'strangemisterio78@gmail.com',
+        };
+      case 'SUBSCRIPTION':
+        break;
+      case 'PLEDGE':
+        return {
+          items: [
+            {
+              label: 'Залог за поездку', //наименование товара
+              price: 300, //цена
+              quantity: 1.0, //количество
+              amount: 300, //сумма
+              vat: 0, //ставка НДС
+              method: 0, // тег-1214 признак способа расчета - признак способа расчета
+              object: 0, // тег-1212 признак предмета расчета - признак предмета товара, работы, услуги, платежа, выплаты, иного предмета расчета
+              measurementUnit: 'Шт.', //единица измерения
+            },
+          ],
+        };
+      default:
+        break;
+    }
   }
 }
