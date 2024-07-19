@@ -332,6 +332,8 @@ export class TripProcessService {
     const paymentMethod =
       await this.paymentMethodService.getActivePaymentMethod(user.id);
 
+    let transactionId: string;
+
     if (cardSpent > 0) {
       if (cardSpent > 300) {
         await this.acquiringService
@@ -357,6 +359,7 @@ export class TripProcessService {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
           });
 
+        transactionId = acceptAuthPayment.response.Model.TransactionId;
         console.log('ACCEPT AUTH PAYMENT', acceptAuthPayment);
       } else {
         await this.acquiringService.voidPayment(
@@ -367,7 +370,7 @@ export class TripProcessService {
           franchise.cloudpaymentsKey,
         );
 
-        await this.acquiringService
+        const acceptAuthPayment = await this.acquiringService
           .createReccurentPayment(
             paymentData,
             user.id,
@@ -378,6 +381,7 @@ export class TripProcessService {
           .catch(() => {
             this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
           });
+        transactionId = acceptAuthPayment.response.Model.TransactionId;
       }
     }
 
@@ -418,7 +422,7 @@ export class TripProcessService {
         data: {
           coordinates: JSON.stringify(coordinates),
           paymentData: {
-            transactionId: copy.tripInfo.processPaymentId,
+            transactionId: transactionId,
           },
         },
         include: {
