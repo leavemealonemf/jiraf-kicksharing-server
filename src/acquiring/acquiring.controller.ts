@@ -267,7 +267,7 @@ export class AcquiringController {
   private async getEntityWhereTransactonIdEqual(transactionId: string) {
     // for now we only get trip information, but there will be more of this method in the future
     console.log('в методе поиска поездки');
-    const entity = await this.dbService.$queryRaw`
+    const entity: any = await this.dbService.$queryRaw`
       SELECT * FROM "Trip"
       WHERE paymentData->>'transactionId' = ${Number(transactionId)}
     `.catch((err) => {
