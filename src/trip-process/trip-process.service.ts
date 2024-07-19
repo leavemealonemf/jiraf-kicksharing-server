@@ -417,6 +417,9 @@ export class TripProcessService {
         where: { id: dto.tripId },
         data: {
           coordinates: JSON.stringify(coordinates),
+          paymentData: {
+            transactionId: Number(copy.tripInfo.processPaymentId),
+          },
         },
         include: {
           tariff: true,

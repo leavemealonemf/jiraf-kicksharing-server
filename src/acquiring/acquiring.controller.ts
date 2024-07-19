@@ -18,7 +18,7 @@ import { AcquiringPaymentStatusDto } from './dtos/acquiring-payment.response.dto
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
 import { TransactionStatus } from 'cloudpayments';
 import { IPaymentJsonData } from './gateways-provider/cloudpayments/interfaces/payment-jsondata.interface';
-import { Franchise, User } from '@prisma/client';
+import { Franchise, Trip, User } from '@prisma/client';
 import { IDefaultTransactionNotification } from './gateways-provider/cloudpayments/interfaces';
 import { DbService } from 'src/db/db.service';
 
@@ -243,8 +243,67 @@ export class AcquiringController {
 
   @Public()
   @Post('cloudpayment-receipt-notifications')
-  getCloudpaymentsReceiptNotifications(@Body() dto: any) {
+  async getCloudpaymentsReceiptNotifications(@Body() dto: any) {
     console.log('В обработчике уведомления чека');
     console.log(dto);
+    // Receipt.ReceiptLocalUrl
+    const entity = await this.getEntityWhereTransactonIdEqual(
+      dto.TransactionId,
+    );
+
+    await this.updateEntityWhereTransactionIdEqual(
+      entity,
+      dto.Receipt.ReceiptLocalUrl,
+    );
+  }
+
+  private async updateEntityWhereTransactionIdEqual(
+    entity: Trip,
+    receiptUrl: string,
+  ) {
+    // for now we only update trip information, but there will be more of this method in the future
+
+    await this.dbService.trip
+      .update({
+        where: { id: entity.id },
+        data: {
+          receiptUrl: receiptUrl,
+        },
+      })
+      .then((res) => {
+        console.log('RECEIPT SUCCESSFULLY SAVED');
+        console.log('RECEIPT_URL', res.receiptUrl);
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new BadRequestException(
+          'Не удалось присвоить receiptUrl переданной сущности',
+        );
+      });
+  }
+
+  private async getEntityWhereTransactonIdEqual(transactionId: string) {
+    // for now we only get trip information, but there will be more of this method in the future
+
+    const entity = await this.dbService.trip
+      .findFirst({
+        where: {
+          paymentData: {
+            path: ['transactionId'],
+            equals: transactionId,
+          },
+        },
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    if (!entity) {
+      throw new BadRequestException(
+        'Не удалось найти сущность по переданной транзакции',
+      );
+    }
+
+    return entity;
   }
 }

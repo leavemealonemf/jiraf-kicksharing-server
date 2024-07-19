@@ -102,6 +102,7 @@ model Payment {
   userId      Int?
   datetimeCreated DateTime @default(now())      
   user        User?  @relation(fields: [userId], references: [id])
+  receiptUrl String?
 }
 
 model PaymentMethod {
@@ -151,7 +152,10 @@ model Trip {
   coordinates    String?
   fines Fine[]
   dept Debt?
+  receiptUrl String?
+  paymentData Json? @default("{}")
 }
+
 
 model ActiveTrip {
   id      Int      @id @default(autoincrement())
