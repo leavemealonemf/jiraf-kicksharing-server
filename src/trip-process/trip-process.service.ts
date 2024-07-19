@@ -418,7 +418,7 @@ export class TripProcessService {
         data: {
           coordinates: JSON.stringify(coordinates),
           paymentData: {
-            transactionId: Number(copy.tripInfo.processPaymentId),
+            transactionId: copy.tripInfo.processPaymentId,
           },
         },
         include: {
