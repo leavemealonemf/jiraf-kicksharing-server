@@ -363,7 +363,7 @@ export class TripProcessService {
                   tripOneMinutePrice: copy.tripInfo.pricing.minute,
                   tripStartPrice: copy.tripInfo.pricing.board,
                   tripTotalPriceWithoutStart:
-                    cardSpent - copy.tripInfo.pricing.board + 300,
+                    cardSpent - copy.tripInfo.pricing.board,
                   tripDurationInMinutes: tripDurationMinutes,
                   isBonusesUsed: bonusesSpent > 0 ? true : false,
                   bonusesPaid: bonusesSpent > 0 ? bonusesSpent : 0,
