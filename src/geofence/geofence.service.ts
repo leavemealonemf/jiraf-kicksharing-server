@@ -386,9 +386,9 @@ export class GeofenceService {
   private sortScootersInParkingZone(geofences: any[], scooters: any[]) {
     const geofencesWithScooters = [];
 
-    if (scooters.length === 0) {
-      return geofencesWithScooters;
-    }
+    // if (scooters.length === 0) {
+    //   return geofencesWithScooters;
+    // }
 
     for (let i = 0; i < geofences.length; i++) {
       if (geofences.length === 0) {
