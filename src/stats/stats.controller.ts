@@ -1,6 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { StatsService } from './stats.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser, Platforms } from '@common/decorators';
+import { ErpUser } from '@prisma/client';
+import { PlatformsGuard } from 'src/auth/guards/platform.guard';
 
 @ApiTags('Stats (Статистика)')
 @ApiBearerAuth()
@@ -15,5 +18,12 @@ export class StatsController {
     @Query('end') end: string,
   ) {
     return this.statsService.getStats(interval, start, end);
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
+  @Get('/report')
+  async report(@CurrentUser() erpUser: ErpUser) {
+    return null;
   }
 }
