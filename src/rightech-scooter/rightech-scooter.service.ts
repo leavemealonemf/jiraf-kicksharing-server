@@ -23,7 +23,7 @@ export class RightechScooterService {
     this.baseUrl = configService.get('RIGHTECH_URL');
   }
 
-  async getAll(): Promise<IRightechScooter[]> {
+  async getAll(): Promise<IRightechScooter[] | null> {
     try {
       const { data } = await axios.get(`${this.baseUrl}/objects`, {
         headers: {
@@ -33,7 +33,8 @@ export class RightechScooterService {
 
       return data;
     } catch (error) {
-      console.log(error);
+      this.logger.error(error);
+      return null;
     }
   }
 
