@@ -171,7 +171,8 @@ export class ScooterService {
     const res = await this.rightechScooterService.getAll();
 
     if (!res) {
-      throw new ConflictException('Не удалось получить самокаты Rightech');
+      // throw new ConflictException('Не удалось получить самокаты Rightech');
+      return [];
     }
 
     const scooters = await this.dbService.scooter.findMany({
