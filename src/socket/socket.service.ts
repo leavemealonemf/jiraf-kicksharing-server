@@ -35,6 +35,7 @@ export class WsGateway implements OnModuleInit {
     });
 
     this.externalSocket.on('error', (err) => {
+      this.externalSocket.close(200);
       throw new BadRequestException(
         'Не удалось установить соединение Rightech',
       );
