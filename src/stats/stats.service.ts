@@ -73,6 +73,7 @@ export class StatsService {
     }
 
     const entities = await this.getGroupReportEntities(erpUser, start, end);
+    console.log(entities);
     const entitiesTotalAmount = this.calculateTotalAmount(entities);
     const entitiesAmountOfCharges = this.caclulateAmountOfCharges(entities);
     const franchiseeRevenue = this.calculateFranchiseeRevenue(entities);
