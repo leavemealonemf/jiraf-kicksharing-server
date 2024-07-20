@@ -31,7 +31,7 @@ export class GeofenceController {
 
   @Get('mobile')
   async getMobileGeofences() {
-    return this.geofenceService.getGeofencesInMobile();
+    return await this.geofenceService.getGeofencesInMobile();
   }
 
   @Patch(':id')
