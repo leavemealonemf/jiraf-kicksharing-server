@@ -81,7 +81,8 @@ export class StatsService {
       entities.trips.reduce((acc) => acc + 1, 0) / entities.trips.length;
     const averageTripPriceValue =
       entities.trips.reduce(
-        (acc, val) => acc + (val.price - val.bonusesUsed),
+        (acc, val) =>
+          acc + (val.price - val.bonusesUsed + val.tariff.boardingCost),
         0,
       ) / entities.trips.length;
 
