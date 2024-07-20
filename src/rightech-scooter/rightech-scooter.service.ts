@@ -24,17 +24,17 @@ export class RightechScooterService {
   }
 
   async getAll(): Promise<IRightechScooter[]> {
-    const { data } = await axios.get(`${this.baseUrl}/objects`, {
-      headers: {
-        Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,
-      },
-    });
+    try {
+      const { data } = await axios.get(`${this.baseUrl}/objects`, {
+        headers: {
+          Authorization: `Bearer ${this.configService.get('RIGHTECH_TOKEN')}`,
+        },
+      });
 
-    if (!data) {
-      throw new Error('Ошибка при получении скутеров от Rightech');
+      return data;
+    } catch (error) {
+      console.log(error);
     }
-
-    return data;
   }
 
   async getOne(id: string): Promise<IRightechScooter> {
