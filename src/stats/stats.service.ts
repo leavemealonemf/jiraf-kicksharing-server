@@ -73,7 +73,6 @@ export class StatsService {
     }
 
     const entities = await this.getGroupReportEntities(erpUser, start, end);
-    console.log(entities);
     const entitiesTotalAmount = this.calculateTotalAmount(entities);
     const entitiesAmountOfCharges = this.caclulateAmountOfCharges(entities);
     const franchiseeRevenue = this.calculateFranchiseeRevenue(entities);
@@ -107,7 +106,7 @@ export class StatsService {
           franchiseeRevenue.tripsFranchiseeRevenue
         ).toFixed(2),
         averageTripsCount: averageTripCountValue,
-        averageTripsPrice: averageTripPriceValue,
+        averageTripsPrice: averageTripPriceValue.toFixed(2),
         categories,
       },
     };
@@ -136,17 +135,19 @@ export class StatsService {
     const categories = {
       trips: {
         count: entities.trips.length,
-        paidMoney: this.calucateMoneySpentForTrip(entities.trips),
-        paidBonuses: this.calucateBonusesSpentForTrip(entities.trips),
-        notPaid: this.calucateDebtsForTrip(entities.trips),
+        paidMoney: this.calucateMoneySpentForTrip(entities.trips).toFixed(2),
+        paidBonuses: this.calucateBonusesSpentForTrip(entities.trips).toFixed(
+          2,
+        ),
+        notPaid: this.calucateDebtsForTrip(entities.trips).toFixed(2),
       },
       fines: {
         count: entities.fines.length,
-        sum: this.calculateFinesOrDebtsTotalSum(entities.fines),
+        sum: this.calculateFinesOrDebtsTotalSum(entities.fines).toFixed(2),
       },
       debts: {
         count: entities.debts.length,
-        sum: this.calculateFinesOrDebtsTotalSum(entities.debts),
+        sum: this.calculateFinesOrDebtsTotalSum(entities.debts).toFixed(2),
       },
     };
 
