@@ -1,4 +1,4 @@
-import { OnModuleInit } from '@nestjs/common';
+import { BadRequestException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
@@ -31,6 +31,12 @@ export class WsGateway implements OnModuleInit {
       this.server.emit(
         'messageFromExternalServer',
         JSON.parse(message.toString()),
+      );
+    });
+
+    this.externalSocket.on('error', (err) => {
+      throw new BadRequestException(
+        'Не удалось установить соединение Rightech',
       );
     });
 
