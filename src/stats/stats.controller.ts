@@ -23,7 +23,11 @@ export class StatsController {
   @UseGuards(PlatformsGuard)
   @Platforms('WEB')
   @Get('/report')
-  async report(@CurrentUser() erpUser: ErpUser) {
-    return null;
+  async report(
+    @CurrentUser() erpUser: ErpUser,
+    @Query('start') start?: string,
+    @Query('end') end?: string,
+  ) {
+    return await this.statsService.report(erpUser, start, end);
   }
 }
