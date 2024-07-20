@@ -1,4 +1,4 @@
-import { BadRequestException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
@@ -13,6 +13,7 @@ export class WsGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
   private externalSocket: any;
+  private readonly logger = new Logger(WsGateway.name);
 
   constructor(private readonly config: ConfigService) {}
 
@@ -35,10 +36,13 @@ export class WsGateway implements OnModuleInit {
     });
 
     this.externalSocket.on('error', (err) => {
-      this.externalSocket.close(200);
-      throw new BadRequestException(
-        'Не удалось установить соединение Rightech',
-      );
+      this.logger.error(err);
+      this.externalSocket.close(1000);
+    });
+
+    this.externalSocket.on('close', () => {
+      this.logger.warn('WebSocket connection closed.');
+      // setTimeout(() => this.connectToExternalSocket(), this.reconnectInterval);
     });
 
     this.server.on('connection', (socket) => {
