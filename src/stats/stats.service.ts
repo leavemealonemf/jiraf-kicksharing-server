@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { Debt, ErpUser, Fine, Trip } from '@prisma/client';
+import { Debt, ErpUser, Fine, Tariff, Trip } from '@prisma/client';
 import { DbService } from 'src/db/db.service';
 import { TripService } from 'src/trip/trip.service';
 import { v4 } from 'uuid';
 
 interface IReportTripStruct extends Trip {
   debt: Debt;
+  tariff: Tariff;
 }
 
 type FinesOrDebts = Fine[] | Debt[];
@@ -128,7 +129,11 @@ export class StatsService {
   }
 
   private calucateMoneySpentForTrip(trips: IReportTripStruct[]) {
-    return trips.reduce((acc, val) => acc + (val.price - val.bonusesUsed), 0);
+    return trips.reduce(
+      (acc, val) =>
+        acc + (val.price - val.bonusesUsed + val.tariff.boardingCost),
+      0,
+    );
   }
 
   private groupEntitiesByCategories(entities: ReportEntities) {
@@ -160,7 +165,9 @@ export class StatsService {
     fines,
   }: ReportEntities): EntitiesFranchiseeRevenue {
     const tripsFranchiseeRevenue = trips.reduce(
-      (acc, current) => acc + current.price - current.bonusesUsed,
+      (acc, current) =>
+        acc +
+        (current.price - current.bonusesUsed + current.tariff.boardingCost),
       0,
     );
     const paidFines = fines.filter((x) => x.paidStatus === 'PAID');
@@ -187,7 +194,9 @@ export class StatsService {
     fines,
   }: ReportEntities): EntitiesAmountOfCharges {
     const tripsAmountOfCharges = trips.reduce(
-      (acc, current) => acc + current.price - current.bonusesUsed,
+      (acc, current) =>
+        acc +
+        (current.price - current.bonusesUsed + current.tariff.boardingCost),
       0,
     );
     const paidFines = fines.filter((x) => x.paidStatus === 'PAID');
@@ -210,7 +219,9 @@ export class StatsService {
     debts,
   }: ReportEntities): EntitiesTotalAmount {
     const tripsTotalAmount = trips.reduce(
-      (acc, current) => acc + current.price,
+      (acc, current) =>
+        acc +
+        (current.price + current.bonusesUsed + current.tariff.boardingCost),
       0,
     );
     const finesTotalAmount = fines.reduce(
@@ -245,6 +256,7 @@ export class StatsService {
             },
             include: {
               dept: true,
+              tariff: true,
             },
           })
           .catch((err) => {
