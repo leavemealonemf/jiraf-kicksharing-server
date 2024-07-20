@@ -43,16 +43,14 @@ export class GeofenceService {
     // const scooters = await this.sortScootersInArray();
     const scooters = await this.scooterService.findAllMobile();
 
-    const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
-      geofences,
-      scooters,
-    );
+    // const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
+    //   geofences,
+    //   scooters,
+    // );
 
     // comma
 
-    const geofencesWithLimit = this.getCurrentSpeedLimit(
-      geofencesWithOrWithoutScooters,
-    );
+    const geofencesWithLimit = this.getCurrentSpeedLimit(geofences);
 
     return geofencesWithLimit;
   }
