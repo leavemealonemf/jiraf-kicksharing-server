@@ -118,7 +118,9 @@ export class StatsService {
   }
 
   private calucateDebtsForTrip(trips: IReportTripStruct[]) {
-    const tripDebts = trips.filter((x) => x.debt.paidStatus === 'NOTPAID');
+    const tripDebts = trips.filter(
+      (x) => x.debt && x.debt.paidStatus === 'NOTPAID',
+    );
     return tripDebts.reduce((acc, val) => acc + val.debt.price, 0);
   }
 
