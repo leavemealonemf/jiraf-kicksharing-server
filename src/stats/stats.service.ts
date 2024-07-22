@@ -127,15 +127,18 @@ export class StatsService {
   }
 
   private calculateDaysInterval(start: string, end: string): number {
-    const date = new Date();
-    const firstDate = new Date(start).getDate();
-    const endDate = new Date(end).getDate();
+    const dayStart = new Date(start);
+    const dayEnd = new Date(end);
 
-    if (firstDate === endDate) {
-      return new Date(date.getFullYear(), date.getMonth(), 0).getDate();
-    }
+    const diffInMilliseconds = dayEnd.getTime() - dayStart.getTime();
 
-    const daysInterval = Math.abs(firstDate - endDate);
+    // Переводим разницу из миллисекунд в дни
+    const diffInDays = diffInMilliseconds / (1000 * 60 * 60 * 24);
+    const daysInterval = Math.round(Math.abs(diffInDays));
+
+    if (isNaN(daysInterval)) return 1;
+
+    if (daysInterval === 0) return 1;
 
     return daysInterval;
   }
