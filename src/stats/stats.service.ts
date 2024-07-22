@@ -160,13 +160,13 @@ export class StatsService {
       fines: {
         count: entities.fines.length,
         paidCount: paidFines.length,
-        paidSum: paidFinesSum,
+        paidSum: isNaN(paidFinesSum) ? 0 : paidFinesSum.toFixed(2),
         totalSum: this.calculateFinesOrDebtsTotalSum(entities.fines).toFixed(2),
       },
       debts: {
         count: entities.debts.length,
         paidCount: paidDebts.length,
-        paidSum: paidDebtsSum,
+        paidSum: isNaN(paidDebtsSum) ? 0 : paidDebtsSum.toFixed(2),
         totalSum: this.calculateFinesOrDebtsTotalSum(entities.debts).toFixed(2),
       },
     };
