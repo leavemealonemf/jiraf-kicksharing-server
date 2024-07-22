@@ -75,7 +75,14 @@ export class StatsService {
 
     const daysInterval = this.calculateDaysInterval(start, end);
 
-    const entities = await this.getGroupReportEntities(erpUser, start, end);
+    let entities;
+
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      entities = await this.getGroupReportEntitiesForAdmin(start, end);
+    } else {
+      entities = await this.getGroupReportEntities(erpUser, start, end);
+    }
+
     const entitiesTotalAmount = this.calculateTotalAmount(entities);
     const entitiesAmountOfCharges = this.caclulateAmountOfCharges(entities);
     const franchiseeRevenue = this.calculateFranchiseeRevenue(entities);
@@ -339,8 +346,68 @@ export class StatsService {
     return { trips, fines, debts };
   }
 
+  private async getGroupReportEntitiesForAdmin(
+    start: string,
+    end: string,
+  ): Promise<ReportEntities> {
+    const { trips, fines, debts } = await this.dbService.$transaction(
+      async () => {
+        const trips = await this.dbService.trip
+          .findMany({
+            where: {
+              startTime: {
+                gte: start,
+                lte: end,
+              },
+            },
+            include: {
+              dept: true,
+              tariff: true,
+            },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+
+        const fines = await this.dbService.fine
+          .findMany({
+            where: {
+              createdAt: {
+                gte: start,
+                lte: end,
+              },
+            },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+
+        const debts = await this.dbService.debt
+          .findMany({
+            where: {
+              createdAt: {
+                gte: start,
+                lte: end,
+              },
+            },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+
+        return { trips, fines, debts };
+      },
+    );
+
+    // @ts-ignore
+    return { trips, fines, debts };
+  }
+
   private checkUserPermission(erpUser: ErpUser): boolean {
     if (!erpUser) return false;
+
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') return true;
+
     if (erpUser.role === 'FRANCHISE' && erpUser.franchiseEmployeeId) {
       return true;
     }
