@@ -122,8 +122,13 @@ export class StatsService {
   }
 
   private calculateDaysInterval(start: string, end: string): number {
+    const date = new Date();
     const firstDate = new Date(start).getDate();
     const endDate = new Date(end).getDate();
+
+    if (firstDate === endDate) {
+      return new Date(date.getFullYear(), date.getMonth(), 0).getDate();
+    }
 
     const daysInterval = Math.abs(firstDate - endDate);
 
