@@ -79,8 +79,9 @@ export class StatsService {
     const entitiesTotalAmount = this.calculateTotalAmount(entities);
     const entitiesAmountOfCharges = this.caclulateAmountOfCharges(entities);
     const franchiseeRevenue = this.calculateFranchiseeRevenue(entities);
-    const averageTripCountValue =
-      entities.trips.reduce((acc) => acc + 1, 0) / daysInterval;
+    const averageTripCountValue = Math.round(
+      entities.trips.length / daysInterval,
+    );
     const averageTripPriceValue =
       entities.trips.reduce(
         (acc, val) =>
