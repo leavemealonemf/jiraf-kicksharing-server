@@ -110,7 +110,9 @@ export class StatsService {
         averageTripsCount: isNaN(averageTripCountValue)
           ? 0
           : averageTripCountValue,
-        averageTripsPrice: averageTripPriceValue.toFixed(2),
+        averageTripsPrice: isNaN(averageTripPriceValue)
+          ? 0
+          : averageTripPriceValue.toFixed(2),
         categories,
       },
     };
