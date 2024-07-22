@@ -73,12 +73,14 @@ export class StatsService {
       throw new BadRequestException('У Вас нет доступа к отчетности');
     }
 
+    const daysInterval = this.calculateDaysInterval(start, end);
+
     const entities = await this.getGroupReportEntities(erpUser, start, end);
     const entitiesTotalAmount = this.calculateTotalAmount(entities);
     const entitiesAmountOfCharges = this.caclulateAmountOfCharges(entities);
     const franchiseeRevenue = this.calculateFranchiseeRevenue(entities);
     const averageTripCountValue =
-      entities.trips.reduce((acc) => acc + 1, 0) / entities.trips.length;
+      entities.trips.reduce((acc) => acc + 1, 0) / daysInterval;
     const averageTripPriceValue =
       entities.trips.reduce(
         (acc, val) =>
@@ -116,6 +118,15 @@ export class StatsService {
         categories,
       },
     };
+  }
+
+  private calculateDaysInterval(start: string, end: string): number {
+    const firstDate = new Date(start).getDate();
+    const endDate = new Date(end).getDate();
+
+    const daysInterval = Math.abs(firstDate - endDate);
+
+    return daysInterval;
   }
 
   private calculateFinesOrDebtsTotalSum(entity: FinesOrDebts) {
