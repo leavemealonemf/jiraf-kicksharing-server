@@ -107,7 +107,9 @@ export class StatsService {
           franchiseeRevenue.finesFranchiseeRevenue +
           franchiseeRevenue.tripsFranchiseeRevenue
         ).toFixed(2),
-        averageTripsCount: averageTripCountValue,
+        averageTripsCount: isNaN(averageTripCountValue)
+          ? 0
+          : averageTripCountValue,
         averageTripsPrice: averageTripPriceValue.toFixed(2),
         categories,
       },
