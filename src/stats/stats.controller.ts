@@ -27,7 +27,8 @@ export class StatsController {
     @CurrentUser() erpUser: ErpUser,
     @Query('start') start?: string,
     @Query('end') end?: string,
+    @Query('who') franchiseId = 0,
   ) {
-    return await this.statsService.report(erpUser, start, end);
+    return await this.statsService.report(erpUser, start, end, +franchiseId);
   }
 }

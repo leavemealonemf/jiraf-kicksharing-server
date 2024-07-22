@@ -67,7 +67,12 @@ export class StatsService {
     };
   }
 
-  async report(erpUser: ErpUser, start: string, end: string) {
+  async report(
+    erpUser: ErpUser,
+    start: string,
+    end: string,
+    franchiseId: number,
+  ) {
     const isAccess = this.checkUserPermission(erpUser);
     if (!isAccess) {
       throw new BadRequestException('У Вас нет доступа к отчетности');
@@ -78,7 +83,11 @@ export class StatsService {
     let entities;
 
     if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
-      entities = await this.getGroupReportEntitiesForAdmin(start, end);
+      entities = await this.getGroupReportEntitiesForAdmin(
+        start,
+        end,
+        franchiseId,
+      );
     } else {
       entities = await this.getGroupReportEntities(erpUser, start, end);
     }
@@ -349,12 +358,30 @@ export class StatsService {
   private async getGroupReportEntitiesForAdmin(
     start: string,
     end: string,
+    franhiseId: number,
   ): Promise<ReportEntities> {
+    const franchise = await this.dbService.franchise
+      .findFirst({
+        where: { id: franhiseId },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!franchise) {
+      throw new BadRequestException(
+        'Не удалось получить франчайзи на которого формируем отчет',
+      );
+    }
+
     const { trips, fines, debts } = await this.dbService.$transaction(
       async () => {
         const trips = await this.dbService.trip
           .findMany({
             where: {
+              scooter: {
+                franchiseId: franhiseId,
+              },
               startTime: {
                 gte: start,
                 lte: end,
@@ -372,6 +399,7 @@ export class StatsService {
         const fines = await this.dbService.fine
           .findMany({
             where: {
+              initiatorId: franhiseId,
               createdAt: {
                 gte: start,
                 lte: end,
@@ -385,6 +413,7 @@ export class StatsService {
         const debts = await this.dbService.debt
           .findMany({
             where: {
+              initiatorId: franhiseId,
               createdAt: {
                 gte: start,
                 lte: end,
