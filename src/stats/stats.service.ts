@@ -82,6 +82,11 @@ export class StatsService {
     const averageTripCountValue = Math.round(
       entities.trips.length / daysInterval,
     );
+
+    console.log('DAYS INTERVAL', daysInterval);
+    console.log('TRIPS COUNT', entities.trips.length);
+    console.log('AVERAGE TRIPS COUNT VALUE', averageTripCountValue);
+
     const averageTripPriceValue =
       entities.trips.reduce(
         (acc, val) =>
