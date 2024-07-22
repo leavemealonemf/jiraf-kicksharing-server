@@ -138,6 +138,12 @@ export class StatsService {
   }
 
   private groupEntitiesByCategories(entities: ReportEntities) {
+    const paidFines = entities.fines.filter((x) => x.paidStatus === 'PAID');
+    const paidFinesSum = this.calculateFinesOrDebtsTotalSum(paidFines);
+
+    const paidDebts = entities.debts.filter((x) => x.paidStatus === 'PAID');
+    const paidDebtsSum = this.calculateFinesOrDebtsTotalSum(paidDebts);
+
     const categories = {
       trips: {
         count: entities.trips.length,
@@ -149,11 +155,15 @@ export class StatsService {
       },
       fines: {
         count: entities.fines.length,
-        sum: this.calculateFinesOrDebtsTotalSum(entities.fines).toFixed(2),
+        paidCount: paidFines.length,
+        paidSum: paidFinesSum,
+        totalSum: this.calculateFinesOrDebtsTotalSum(entities.fines).toFixed(2),
       },
       debts: {
         count: entities.debts.length,
-        sum: this.calculateFinesOrDebtsTotalSum(entities.debts).toFixed(2),
+        paidCount: paidDebts.length,
+        paidSum: paidDebtsSum,
+        totalSum: this.calculateFinesOrDebtsTotalSum(entities.debts).toFixed(2),
       },
     };
 
