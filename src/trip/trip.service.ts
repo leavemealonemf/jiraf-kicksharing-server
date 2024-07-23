@@ -1,10 +1,16 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { DbService } from 'src/db/db.service';
 import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ErpUser } from '@prisma/client';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -125,77 +131,30 @@ export class TripService {
     return trip;
   }
 
-  async findAll(interval: string, start: string, end: string) {
-    const currentDate = new Date();
-    let startDate: Date;
+  async findAll(
+    erpUser: ErpUser,
+    interval: string,
+    start: string,
+    end: string,
+    franchiseId: number,
+  ) {
+    const isAccess = this.checkUserRole(erpUser);
 
-    switch (interval) {
-      case 'day':
-        startDate = new Date(currentDate);
-        startDate.setHours(0, 0, 0, 0);
-        break;
-      case 'week':
-        startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case 'month':
-        startDate = new Date(currentDate);
-        startDate.setMonth(startDate.getMonth() - 1);
-        break;
-      case 'all':
-        startDate = new Date(0);
-        break;
-      case 'yesterday':
-        startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(currentDate);
-        endDate.setHours(0, 0, 0, 0);
-        return this.dbService.trip.findMany({
-          where: {
-            startTime: {
-              gte: startDate.toISOString(),
-              lte: endDate.toISOString(),
-            },
-          },
-          orderBy: { startTime: 'desc' },
-          include: {
-            scooter: true,
-            tariff: true,
-            user: true,
-          },
-        });
-
-      case 'custom':
-        return this.dbService.trip.findMany({
-          where: {
-            startTime: {
-              gte: start,
-              lte: end,
-            },
-          },
-          orderBy: { startTime: 'desc' },
-          include: {
-            scooter: true,
-            tariff: true,
-            user: true,
-          },
-        });
-      default:
-        startDate = new Date(0);
-        break;
+    if (!isAccess) {
+      throw new BadRequestException(
+        'У вас недостаточно прав для выполнения операции',
+      );
     }
 
-    return this.dbService.trip.findMany({
-      where: {
-        startTime: {
-          gte: startDate.toISOString(),
-          lte: currentDate.toISOString(),
-        },
-      },
-      orderBy: { startTime: 'desc' },
-      include: { scooter: true, tariff: true, user: true },
-    });
+    let trips;
+
+    if (erpUser.role === 'ADMIN') {
+      trips = await this.tripsForAdmin(start, end, franchiseId);
+    } else {
+      trips = await this.tripsForFranchise(start, end, erpUser);
+    }
+
+    return trips;
   }
 
   async findOne(id: number) {
@@ -240,6 +199,96 @@ export class TripService {
         });
         return res;
       });
+  }
+
+  private async tripsForAdmin(start: string, end: string, franchiseId: number) {
+    if (!franchiseId || franchiseId === 0) {
+      return this.dbService.trip
+        .findMany({
+          where: {
+            startTime: {
+              gte: start,
+              lte: end,
+            },
+          },
+          orderBy: { startTime: 'desc' },
+          include: {
+            scooter: true,
+            tariff: true,
+            user: true,
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException('Не удалось предоставить все поездки');
+        });
+    }
+
+    return this.dbService.trip
+      .findMany({
+        where: {
+          scooter: {
+            franchiseId: franchiseId,
+          },
+          startTime: {
+            gte: start,
+            lte: end,
+          },
+        },
+        orderBy: { startTime: 'desc' },
+        include: {
+          scooter: true,
+          tariff: true,
+          user: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          'Не удалось предоставить поездки для конкретного франчайзи по фильтру',
+        );
+      });
+  }
+
+  private async tripsForFranchise(
+    start: string,
+    end: string,
+    erpUser: ErpUser,
+  ) {
+    return this.dbService.trip
+      .findMany({
+        where: {
+          scooter: {
+            franchiseId: erpUser.franchiseEmployeeId,
+          },
+          startTime: {
+            gte: start,
+            lte: end,
+          },
+        },
+        orderBy: { startTime: 'desc' },
+        include: {
+          scooter: true,
+          tariff: true,
+          user: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException(
+          'Не удалось предоставить поездки для франчайзи',
+        );
+      });
+  }
+
+  private checkUserRole(erpUser: ErpUser): boolean {
+    if (erpUser.role === 'FRANCHISE' && erpUser.franchiseEmployeeId) {
+      return true;
+    }
+
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') return true;
+
+    return false;
   }
 
   private saveFile(photo: string, entityPath: string) {

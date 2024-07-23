@@ -15,6 +15,7 @@ import { UpdateTripDto } from './dto/update-trip.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, Platforms } from '@common/decorators';
 import { PlatformsGuard } from 'src/auth/guards/platform.guard';
+import { ErpUser } from '@prisma/client';
 
 @ApiTags('Trips (Поездки)')
 @ApiBearerAuth()
@@ -32,12 +33,20 @@ export class TripController {
   @UseGuards(PlatformsGuard)
   @Platforms('WEB')
   @Get()
-  findAll(
+  async findAll(
+    @CurrentUser() erpUser: ErpUser,
     @Query('interval') interval: string,
     @Query('start') start?: string,
     @Query('end') end?: string,
+    @Query('who') franchiseId = 0,
   ) {
-    return this.tripService.findAll(interval, start, end);
+    return await this.tripService.findAll(
+      erpUser,
+      interval,
+      start,
+      end,
+      +franchiseId,
+    );
   }
 
   @UseGuards(PlatformsGuard)
