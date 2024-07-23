@@ -128,6 +128,18 @@ export class StatsService {
     return daysInterval;
   }
 
+  private calculateTripTotalSum(trips: IReportTripStruct[]) {
+    const tripWithDebts = trips.filter((x) => x.debt);
+
+    const debtsPrice = tripWithDebts.reduce((acc, val) => acc + val.price, 0);
+    const tripDefaultPrice = trips.reduce(
+      (acc, val) => acc + (val.price + val.tariff.boardingCost),
+      0,
+    );
+
+    return (debtsPrice + tripDefaultPrice).toFixed(2);
+  }
+
   private calculateFinesOrDebtsTotalSum(entity: FinesOrDebts) {
     return entity.reduce((acc, val) => acc + val.price, 0);
   }
@@ -161,6 +173,7 @@ export class StatsService {
     const categories = {
       trips: {
         count: entities.trips.length,
+        totalSum: this.calculateTripTotalSum(entities.trips),
         paidMoney: this.calucateMoneySpentForTrip(entities.trips).toFixed(2),
         paidBonuses: this.calucateBonusesSpentForTrip(entities.trips).toFixed(
           2,
