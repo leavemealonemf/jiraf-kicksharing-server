@@ -35,18 +35,11 @@ export class TripController {
   @Get()
   async findAll(
     @CurrentUser() erpUser: ErpUser,
-    @Query('interval') interval: string,
     @Query('start') start?: string,
     @Query('end') end?: string,
     @Query('who') franchiseId = 0,
   ) {
-    return await this.tripService.findAll(
-      erpUser,
-      interval,
-      start,
-      end,
-      +franchiseId,
-    );
+    return await this.tripService.findAll(erpUser, start, end, +franchiseId);
   }
 
   @UseGuards(PlatformsGuard)

@@ -133,7 +133,6 @@ export class TripService {
 
   async findAll(
     erpUser: ErpUser,
-    interval: string,
     start: string,
     end: string,
     franchiseId: number,
