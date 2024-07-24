@@ -41,7 +41,6 @@ export class ScooterService {
     const instance = await this.dbService.scooter
       .create({
         data: {
-          batteryLevel: createScooterDto.batteryLevel,
           deviceId: deviceId,
           modelId: createScooterDto.modelId,
           qrCode: qrPath,

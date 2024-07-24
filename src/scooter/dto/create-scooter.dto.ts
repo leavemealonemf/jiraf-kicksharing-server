@@ -15,12 +15,6 @@ export class CreateScooterDto {
   })
   deviceIMEI: string;
 
-  @ApiProperty({ default: 100 })
-  @IsNotEmpty({
-    message: 'Поле не должно быть пустым',
-  })
-  batteryLevel: number;
-
   @ApiProperty({ default: 'ACTIVE' })
   @IsNotEmpty({
     message: 'Поле не должно быть пустым',

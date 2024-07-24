@@ -7,7 +7,6 @@ import { MailModule } from './mail/mail.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { FranchiseModule } from './franchise/franchise.module';
-import { ParkingModule } from './parking/parking.module';
 import { ScooterModule } from './scooter/scooter.module';
 import { ScooterModelModule } from './scooter-model/scooter-model.module';
 import { WsGateway } from './socket/socket.service';
@@ -52,7 +51,6 @@ console.log(NODE_ENV);
     }),
     MailModule,
     FranchiseModule,
-    ParkingModule,
     ScooterModule,
     ScooterModelModule,
     TariffModule,
