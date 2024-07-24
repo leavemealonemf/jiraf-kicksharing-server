@@ -435,6 +435,8 @@ export class GeofenceService {
             : true,
       });
     }
+    console.log('GEOFENCE WITH SCOOTERS', geofencesWithScooters);
+
     return geofencesWithScooters;
   }
 
