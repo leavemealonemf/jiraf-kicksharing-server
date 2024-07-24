@@ -133,6 +133,7 @@ export class AcquiringController {
     const reccurentPayment = await this.acquiringService.createReccurentPayment(
       dto,
       userRes.id,
+      userRes.phone,
       paymentMethod,
       franchise.youKassaAccount,
       franchise.cloudpaymentsKey,
@@ -165,6 +166,7 @@ export class AcquiringController {
       await this.acquiringService.createReccurentPaymentTwoStage(
         dto,
         userRes.id,
+        userRes.phone,
         paymentMethod,
         franchise.youKassaAccount,
         franchise.cloudpaymentsKey,
