@@ -43,16 +43,9 @@ export class GeofenceService {
     // const scooters = await this.sortScootersInArray();
     const scooters = await this.scooterService.findAllMobile();
 
-    console.log('GET SCOOTERS', scooters);
-
     const geofencesWithOrWithoutScooters = this.sortScootersInParkingZone(
       geofences,
       scooters,
-    );
-
-    console.log(
-      'geofencesWithOrWithoutScooters',
-      geofencesWithOrWithoutScooters,
     );
 
     // comma
@@ -433,7 +426,6 @@ export class GeofenceService {
             : true,
       });
     }
-    console.log('GEOFENCE WITH SCOOTERS', geofencesWithScooters);
 
     return geofencesWithScooters;
   }
