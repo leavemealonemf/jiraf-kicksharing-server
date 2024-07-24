@@ -175,6 +175,7 @@ export class ScooterService {
     }
 
     const scooters = await this.dbService.scooter.findMany({
+      where: { controlledStatuses: 'ONLINE' },
       include: {
         model: true,
       },
