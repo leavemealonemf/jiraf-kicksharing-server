@@ -419,7 +419,7 @@ export class GeofenceService {
           radius,
         );
 
-        if (scooterInZone) {
+        if (scooterInZone && scooters[i].controlledStatuses === 'ONLINE') {
           zoneScooters.push(scooters[j]);
         }
       }
