@@ -72,6 +72,16 @@ export class DebtService implements IDebtService {
   }
 
   async payOfDebt(userId: number, debtUUID: string) {
+    const user = await this.dbService.user
+      .findFirst({ where: { id: userId } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!user) {
+      throw new BadRequestException('Не удалось найти пользователя');
+    }
+
     const debt = await this.checkIsDebtExist(debtUUID);
     const paymentMethod =
       await this.paymentMethodService.getActivePaymentMethod(userId);
@@ -90,6 +100,7 @@ export class DebtService implements IDebtService {
           },
         },
         userId,
+        user.phone,
         paymentMethod,
         franchise.youKassaAccount,
         franchise.cloudpaymentsKey,

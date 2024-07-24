@@ -178,6 +178,16 @@ export class FineService {
   }
 
   async payOfFine(userId: number, fineUUID: string) {
+    const user = await this.dbService.user
+      .findFirst({ where: { id: userId } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    if (!user) {
+      throw new BadRequestException('Не удалось найти пользователя');
+    }
+
     const fine = await this.checkIsFineExist(fineUUID);
     const paymentMethod =
       await this.paymentMethodService.getActivePaymentMethod(userId);
@@ -196,6 +206,7 @@ export class FineService {
           },
         },
         userId,
+        user.phone,
         paymentMethod,
         franchise.youKassaAccount,
         franchise.cloudpaymentsKey,
