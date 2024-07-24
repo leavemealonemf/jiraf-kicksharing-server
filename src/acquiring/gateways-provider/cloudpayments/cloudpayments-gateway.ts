@@ -5,6 +5,7 @@ import { IVoidPaymentData } from './interfaces';
 import * as uuid from 'uuid';
 import { ReccurentPaymentDto } from 'src/acquiring/dtos';
 import { PaymentMethod, User } from '@prisma/client';
+import { formatPhoneNumber } from '@common/utils';
 
 export class CloudPaymentsGateway extends AcquiringProvider {
   private readonly logger = new Logger(CloudPaymentsGateway.name);
@@ -61,9 +62,11 @@ export class CloudPaymentsGateway extends AcquiringProvider {
   async createReccurentPayment(
     paymentData: ReccurentPaymentDto,
     userId: number,
+    phone: string,
     paymentMethod: PaymentMethod,
   ): Promise<any> {
     const receipt = this.createReceiptData(paymentData);
+    const payerPhoneNumber = formatPhoneNumber(phone);
 
     const payment = await this.client
       .getClientApi()
@@ -77,6 +80,9 @@ export class CloudPaymentsGateway extends AcquiringProvider {
           service: 'payment',
           ...receipt,
         }),
+        Payer: {
+          Phone: payerPhoneNumber,
+        },
       })
       .catch((err) => {
         this.logger.error(err);
@@ -95,9 +101,12 @@ export class CloudPaymentsGateway extends AcquiringProvider {
   async createTwoStagePayment(
     paymentData: ReccurentPaymentDto,
     userId: number,
+    phone: string,
     paymentMethod: PaymentMethod,
   ): Promise<any> {
     const receipt = this.createReceiptData(paymentData);
+    const payerPhoneNumber = formatPhoneNumber(phone);
+
     const payment = await this.client
       .getClientApi()
       .authorizeTokenPayment({
@@ -110,6 +119,9 @@ export class CloudPaymentsGateway extends AcquiringProvider {
           service: 'payment',
           ...receipt,
         }),
+        Payer: {
+          Phone: payerPhoneNumber,
+        },
       })
       .catch((err) => {
         this.logger.error(err);

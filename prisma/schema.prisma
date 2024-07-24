@@ -172,7 +172,6 @@ model Scooter {
   deviceIMEI       String?   @unique
   qrCode           String
   serialNumber     String
-  batteryLevel     Int     
   status           ScooterStatus @default(ACTIVE)
   power            Boolean @default(false) 
   rented           Boolean @default(false)
@@ -194,15 +193,6 @@ model ScooterModel {
   modelName        String   @unique
   scooters         Scooter[]   @relation("ScooterModels")
   chargeReserve    Int?
-}
-
-model Parking {
-  id       Int      @id @default(autoincrement())
-  address  String?
-  photo    String?  // Предполагается, что это будет ссылка на файл/фотографию
-  latitude Float
-  longitude Float
-  radius   Int      // Замените на тип, который отражает радиус  
 }
 
 model Tariff {

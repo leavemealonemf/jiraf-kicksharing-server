@@ -27,11 +27,7 @@ import * as path from 'path';
 import { AcquiringService } from 'src/acquiring/acquiring.service';
 import { Geofence, Scooter, User } from '@prisma/client';
 import { PaymentMethodService } from 'src/payment-method/payment-method.service';
-import {
-  AcquiringProcessPaymentDto,
-  paymentType,
-  ReccurentPaymentDto,
-} from 'src/acquiring/dtos';
+import { ReccurentPaymentDto } from 'src/acquiring/dtos';
 import {
   ScooterCommandHandler,
   getScooterPackets,
@@ -103,6 +99,7 @@ export class TripProcessService {
           },
         },
         userDb.id,
+        userDb.phone,
         paymentMethod,
         franchise.youKassaAccount,
         franchise.cloudpaymentsKey,
@@ -371,6 +368,7 @@ export class TripProcessService {
               },
             },
             user.id,
+            user.phone,
             paymentMethod,
             franchise.youKassaAccount,
             franchise.cloudpaymentsKey,
@@ -411,6 +409,7 @@ export class TripProcessService {
               },
             },
             user.id,
+            user.phone,
             paymentMethod,
             franchise.youKassaAccount,
             franchise.cloudpaymentsKey,

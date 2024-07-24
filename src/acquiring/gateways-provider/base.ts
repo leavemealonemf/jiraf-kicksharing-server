@@ -4,6 +4,7 @@ export abstract class AcquiringProvider {
   abstract createTwoStagePayment(
     paymentData: any,
     userId: number,
+    phone: string,
     paymentMethod: any,
   ): Promise<any>;
   abstract acceptPayment(amount: number, transactionId: number): Promise<any>;
@@ -12,6 +13,7 @@ export abstract class AcquiringProvider {
   abstract createReccurentPayment(
     paymentData: any,
     userId: number,
+    phone: string,
     paymentMethod: any,
   ): Promise<any>;
   abstract confirm3DSecure(): Promise<any>;

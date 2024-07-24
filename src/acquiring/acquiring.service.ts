@@ -51,6 +51,7 @@ export class AcquiringService {
   async createReccurentPayment(
     paymentData: ReccurentPaymentDto,
     userId: number,
+    phone: string,
     paymentMethod: PaymentMethod,
     publicId: string,
     privateKey: string,
@@ -65,6 +66,7 @@ export class AcquiringService {
     return await gateway.createReccurentPayment(
       paymentData,
       userId,
+      phone,
       paymentMethod,
     );
   }
@@ -72,6 +74,7 @@ export class AcquiringService {
   async createReccurentPaymentTwoStage(
     paymentData: ReccurentPaymentDto,
     userId: number,
+    phone: string,
     paymentMethod: PaymentMethod,
     publicId: string,
     privateKey: string,
@@ -86,6 +89,7 @@ export class AcquiringService {
     return await gateway.createTwoStagePayment(
       paymentData,
       userId,
+      phone,
       paymentMethod,
     );
   }
