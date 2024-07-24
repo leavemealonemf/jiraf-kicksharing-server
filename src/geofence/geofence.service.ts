@@ -404,6 +404,8 @@ export class GeofenceService {
       const zoneScooters = [];
 
       for (let j = 0; j < scooters.length; j++) {
+        if (scooters[i].scooter.controlledStatuses !== 'ONLINE') continue;
+
         const scooterCoordinates = {
           lat: scooters[j].rightechScooter.state.lat,
           lng: scooters[j].rightechScooter.state.lon,
@@ -419,10 +421,7 @@ export class GeofenceService {
           radius,
         );
 
-        if (
-          scooterInZone &&
-          scooters[i].scooter.controlledStatuses === 'ONLINE'
-        ) {
+        if (scooterInZone) {
           zoneScooters.push(scooters[j]);
         }
       }
