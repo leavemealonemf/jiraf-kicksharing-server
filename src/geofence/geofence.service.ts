@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -7,7 +8,7 @@ import {
 import { DbService } from 'src/db/db.service';
 import { UpdateGeofenceTypeDto } from './dto/update-geofencetype.dto';
 import { CreateGeofenceDto } from './dto/create-geofence.dto';
-import { GeofenceDrawType } from '@prisma/client';
+import { ErpUser, GeofenceDrawType } from '@prisma/client';
 import { generateUUID } from '@common/utils';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -16,18 +17,54 @@ import { ScooterService } from 'src/scooter/scooter.service';
 
 @Injectable()
 export class GeofenceService {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(GeofenceService.name);
 
   constructor(
     private readonly dbService: DbService,
     private readonly scooterService: ScooterService,
   ) {}
 
-  async getGeofences() {
-    return this.dbService.geofence.findMany({
-      orderBy: { dateTimeCreated: 'desc' },
-      include: { type: true },
-    });
+  async getGeofences(erpUser: ErpUser) {
+    const isAccess = this.checkUserRolePermissions(erpUser);
+
+    if (!isAccess) {
+      throw new BadRequestException('У вас недостаточно прав');
+    }
+
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      return await this.dbService.geofence
+        .findMany({
+          orderBy: { dateTimeCreated: 'desc' },
+          include: { type: true },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException('Не удалось получить геозоны');
+        });
+    }
+
+    return await this.dbService.geofence
+      .findMany({
+        where: { franchiseId: erpUser.franchiseEmployeeId },
+        orderBy: { dateTimeCreated: 'desc' },
+        include: { type: true },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('Не удалось получить геозоны');
+      });
+  }
+
+  private checkUserRolePermissions(erpUser: ErpUser): boolean {
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      return true;
+    }
+
+    if (erpUser.role === 'FRANCHISE' && erpUser.franchiseEmployeeId) {
+      return true;
+    }
+
+    return false;
   }
 
   async getGeofencesInMobile() {
@@ -57,7 +94,13 @@ export class GeofenceService {
     return geofencesWithLimit;
   }
 
-  async createGeofence(dto: CreateGeofenceDto) {
+  async createGeofence(dto: CreateGeofenceDto, erpUser: ErpUser) {
+    const isAccess = this.checkUserRolePermissions(erpUser);
+
+    if (!isAccess) {
+      throw new BadRequestException('У вас недостаточно прав');
+    }
+
     const uuid = generateUUID();
     const path = `uploads/images/geofences/${uuid}/photo/image.png`;
 
@@ -83,7 +126,10 @@ export class GeofenceService {
           secondTimePeriodStart: dto.secondTimePeriodStart,
           typeId: dto.typeId,
           cityId: dto.cityId,
-          franchiseId: dto.franchiseId,
+          franchiseId:
+            erpUser.role === 'ADMIN'
+              ? dto.franchiseId
+              : erpUser.franchiseEmployeeId,
         },
         include: { type: true },
       })
