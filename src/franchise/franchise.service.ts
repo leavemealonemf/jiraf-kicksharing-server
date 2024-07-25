@@ -5,6 +5,7 @@ import { DbService } from 'src/db/db.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ConnectOwnerToFranchiseDto } from './dto';
 import { CityService } from 'src/city/city.service';
+import { GeofenceService } from 'src/geofence/geofence.service';
 
 @Injectable()
 export class FranchiseService {
@@ -14,6 +15,7 @@ export class FranchiseService {
     private readonly dbService: DbService,
     private readonly authService: AuthService,
     private readonly cityService: CityService,
+    private readonly geofenceService: GeofenceService,
   ) {}
 
   async create(dto: CreateFranchiseDto) {
@@ -59,6 +61,9 @@ export class FranchiseService {
         'Не удалось создать франшизу с данными: ' + JSON.stringify(dto),
       );
     }
+
+    await this.geofenceService.createGeofenceType(franchise.id);
+
     return franchise;
   }
 

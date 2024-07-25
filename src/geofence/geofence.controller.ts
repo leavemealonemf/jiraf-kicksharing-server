@@ -58,8 +58,8 @@ export class GeofenceController {
   }
 
   @Post('types')
-  async createGeofenceType() {
-    this.geofenceService.createGeofenceType();
+  async createGeofenceType(@Body() franchiseId: number) {
+    this.geofenceService.createGeofenceType(franchiseId);
   }
 
   @Patch('types/:id')

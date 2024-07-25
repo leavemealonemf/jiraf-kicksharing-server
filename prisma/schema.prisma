@@ -47,6 +47,7 @@ model Franchise {
   workStatus FranchiseWorkStatus @default(WORK)
   scooters Scooter[]
   geofences Geofence[]
+  geofenceTypes GeofenceType[]
   cityId Int @unique
   city City @relation(fields: [cityId], references: [id])
   supportLink String?
@@ -270,6 +271,8 @@ model GeofenceType {
   isScooterBehavior  Boolean @default(false)
   noiceToTheClient   Boolean @default(false)
   geofences          Geofence[]
+  franchiseId        Int @default(1)
+  franchise          Franchise @relation(fields: [franchiseId], references: [id], onDelete: NoAction)
   params             GeofenceTypeParams?
 }
 

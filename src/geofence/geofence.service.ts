@@ -163,14 +163,36 @@ export class GeofenceService {
       });
   }
 
-  async getGeofenceTypes() {
-    return this.dbService.geofenceType.findMany({
-      include: { params: true },
-      orderBy: { id: 'asc' },
-    });
+  async getGeofenceTypes(erpUser?: ErpUser) {
+    const isAccess = this.checkUserRolePermissions(erpUser);
+
+    if (!isAccess) {
+      throw new BadRequestException('У вас недостаточно прав');
+    }
+
+    if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
+      return await this.dbService.geofenceType
+        .findMany({
+          include: { params: true },
+          orderBy: { id: 'asc' },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+        });
+    }
+
+    return await this.dbService.geofenceType
+      .findMany({
+        where: { franchiseId: erpUser.franchiseEmployeeId },
+        include: { params: true },
+        orderBy: { id: 'asc' },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+      });
   }
 
-  async createGeofenceType() {
+  async createGeofenceType(franchiseId: number) {
     const data = [
       {
         colorHex: '#F32C2C',
@@ -182,7 +204,7 @@ export class GeofenceService {
         canRiding: true,
         isScooterBehavior: true,
         noiceToTheClient: true,
-
+        franchiseId,
         speedReduction: 5,
         notificationMessage:
           'Внимание! Вы заехали в зону, где кататься запрещено. Вернитесь обратно.',
@@ -196,6 +218,7 @@ export class GeofenceService {
         slug: 'paidParkingCircle',
         canParking: true,
         canRiding: true,
+        franchiseId,
         description: 'Здесь вы можете завершить аренду за деньги',
         parkingPrice: 50,
       },
@@ -207,6 +230,7 @@ export class GeofenceService {
         drawType: GeofenceDrawType.POLYGON,
         slug: 'parkingPolygon',
         canParking: true,
+        franchiseId,
         canRiding: true,
       },
       {
@@ -217,6 +241,7 @@ export class GeofenceService {
         drawType: GeofenceDrawType.CIRCLE,
         slug: 'parkingCircle',
         canParking: true,
+        franchiseId,
         canRiding: true,
       },
       {
@@ -228,6 +253,7 @@ export class GeofenceService {
         slug: 'notParking',
         canParking: false,
         canRiding: true,
+        franchiseId,
         description:
           'Здесь нельзя парковаться и оставлять самокаты, даже ненадолго',
         parkingFinePrice: 100,
@@ -245,6 +271,7 @@ export class GeofenceService {
           'Здесь запрещено кататься. Наслаждайтесь остальной частью города',
         isScooterBehavior: true,
         noiceToTheClient: true,
+        franchiseId,
 
         parkingFinePrice: 100,
         speedReduction: 5,
@@ -260,6 +287,7 @@ export class GeofenceService {
         slug: 'speedLimitAllDay',
         canParking: false,
         canRiding: true,
+        franchiseId,
         description:
           'Скорость самоката автоматически снизится, так безопаснее для всех',
       },
@@ -272,6 +300,7 @@ export class GeofenceService {
         slug: 'speedLimitSchedule',
         canParking: false,
         canRiding: true,
+        franchiseId,
         description:
           'Скорость самоката автоматически снизится, так безопаснее для всех',
         secondDescription:
@@ -289,6 +318,7 @@ export class GeofenceService {
           drawType: obj.drawType,
           subTitle: obj.subTitle,
           canParking: obj.canParking,
+          franchiseId: obj.franchiseId,
           canRiding: obj.canRiding,
           description: obj.description,
           parkingPrice: obj.parkingPrice,

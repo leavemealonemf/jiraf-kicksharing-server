@@ -14,7 +14,6 @@ import axios from 'axios';
 import { ErpUser, Scooter } from '@prisma/client';
 import { RightechScooterService } from 'src/rightech-scooter/rightech-scooter.service';
 import { SettingsService } from 'src/settings/settings.service';
-import { FranchiseService } from 'src/franchise/franchise.service';
 import { qrRedirectQueryName, qrRedirectURL } from '@common/constants';
 
 @Injectable()
@@ -25,7 +24,6 @@ export class ScooterService {
     private readonly dbService: DbService,
     private readonly rightechScooterService: RightechScooterService,
     private readonly settingsService: SettingsService,
-    private readonly franchiseService: FranchiseService,
   ) {}
 
   async create(createScooterDto: CreateScooterDto) {
