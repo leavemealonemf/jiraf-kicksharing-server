@@ -256,7 +256,7 @@ model Geofence {
 model GeofenceType {
   id                 Int      @id @default(autoincrement())
   uuid               String
-  name               String   @unique
+  name               String   
   subTitle           String?
   slug               String
   img                String?
