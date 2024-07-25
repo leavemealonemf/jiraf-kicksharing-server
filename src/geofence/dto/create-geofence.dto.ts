@@ -45,6 +45,6 @@ export class CreateGeofenceDto {
   cityId: number;
 
   @ApiProperty({ default: 1 })
-  @IsNumber(undefined, { message: 'На вход ожидалось число' })
+  // @IsNumber(undefined, { message: 'На вход ожидалось число' })
   franchiseId?: number;
 }
