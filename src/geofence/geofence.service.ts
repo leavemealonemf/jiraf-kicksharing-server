@@ -24,7 +24,7 @@ export class GeofenceService {
     private readonly scooterService: ScooterService,
   ) {}
 
-  async getGeofences(erpUser: ErpUser) {
+  async getGeofences(erpUser?: ErpUser) {
     const isAccess = this.checkUserRolePermissions(erpUser);
 
     if (!isAccess) {
