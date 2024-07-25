@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import { GeofenceService } from './geofence.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -15,6 +14,7 @@ import { CreateGeofenceDto } from './dto/create-geofence.dto';
 import { UpdateGeofenceDto } from './dto/update-geofence.dto';
 import { CurrentUser } from '@common/decorators';
 import { ErpUser } from '@prisma/client';
+import { CreateGeofenceTypesDto } from './dto/create-geofence-types';
 
 @ApiTags('Геозоны и типы')
 @ApiBearerAuth()
@@ -59,8 +59,8 @@ export class GeofenceController {
   }
 
   @Post('types')
-  async createGeofenceType(@Query('franchiseId') franchiseId = 1) {
-    this.geofenceService.createGeofenceType(franchiseId);
+  async createGeofenceType(@Body() dto: CreateGeofenceTypesDto) {
+    await this.geofenceService.createGeofenceType(dto.franchiseId);
   }
 
   @Patch('types/:id')
