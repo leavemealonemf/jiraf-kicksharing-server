@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { GeofenceService } from './geofence.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -58,7 +59,7 @@ export class GeofenceController {
   }
 
   @Post('types')
-  async createGeofenceType(@Body() franchiseId: number) {
+  async createGeofenceType(@Query('franchiseId') franchiseId = 1) {
     this.geofenceService.createGeofenceType(franchiseId);
   }
 
