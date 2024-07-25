@@ -45,9 +45,6 @@ export class CreateGeofenceDto {
   cityId: number;
 
   @ApiProperty({ default: 1 })
-  @IsNotEmpty({
-    message: 'Поле franchiseId не должно быть пустым',
-  })
   @IsNumber(undefined, { message: 'На вход ожидалось число' })
-  franchiseId: number;
+  franchiseId?: number;
 }
