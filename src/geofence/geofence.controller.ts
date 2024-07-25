@@ -53,8 +53,8 @@ export class GeofenceController {
   }
 
   @Get('types')
-  async getGeofenceTypes() {
-    return this.geofenceService.getGeofenceTypes();
+  async getGeofenceTypes(@CurrentUser() erpUser: ErpUser) {
+    return this.geofenceService.getGeofenceTypes(erpUser);
   }
 
   @Post('types')
