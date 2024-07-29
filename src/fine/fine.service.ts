@@ -203,6 +203,11 @@ export class FineService {
           metadata: {
             description: `№ ${fineUUID}`,
             type: 'FINE',
+            isReceiptIncludes: true,
+            receiptData: {
+              receiptType: 'FINE',
+              servicePrice: fine.price,
+            },
           },
         },
         userId,

@@ -97,6 +97,11 @@ export class DebtService implements IDebtService {
           metadata: {
             description: `№ ${debtUUID}`,
             type: 'DEBT',
+            isReceiptIncludes: true,
+            receiptData: {
+              receiptType: 'DEBT',
+              servicePrice: debt.price,
+            },
           },
         },
         userId,
