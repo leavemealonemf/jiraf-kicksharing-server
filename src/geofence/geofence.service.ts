@@ -55,6 +55,18 @@ export class GeofenceService {
       });
   }
 
+  async getGeofencesForTrip() {
+    return await this.dbService.geofence
+      .findMany({
+        orderBy: { dateTimeCreated: 'desc' },
+        include: { type: true },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        throw new BadRequestException('Не удалось получить геозоны');
+      });
+  }
+
   private checkUserRolePermissions(erpUser: ErpUser): boolean {
     if (erpUser.role === 'ADMIN' || erpUser.role === 'EMPLOYEE') {
       return true;

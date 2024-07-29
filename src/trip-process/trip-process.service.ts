@@ -808,7 +808,7 @@ export class TripProcessService {
     scooterLatitude: number,
     scooterLongitude: number,
   ): Promise<any> {
-    const geofences: any[] = await this.geofenceService.getGeofences();
+    const geofences: any[] = await this.geofenceService.getGeofencesForTrip();
 
     let result = null;
 
@@ -1084,7 +1084,7 @@ export class TripProcessService {
     lat: number,
     lon: number,
   ): Promise<GofencingStatus[]> {
-    const zones = await this.geofenceService.getGeofences();
+    const zones = await this.geofenceService.getGeofencesForTrip();
 
     const includedZones = [];
 
