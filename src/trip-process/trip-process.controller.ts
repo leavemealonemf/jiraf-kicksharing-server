@@ -11,15 +11,16 @@ import {
   SaveTripPictureDto,
   CanParkingDto,
 } from './dto';
+import { TerminateTripDto } from './dto/terminate-trip.dto';
 
-@UseGuards(PlatformsGuard)
-@Platforms('MOBILE')
 @ApiTags('Процесс поездки')
 @ApiBearerAuth()
 @Controller('trip-process')
 export class TripProcessController {
   constructor(private readonly tripProcessService: TripProcessService) {}
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/start')
   async start(@Body() dto: StartTripProcessDto, @CurrentUser() user: any) {
     return this.tripProcessService.start(dto, user);
@@ -30,11 +31,25 @@ export class TripProcessController {
   //   return this.tripProcessService.end(dto, user.clientId);
   // }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/end-test')
   async endTest(@Body() dto: EndTripProcessDto, @CurrentUser() user: any) {
-    return this.tripProcessService.endTripTest(dto, user.clientId);
+    return await this.tripProcessService.endTripTest(dto, user.clientId);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('WEB')
+  @Post('/emergency-trip-termination')
+  async terminateTrip(@Body() dto: TerminateTripDto) {
+    return await this.tripProcessService.terminateTrip(
+      dto.tripId,
+      dto.userUUID,
+    );
+  }
+
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/can-parking')
   async canParking(@Body() dto: CanParkingDto) {
     return await this.tripProcessService.canParking(
@@ -45,6 +60,8 @@ export class TripProcessController {
     );
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Get('/active-trips')
   async getActiveTrips(@CurrentUser() user: any) {
     return this.tripProcessService.getActiveTrips(user.id);
@@ -66,16 +83,22 @@ export class TripProcessController {
   //   return this.tripProcessService.getUpdatedTripInfo(tripUUID);
   // }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/pause-on')
   async pauseOn(@Body() dto: PauseOnTripProcessDto) {
     return this.tripProcessService.pauseOn(dto.activeTripUUID);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/pause-off')
   async pauseOff(@Body() dto: PauseOffTripProcessDto) {
     return this.tripProcessService.pauseOff(dto.activeTripUUID);
   }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
   @Post('/save-picture')
   async savePicture(@Body() dto: SaveTripPictureDto) {
     return this.tripProcessService.saveTripPhoto(dto.tripId, dto.photo);

@@ -161,6 +161,7 @@ model Trip {
 model ActiveTrip {
   id      Int      @id @default(autoincrement())
   tripUUID String @unique
+  tripId Int
   userId Int 
   user User @relation(fields: [userId], references: [id])
 

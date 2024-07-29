@@ -148,6 +148,7 @@ export class TripProcessService {
             data: {
               userId: userDb.id,
               tripUUID: tripUUID,
+              tripId: isTripCreated.id,
             },
           });
           const updateScooterStatus = await this.dbService.scooter.update({
@@ -242,7 +243,7 @@ export class TripProcessService {
     return cachedTrips;
   }
 
-  async endTripTest(dto: EndTripProcessDto, userUUID: any) {
+  async endTripTest(dto: EndTripProcessDto, userUUID: string) {
     const user = await this.userService.findOneByUUID(userUUID);
 
     const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
@@ -455,6 +456,253 @@ export class TripProcessService {
     const updatedTrip = await this.dbService.trip
       .update({
         where: { id: dto.tripId },
+        data: {
+          coordinates: JSON.stringify(coordinates),
+          paymentData: {
+            transactionId: transactionId,
+          },
+        },
+        include: {
+          tariff: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        return 'Не удалось сохранить координаты';
+      });
+
+    this.dbService.activeTrip
+      .delete({ where: { tripUUID: copy.uuid } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
+
+    return {
+      trip: copy,
+      updatedTrip: updatedTrip,
+      payment: savedPayment,
+    };
+  }
+
+  // TERMINATE FROM CRM
+
+  async terminateTrip(tripId: number, userUUID: string) {
+    const user = await this.userService.findOneByUUID(userUUID);
+
+    const activeTrip = await this.dbService.activeTrip.findFirst({
+      where: { tripId: tripId },
+    });
+
+    const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+      activeTrip.tripUUID,
+    );
+
+    const { tripCoast, tripDurationMinutes } = this.calcTripCost(cachedTrip);
+    const tripCoastPayment = tripCoast + cachedTrip.tripInfo.pricing.board;
+
+    let bonusesSpent = 0.0;
+    let cardSpent = 0.0;
+
+    const maxBonusUsage = parseFloat((tripCoastPayment * 0.5).toFixed(2));
+    const availableBonuses = Math.min(user.bonuses, maxBonusUsage);
+    const remainingTripCost = parseFloat(
+      (tripCoastPayment - availableBonuses).toFixed(2),
+    );
+
+    cardSpent = parseFloat((remainingTripCost * 0.5).toFixed(2));
+    bonusesSpent = parseFloat((tripCoastPayment - cardSpent).toFixed(2));
+
+    if (bonusesSpent > availableBonuses) {
+      bonusesSpent = availableBonuses;
+      cardSpent = parseFloat((tripCoastPayment - bonusesSpent).toFixed(2));
+    }
+
+    cardSpent = parseFloat(cardSpent.toFixed(2));
+    bonusesSpent = parseFloat(bonusesSpent.toFixed(2));
+
+    const trip = await this.dbService.trip.update({
+      where: { id: tripId },
+      data: {
+        endTime: new Date().toISOString(),
+        coordinates: null,
+        scooter: {
+          update: {
+            rented: false,
+          },
+        },
+        rating: 5,
+        bonusesUsed: bonusesSpent,
+        price: tripCoast,
+        distance: cachedTrip.tripInfo.distanceTraveled,
+        user: {
+          update: {
+            bonuses: {
+              decrement: bonusesSpent,
+            },
+          },
+        },
+      },
+    });
+
+    const scooter: Scooter = await this.scooterService.findOne(trip.scooterId);
+
+    const franchise = await this.dbService.franchise.findFirst({
+      where: { id: scooter.franchiseId },
+    });
+
+    await this.scooterCommandHandlerIOT.sendCommand(
+      scooter.deviceIMEI,
+      DEVICE_COMMANDS.LOCK,
+    );
+
+    if (!trip) {
+      throw new BadRequestException(
+        `Не удалось завершить поездку с id: ${tripId}`,
+      );
+    }
+
+    // const cachedTrip: IActiveTripRoot = await this.cacheManager.get(
+    //   dto.tripUUID,
+    // );
+
+    const copy = Object.assign({}, cachedTrip);
+
+    // Списание и сохранение платежа
+
+    const paymentData: ReccurentPaymentDto = {
+      amount: cardSpent,
+      metadata: {
+        description: `Самокат №${cachedTrip.tripInfo.scooter.scooter.deviceId}`,
+        type: 'TRIP',
+      },
+    };
+
+    const paymentMethod =
+      await this.paymentMethodService.getActivePaymentMethod(user.id);
+
+    let transactionId: string;
+
+    if (cardSpent > 0) {
+      if (cardSpent > 300) {
+        await this.acquiringService
+          .acceptPayment(
+            300,
+            Number(copy.tripInfo.processPaymentId),
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
+          )
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ ПОДТВЕРДИТЬ ЗАЛОГ');
+          });
+
+        const acceptAuthPayment = await this.acquiringService
+          .createReccurentPayment(
+            {
+              ...paymentData,
+              amount: cardSpent - 300,
+              metadata: {
+                ...paymentData.metadata,
+                isReceiptIncludes: true,
+                receiptData: {
+                  receiptType: 'TRIP',
+                  tripOneMinutePrice: copy.tripInfo.pricing.minute,
+                  tripStartPrice: copy.tripInfo.pricing.board,
+                  tripTotalPriceWithoutStart:
+                    cardSpent - 300 - copy.tripInfo.pricing.board,
+                  tripDurationInMinutes: tripDurationMinutes,
+                  isBonusesUsed: bonusesSpent > 0 ? true : false,
+                  bonusesPaid: bonusesSpent > 0 ? bonusesSpent : 0,
+                },
+              },
+            },
+            user.id,
+            user.phone,
+            paymentMethod,
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
+          )
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+          });
+
+        transactionId = acceptAuthPayment.response.Model.TransactionId;
+        console.log('ACCEPT AUTH PAYMENT', acceptAuthPayment);
+      } else {
+        await this.acquiringService.voidPayment(
+          {
+            TransactionId: Number(copy.tripInfo.processPaymentId),
+          },
+          franchise.youKassaAccount,
+          franchise.cloudpaymentsKey,
+        );
+
+        const acceptAuthPayment = await this.acquiringService
+          .createReccurentPayment(
+            {
+              ...paymentData,
+              amount: cardSpent,
+              metadata: {
+                ...paymentData.metadata,
+                isReceiptIncludes: true,
+                receiptData: {
+                  receiptType: 'TRIP',
+                  tripOneMinutePrice: copy.tripInfo.pricing.minute,
+                  tripStartPrice: copy.tripInfo.pricing.board,
+                  tripTotalPriceWithoutStart:
+                    cardSpent - copy.tripInfo.pricing.board,
+                  tripDurationInMinutes: tripDurationMinutes,
+                  isBonusesUsed: bonusesSpent > 0 ? true : false,
+                  bonusesPaid: bonusesSpent > 0 ? bonusesSpent : 0,
+                },
+              },
+            },
+            user.id,
+            user.phone,
+            paymentMethod,
+            franchise.youKassaAccount,
+            franchise.cloudpaymentsKey,
+          )
+          .catch(() => {
+            this.logger.log('НЕ УДАЛОСЬ СПИСАТЬ ДЕНЬГИ ЗА ПОЕЗДКУ!');
+          });
+        transactionId = acceptAuthPayment.response.Model.TransactionId;
+      }
+    }
+
+    const savedPayment = await this.paymentsService.savePayment(
+      paymentData,
+      user.id,
+      paymentMethod,
+    );
+
+    if (!savedPayment) {
+      this.logger.log('НЕ УДАЛОСЬ СОХРАНИТЬ ПЛАТЕЖ ПОЕЗДКИ!');
+    }
+
+    // \Списание и сохранение платежа/
+
+    await this.cacheManager.del(activeTrip.tripUUID);
+
+    const getPackets: any[] = await getScooterPackets(
+      scooter.deviceIMEI,
+      trip.startTime.toISOString(),
+      trip.endTime.toISOString(),
+    );
+
+    if (!getPackets) {
+      throw new BadRequestException('Не удалось получить пакеты');
+    }
+
+    const coordinates = getPackets.map((p) => {
+      return {
+        lat: p.lat,
+        lon: p.lon,
+      };
+    });
+
+    const updatedTrip = await this.dbService.trip
+      .update({
+        where: { id: tripId },
         data: {
           coordinates: JSON.stringify(coordinates),
           paymentData: {
