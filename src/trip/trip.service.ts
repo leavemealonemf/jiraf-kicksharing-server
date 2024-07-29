@@ -215,6 +215,7 @@ export class TripService {
             scooter: true,
             tariff: true,
             user: true,
+            dept: true,
           },
         })
         .catch((err) => {
@@ -270,6 +271,7 @@ export class TripService {
           scooter: true,
           tariff: true,
           user: true,
+          dept: true,
         },
       })
       .catch((err) => {
