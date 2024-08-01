@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
@@ -7,6 +8,7 @@ interface ICommandHandler {
 
 export class ScooterCommandHandler implements ICommandHandler {
   private readonly configService: ConfigService;
+  private readonly logger = new Logger(ScooterCommandHandler.name);
 
   constructor() {
     this.configService = new ConfigService();
@@ -27,7 +29,8 @@ export class ScooterCommandHandler implements ICommandHandler {
       );
       return data;
     } catch (error) {
-      throw new Error('IoT send scooter command Error');
+      this.logger.error(error);
+      // throw new Error('IoT send scooter command Error');
     }
   }
 }
