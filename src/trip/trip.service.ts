@@ -61,7 +61,12 @@ export class TripService {
         orderBy: {
           startTime: 'desc',
         },
-        where: { userId: userId },
+        where: {
+          userId: userId,
+          endTime: {
+            not: null,
+          },
+        },
         include: {
           scooter: {
             select: {
