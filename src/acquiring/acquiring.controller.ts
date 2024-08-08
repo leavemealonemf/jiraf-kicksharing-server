@@ -192,7 +192,7 @@ export class AcquiringController {
       return;
     }
     const providedData: IPaymentJsonData = JSON.parse(dto.Data);
-    console.log(providedData.methodUuid);
+    // console.log(providedData.methodUuid);
     // void payment if is two-stage payment
     if (
       dto.Status === TransactionStatus.Authorized &&

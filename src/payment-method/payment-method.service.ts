@@ -105,27 +105,58 @@ export class PaymentMethodService {
 
     const cardExpData = response.CardExpDate.split('/');
 
-    await this.dbService.paymentMethod
-      .create({
-        data: {
-          paymentId: response.Token,
-          cardType: response.CardType,
-          type: 'bank_card',
-          active: true,
-          cardFirstSix: response.CardFirstSix,
-          cardLastFour: response.CardLastFour,
-          userId: userId,
-          accountId: response.AccountId,
-          expMonth: cardExpData[0],
-          expYear: cardExpData[1],
-        },
+    // CHECK IF PAYMENT METHOD'S EXIST. IF NULL SET PAYMENT METHOD ACTIVE
+
+    const res = await this.dbService
+      .$transaction(async () => {
+        const isPaymentMethodExist = await this.dbService.paymentMethod
+          .findFirst({
+            where: { userId: userId },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+
+        const paymentMethod: any = await this.dbService.paymentMethod
+          .create({
+            data: {
+              paymentId: response.Token,
+              cardType: response.CardType,
+              type: 'bank_card',
+              active: true,
+              cardFirstSix: response.CardFirstSix,
+              cardLastFour: response.CardLastFour,
+              userId: userId,
+              accountId: response.AccountId,
+              expMonth: cardExpData[0],
+              expYear: cardExpData[1],
+            },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+
+        if (!isPaymentMethodExist) {
+          await this.dbService.user
+            .update({
+              where: { id: userId },
+              data: {
+                activePaymentMethod: paymentMethod.id,
+              },
+            })
+            .catch((err) => {
+              this.logger.error(err);
+            });
+        }
+
+        return true;
       })
       .catch((err) => {
         this.logger.error(err);
-        return false;
+        return err;
       });
 
-    return true;
+    return res;
   }
 
   private async checkIsCardAlreadyExist(
