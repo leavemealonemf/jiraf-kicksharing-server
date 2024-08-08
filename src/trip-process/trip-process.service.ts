@@ -824,9 +824,9 @@ export class TripProcessService {
       turfCoordinates.push(turfCoordinates[0]);
       const polygon = turf.polygon([turfCoordinates]);
 
-      console.log(polygon.geometry.coordinates);
-      console.log(scooterLatitude);
-      console.log(scooterLongitude);
+      // console.log(polygon.geometry.coordinates);
+      // console.log(scooterLatitude);
+      // console.log(scooterLongitude);
 
       const isUserInParking = this.checkIsUserInParking(
         userLatitude,
@@ -917,6 +917,7 @@ export class TripProcessService {
         const geofencingStatus = await this.getGeofencingTripStatus(
           packets[0].lat, // first packet lat by index
           packets[0].lon, // first packet lon by index
+          updatedTrip.tripInfo.scooter.scooter.franchiseId, // franchiseId
         );
 
         console.log(geofencingStatus);
@@ -1083,8 +1084,9 @@ export class TripProcessService {
   private async getGeofencingTripStatus(
     lat: number,
     lon: number,
+    franchiseId: number,
   ): Promise<GofencingStatus[]> {
-    const zones = await this.geofenceService.getGeofencesForTrip();
+    const zones = await this.geofenceService.getGeofencesForTrip(franchiseId);
 
     const includedZones = [];
 

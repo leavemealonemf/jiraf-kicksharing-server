@@ -68,6 +68,7 @@ export interface Scooter {
   scooter: {
     deviceId: string;
     deviceIMEI: string;
+    franchiseId: number;
   };
   rightechScooter: object;
 }

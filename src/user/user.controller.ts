@@ -25,6 +25,13 @@ export class UserController {
   //   return this.userService.create(createUserDto);
   // }
 
+  @UseGuards(PlatformsGuard)
+  @Platforms('MOBILE')
+  @Get('delete-account')
+  async deleteAccount(@CurrentUser() user: User) {
+    return await this.userService.deleteUserAccount(user.id);
+  }
+
   @Get('all')
   findAll() {
     return this.userService.findAll();
@@ -52,12 +59,5 @@ export class UserController {
   @Get()
   async getMe(@CurrentUser() user: any) {
     return this.userService.findOneByUUID(user.clientId);
-  }
-
-  @UseGuards(PlatformsGuard)
-  @Platforms('MOBILE')
-  @Get('delete-account')
-  async deleteAccount(@CurrentUser() user: User) {
-    return await this.userService.deleteUserAccount(user.id);
   }
 }

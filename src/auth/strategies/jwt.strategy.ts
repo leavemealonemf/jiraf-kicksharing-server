@@ -1,4 +1,4 @@
-import { JwtPayload } from '../interfaces';
+// import { JwtPayload } from '../interfaces';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: configService.get('JWT_SECRET'),
     });
   }
-  async validate(payload: JwtPayload) {
+  async validate(payload: any) {
     let user: ErpUser | User;
 
     if (payload.platform === 'WEB') {
@@ -33,18 +33,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
       user = webUser;
     } else {
-      const mobileUser = await this.userService
-        .findOneByUUID(payload.uuid)
+      const mobileUser: User = await this.userService
+        .findOneByUUID(payload.clientId)
         .catch((err) => {
           this.logger.error(err);
           return null;
         });
+
+      if (mobileUser.status === 'DELETED') {
+        throw new UnauthorizedException();
+      }
+
       user = mobileUser;
     }
+
+    console.log('USER FROM JWT STRATEGY', JSON.stringify(user));
 
     if (!user) {
       throw new UnauthorizedException();
     }
+
     return payload;
   }
 }

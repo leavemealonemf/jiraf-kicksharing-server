@@ -55,16 +55,29 @@ export class GeofenceService {
       });
   }
 
-  async getGeofencesForTrip() {
-    return await this.dbService.geofence
-      .findMany({
-        orderBy: { dateTimeCreated: 'desc' },
-        include: { type: true },
-      })
-      .catch((err) => {
-        this.logger.error(err);
-        throw new BadRequestException('Не удалось получить геозоны');
-      });
+  async getGeofencesForTrip(franchiseId?: number) {
+    if (franchiseId) {
+      return await this.dbService.geofence
+        .findMany({
+          orderBy: { dateTimeCreated: 'desc' },
+          where: { franchiseId: franchiseId },
+          include: { type: true },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException('Не удалось получить геозоны');
+        });
+    } else {
+      return await this.dbService.geofence
+        .findMany({
+          orderBy: { dateTimeCreated: 'desc' },
+          include: { type: true },
+        })
+        .catch((err) => {
+          this.logger.error(err);
+          throw new BadRequestException('Не удалось получить геозоны');
+        });
+    }
   }
 
   private checkUserRolePermissions(erpUser: ErpUser): boolean {

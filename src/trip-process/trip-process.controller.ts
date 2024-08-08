@@ -57,6 +57,7 @@ export class TripProcessController {
       dto.userLongitude,
       dto.scooterLatitude,
       dto.scooterLongitude,
+      // dto.franchiseId,
     );
   }
 

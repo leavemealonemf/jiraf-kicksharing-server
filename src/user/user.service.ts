@@ -54,15 +54,19 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const user = await this.dbService.user.findFirst({
-      where: { id: id },
-      include: {
-        paymentMethods: true,
-        payments: {
-          include: { paymentMethod: true },
+    const user = await this.dbService.user
+      .findFirst({
+        where: { id: id },
+        include: {
+          paymentMethods: true,
+          payments: {
+            include: { paymentMethod: true },
+          },
         },
-      },
-    });
+      })
+      .catch((err) => {
+        this.logger.error(err);
+      });
     if (!user) {
       throw new NotFoundException(`Пользователь с id ${id} не найден`);
     }
@@ -167,7 +171,11 @@ export class UserService {
   }
 
   async deleteUserAccount(userId: number) {
-    const user = await this.dbService.user.findFirst({ where: { id: userId } });
+    const user = await this.dbService.user
+      .findFirst({ where: { id: userId } })
+      .catch((err) => {
+        this.logger.error(err);
+      });
     if (!user) {
       throw new NotFoundException(
         `Не получается удалить. Пользователя с id ${userId} не существует!`,
@@ -184,20 +192,29 @@ export class UserService {
           where: { id: userId },
           data: {
             status: 'DELETED',
-            phone: user.phone + ':deleted',
+            phone: user.phone + ':deleted/' + new Date().toISOString(),
           },
         })
         .catch((err) => {
           this.logger.error(err);
         });
 
-      await this.dbService.userSubscriptionsOptions
-        .delete({
+      // DELETE USER SUBSCRIPTION OPTIONS IF EXIST
+
+      const userSubscriptionOptions =
+        await this.dbService.userSubscriptionsOptions.findFirst({
           where: { userId: user.id },
-        })
-        .catch((err) => {
-          this.logger.error(err);
         });
+
+      if (userSubscriptionOptions) {
+        await this.dbService.userSubscriptionsOptions
+          .delete({
+            where: { userId: user.id },
+          })
+          .catch((err) => {
+            this.logger.error(err);
+          });
+      }
 
       return updated;
     });

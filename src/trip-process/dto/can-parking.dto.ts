@@ -18,4 +18,8 @@ export class CanParkingDto {
   @IsNumber()
   @IsNotEmpty()
   scooterLongitude: number;
+  // @ApiProperty({ default: 1 })
+  // @IsNumber()
+  // @IsNotEmpty()
+  // franchiseId: number;
 }
