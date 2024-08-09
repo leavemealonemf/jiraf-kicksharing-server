@@ -927,8 +927,7 @@ export class TripProcessService {
 
         if (
           geofencingStatus[0] === 'TRAVEL_BAN' &&
-          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON' &&
-          !updatedTrip.tripInfo.paused
+          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
         ) {
           await this.scooterCommandHandlerIOT.sendCommand(
             scooter.scooter.deviceIMEI,
@@ -936,11 +935,13 @@ export class TripProcessService {
           );
           updatedTrip.tripInfo.deviceProps.engineStatus = 'POWEROFF';
         } else {
-          updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.START_ENGINE,
-          );
+          if (!updatedTrip.tripInfo.paused) {
+            updatedTrip.tripInfo.deviceProps.engineStatus = 'POWERON';
+            await this.scooterCommandHandlerIOT.sendCommand(
+              scooter.scooter.deviceIMEI,
+              DEVICE_COMMANDS.START_ENGINE,
+            );
+          }
         }
 
         if (geofencingStatus[0].split('.')[0] === 'ALL_TIME_SPEED_LIMIT') {
