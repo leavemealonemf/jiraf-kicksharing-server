@@ -952,18 +952,18 @@ export class TripProcessService {
           );
         }
 
-        if (geofencingStatus[0].split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
-          const speedValue = geofencingStatus[0].split('.')[1];
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS_DYNAMIC[speedValue],
-          );
-        } else {
-          await this.scooterCommandHandlerIOT.sendCommand(
-            scooter.scooter.deviceIMEI,
-            DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
-          );
-        }
+        // if (geofencingStatus[0].split('.')[0] === 'SCHEDULE_SPEED_LIMIT') {
+        //   const speedValue = geofencingStatus[0].split('.')[1];
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS_DYNAMIC[speedValue],
+        //   );
+        // } else {
+        //   await this.scooterCommandHandlerIOT.sendCommand(
+        //     scooter.scooter.deviceIMEI,
+        //     DEVICE_COMMANDS.SET_SPEED_LIMIT_NORMAL_MODE_25,
+        //   );
+        // }
 
         updatedTrip.tripInfo.geofencingStatus = geofencingStatus[0];
       }
