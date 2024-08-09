@@ -920,15 +920,12 @@ export class TripProcessService {
         const geofencingStatus = await this.getGeofencingTripStatus(
           packets[0].lat, // first packet lat by index
           packets[0].lon, // first packet lon by index
-          updatedTrip.tripInfo.scooter.scooter.franchiseId, // franchiseId
+          updatedTrip.tripInfo.scooter.scooter.franchiseId,
         );
 
         console.log(geofencingStatus);
 
-        if (
-          geofencingStatus[0] === 'TRAVEL_BAN' &&
-          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
-        ) {
+        if (geofencingStatus[0] === 'TRAVEL_BAN') {
           await this.scooterCommandHandlerIOT.sendCommand(
             scooter.scooter.deviceIMEI,
             DEVICE_COMMANDS.SHUT_DOWN_ENGINE,
