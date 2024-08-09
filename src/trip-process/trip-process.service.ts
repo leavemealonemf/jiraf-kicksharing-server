@@ -752,6 +752,7 @@ export class TripProcessService {
       start: new Date().toISOString(),
       end: null,
     });
+    tripWithPauseIntervals.tripInfo.paused = true;
 
     await this.cacheManager.set(
       activeTripUUID,
@@ -788,6 +789,8 @@ export class TripProcessService {
         tripWithPauseIntervals.tripInfo.pauseIntervals.length - 1
       ].end = new Date().toISOString();
     }
+
+    tripWithPauseIntervals.tripInfo.paused = false;
 
     await this.cacheManager.set(
       activeTripUUID,
@@ -924,7 +927,8 @@ export class TripProcessService {
 
         if (
           geofencingStatus[0] === 'TRAVEL_BAN' &&
-          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON'
+          updatedTrip.tripInfo.deviceProps.engineStatus === 'POWERON' &&
+          !updatedTrip.tripInfo.paused
         ) {
           await this.scooterCommandHandlerIOT.sendCommand(
             scooter.scooter.deviceIMEI,
